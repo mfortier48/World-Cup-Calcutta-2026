@@ -149,6 +149,7 @@ h3 {
   position: relative;
   min-width: 0;
   padding: 30px;
+  isolation: isolate;
 }
 
 .workspace::before {
@@ -160,6 +161,23 @@ h3 {
   background:
     linear-gradient(180deg, rgba(255, 253, 248, 0.2), rgba(255, 253, 248, 0.64) 58%, rgba(255, 253, 248, 0.86)),
     repeating-linear-gradient(90deg, transparent 0 82px, rgba(13, 107, 87, 0.035) 82px 83px);
+}
+
+.workspace::after {
+  content: "";
+  position: fixed;
+  inset: 10rem 0 0 300px;
+  z-index: 0;
+  pointer-events: none;
+  background: url("./player-silhouettes.png") center top / min(1500px, 88vw) auto no-repeat;
+  opacity: 0.44;
+  mix-blend-mode: multiply;
+}
+
+.topbar,
+.view {
+  position: relative;
+  z-index: 1;
 }
 
 .topbar {
@@ -512,6 +530,12 @@ input[type="number"] {
     opacity: 0.25;
   }
 
+  .workspace::after {
+    inset-left: 0;
+    background-size: 1120px auto;
+    opacity: 0.32;
+  }
+
   .app-shell {
     grid-template-columns: 1fr;
   }
@@ -548,6 +572,12 @@ input[type="number"] {
     background-position: center 24rem;
     background-size: 900px auto;
     opacity: 0.18;
+  }
+
+  .workspace::after {
+    inset-top: 18rem;
+    background-size: 900px auto;
+    opacity: 0.24;
   }
 
   .workspace,
