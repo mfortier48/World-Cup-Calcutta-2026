@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>World Cup Calcutta</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="mark">26</div>
+          <div>
+            <p class="eyebrow">World Cup 2026</p>
+            <h1>Calcutta Pool</h1>
+          </div>
+        </div>
+
+        <nav class="nav" aria-label="Primary">
+          <button class="nav-item active" data-view="dashboard">Overview</button>
+          <button class="nav-item" data-view="auction">Auction</button>
+          <button class="nav-item" data-view="results">Results</button>
+          <button class="nav-item" data-view="rules">Rules</button>
+        </nav>
+
+        <section class="panel compact">
+          <p class="panel-label">Prize Pot</p>
+          <strong id="potTotal">$0</strong>
+          <span id="budgetStatus">0 of 12 players entered</span>
+        </section>
+
+        <section class="panel compact">
+          <p class="panel-label">Data Mode</p>
+          <strong>Manual MVP</strong>
+          <span>Designed for API sync plus commissioner overrides later.</span>
+        </section>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Private league tracker</p>
+            <h2 id="viewTitle">Overview</h2>
+          </div>
+          <div class="top-actions">
+            <button class="ghost" id="seedDemoButton" type="button">Load Sample</button>
+            <button class="danger" id="resetButton" type="button">Reset</button>
+          </div>
+        </header>
+
+        <section id="dashboard" class="view active">
+          <div class="metric-grid">
+            <article class="metric">
+              <span>Teams Sold</span>
+              <strong id="teamsSold">0 / 48</strong>
+            </article>
+            <article class="metric">
+              <span>Average Price</span>
+              <strong id="averagePrice">$0</strong>
+            </article>
+            <article class="metric">
+              <span>Top Team</span>
+              <strong id="topTeam">None yet</strong>
+            </article>
+            <article class="metric">
+              <span>Projected Leader</span>
+              <strong id="projectedLeader">None yet</strong>
+            </article>
+          </div>
+
+          <div class="dashboard-grid">
+            <section class="panel">
+              <div class="section-heading">
+                <div>
+                  <p class="panel-label">Payout Leaderboard</p>
+                  <h3>Owner Standings</h3>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Owner</th>
+                      <th>Spent</th>
+                      <th>Projected Payout</th>
+                      <th>Net</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ownerLeaderboard"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="section-heading">
+                <div>
+                  <p class="panel-label">Most Valuable Teams</p>
+                  <h3>Team Payouts</h3>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Team</th>
+                      <th>Owner</th>
+                      <th>Cost</th>
+                      <th>Payout</th>
+                    </tr>
+                  </thead>
+                  <tbody id="teamLeaderboard"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section id="auction" class="view">
+          <section class="panel">
+            <div class="section-heading">
+              <div>
+                <p class="panel-label">Commissioner Entry</p>
+                <h3>Auction Results</h3>
+              </div>
+              <p class="hint">$150 max spend per owner. Unspent budget stays out of the pot.</p>
+            </div>
+            <div class="table-wrap tall">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Team</th>
+                    <th>Conf.</th>
+                    <th>Owner</th>
+                    <th>Price</th>
+                    <th>Budget</th>
+                  </tr>
+                </thead>
+                <tbody id="auctionRows"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section id="results" class="view">
+          <section class="panel">
+            <div class="section-heading">
+              <div>
+                <p class="panel-label">Manual Results</p>
+                <h3>Team Stats And Stage</h3>
+              </div>
+              <p class="hint">These fields will map cleanly to live API data later.</p>
+            </div>
+            <div class="table-wrap tall">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Team</th>
+                    <th>Stage</th>
+                    <th>W</th>
+                    <th>D</th>
+                    <th>GF</th>
+                    <th>GA</th>
+                    <th>Big Win</th>
+                  </tr>
+                </thead>
+                <tbody id="resultRows"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section id="rules" class="view">
+          <div class="rules-layout">
+            <section class="panel">
+              <p class="panel-label">Auction</p>
+              <h3>Pool Rules</h3>
+              <ul class="rules-list">
+                <li>All 48 teams are auctioned individually.</li>
+                <li>Each owner has a hard $150 spending cap.</li>
+                <li>Owners do not need to spend the full budget.</li>
+                <li>The amount actually spent becomes the entire prize pot.</li>
+                <li>Every team must be purchased before the tournament starts.</li>
+                <li>Shared ownership is allowed only if recorded before kickoff.</li>
+              </ul>
+            </section>
+
+            <section class="panel">
+              <p class="panel-label">Payout Formula</p>
+              <h3>Hybrid Structure</h3>
+              <div id="payoutBreakdown" class="payout-breakdown"></div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <template id="ownerOptionsTemplate"></template>
+    <script src="./app.js"></script>
+  </body>
+</html>
