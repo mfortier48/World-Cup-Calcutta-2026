@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=2" />
   </head>
   <body>
     <div class="app-shell">
@@ -50,6 +50,22 @@
         </header>
 
         <section id="dashboard" class="view active">
+          <section class="hero-panel" aria-label="World Cup Calcutta overview">
+            <div class="hero-copy">
+              <p class="eyebrow">Auction night energy</p>
+              <h3>48 teams, 12 owners, one gloriously irrational market.</h3>
+              <p>
+                Track every bid, every upset, every group-stage lifeline, and every weird side-pot swing
+                as the tournament unfolds.
+              </p>
+            </div>
+            <div class="hero-stats" aria-label="Payout mix">
+              <div><strong>65%</strong><span>Advancement</span></div>
+              <div><strong>20%</strong><span>Group Stage</span></div>
+              <div><strong>15%</strong><span>Side Pots</span></div>
+            </div>
+          </section>
+
           <div class="metric-grid">
             <article class="metric">
               <span>Teams Sold</span>
@@ -114,6 +130,21 @@
               </div>
             </section>
           </div>
+
+          <section class="visual-strip" aria-label="Tournament flavor">
+            <article>
+              <span>Star Watch</span>
+              <strong>Messi, Mbappe, Bellingham, Vinicius Jr.</strong>
+            </article>
+            <article>
+              <span>Chaos Watch</span>
+              <strong>Worst goal differential pays too.</strong>
+            </article>
+            <article>
+              <span>Commissioner Mode</span>
+              <strong>Manual updates now, live sync next.</strong>
+            </article>
+          </section>
         </section>
 
         <section id="auction" class="view">
@@ -196,6 +227,6 @@
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js"></script>
+    <script src="./app.js?v=2"></script>
   </body>
 </html>

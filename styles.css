@@ -1,5 +1,5 @@
 :root {
-  --bg: #f5f2ec;
+  --bg: #f7f3ea;
   --surface: #fffdf8;
   --surface-strong: #ffffff;
   --ink: #17211f;
@@ -21,8 +21,10 @@ body {
   min-width: 320px;
   color: var(--ink);
   background:
-    linear-gradient(135deg, rgba(13, 107, 87, 0.12), transparent 34%),
-    linear-gradient(315deg, rgba(178, 58, 72, 0.1), transparent 28%),
+    radial-gradient(circle at 12% 4%, rgba(200, 145, 46, 0.28), transparent 24rem),
+    radial-gradient(circle at 88% 8%, rgba(178, 58, 72, 0.18), transparent 22rem),
+    linear-gradient(135deg, rgba(13, 107, 87, 0.16), transparent 34%),
+    linear-gradient(315deg, rgba(45, 95, 154, 0.12), transparent 30%),
     var(--bg);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -51,7 +53,9 @@ button {
   flex-direction: column;
   gap: 18px;
   padding: 26px;
-  background: rgba(255, 253, 248, 0.78);
+  background:
+    linear-gradient(180deg, rgba(13, 107, 87, 0.14), transparent 280px),
+    rgba(255, 253, 248, 0.82);
   border-right: 1px solid var(--line);
   backdrop-filter: blur(16px);
 }
@@ -73,6 +77,7 @@ button {
   border-radius: 8px;
   font-weight: 850;
   letter-spacing: 0;
+  box-shadow: 0 12px 28px rgba(13, 107, 87, 0.24);
 }
 
 .eyebrow,
@@ -177,6 +182,74 @@ h3 {
   margin-bottom: 14px;
 }
 
+.hero-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.55fr);
+  gap: 18px;
+  align-items: end;
+  min-height: 310px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(9, 27, 31, 0.92), rgba(9, 27, 31, 0.58) 44%, rgba(9, 27, 31, 0.16)),
+    url("./world-cup-hero.png") center / cover;
+  box-shadow: var(--shadow);
+  color: white;
+}
+
+.hero-copy {
+  max-width: 720px;
+  padding: 30px;
+}
+
+.hero-copy .eyebrow {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.hero-copy h3 {
+  max-width: 650px;
+  font-size: clamp(1.8rem, 4vw, 3.7rem);
+  line-height: 0.98;
+}
+
+.hero-copy p:not(.eyebrow) {
+  max-width: 560px;
+  margin: 16px 0 0;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.hero-stats {
+  display: grid;
+  gap: 10px;
+  padding: 24px;
+}
+
+.hero-stats div {
+  display: grid;
+  grid-template-columns: 78px 1fr;
+  align-items: center;
+  min-height: 60px;
+  padding: 12px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+.hero-stats strong {
+  font-size: 1.55rem;
+}
+
+.hero-stats span {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 800;
+}
+
 .metric,
 .panel {
   background: rgba(255, 253, 248, 0.9);
@@ -188,6 +261,16 @@ h3 {
 .metric {
   min-height: 112px;
   padding: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: linear-gradient(90deg, var(--green), var(--blue), var(--red), var(--gold));
 }
 
 .metric span,
@@ -209,6 +292,40 @@ h3 {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 14px;
+}
+
+.visual-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.visual-strip article {
+  min-height: 112px;
+  padding: 18px;
+  border: 1px solid rgba(23, 33, 31, 0.12);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 253, 248, 0.72)),
+    linear-gradient(90deg, rgba(13, 107, 87, 0.22), rgba(200, 145, 46, 0.2));
+  box-shadow: var(--shadow);
+}
+
+.visual-strip span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.visual-strip strong {
+  display: block;
+  margin-top: 12px;
+  font-size: 1.1rem;
+  line-height: 1.3;
 }
 
 .panel {
@@ -381,9 +498,15 @@ input[type="number"] {
   }
 
   .metric-grid,
+  .hero-panel,
   .dashboard-grid,
-  .rules-layout {
+  .rules-layout,
+  .visual-strip {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .hero-panel {
+    align-items: stretch;
   }
 }
 
@@ -406,9 +529,19 @@ input[type="number"] {
   }
 
   .nav,
+  .hero-panel,
   .metric-grid,
   .dashboard-grid,
-  .rules-layout {
+  .rules-layout,
+  .visual-strip {
     grid-template-columns: 1fr;
+  }
+
+  .hero-copy {
+    padding: 24px 18px 0;
+  }
+
+  .hero-stats {
+    padding: 0 18px 18px;
   }
 }
