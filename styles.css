@@ -31,6 +31,19 @@ body {
     sans-serif;
 }
 
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 0 300px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(247, 243, 234, 0.58), rgba(247, 243, 234, 0.34)),
+    url("./player-silhouettes.png") center 58% / min(1380px, 86vw) auto no-repeat;
+  opacity: 0.38;
+  mix-blend-mode: multiply;
+}
+
 button,
 input,
 select {
@@ -133,8 +146,20 @@ h3 {
 }
 
 .workspace {
+  position: relative;
   min-width: 0;
   padding: 30px;
+}
+
+.workspace::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 253, 248, 0.2), rgba(255, 253, 248, 0.64) 58%, rgba(255, 253, 248, 0.86)),
+    repeating-linear-gradient(90deg, transparent 0 82px, rgba(13, 107, 87, 0.035) 82px 83px);
 }
 
 .topbar {
@@ -252,10 +277,11 @@ h3 {
 
 .metric,
 .panel {
-  background: rgba(255, 253, 248, 0.9);
+  background: rgba(255, 253, 248, 0.88);
   border: 1px solid var(--line);
   border-radius: 8px;
   box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
 }
 
 .metric {
@@ -307,9 +333,10 @@ h3 {
   border: 1px solid rgba(23, 33, 31, 0.12);
   border-radius: 8px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 253, 248, 0.72)),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(255, 253, 248, 0.68)),
     linear-gradient(90deg, rgba(13, 107, 87, 0.22), rgba(200, 145, 46, 0.2));
   box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
 }
 
 .visual-strip span {
@@ -361,7 +388,7 @@ h3 {
   overflow: auto;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: var(--surface-strong);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .table-wrap.tall {
@@ -479,6 +506,12 @@ input[type="number"] {
 }
 
 @media (max-width: 980px) {
+  body::before {
+    inset-left: 0;
+    background-size: 1180px auto;
+    opacity: 0.25;
+  }
+
   .app-shell {
     grid-template-columns: 1fr;
   }
@@ -511,6 +544,12 @@ input[type="number"] {
 }
 
 @media (max-width: 680px) {
+  body::before {
+    background-position: center 24rem;
+    background-size: 900px auto;
+    opacity: 0.18;
+  }
+
   .workspace,
   .sidebar {
     padding: 18px;

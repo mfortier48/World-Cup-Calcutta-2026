@@ -1,0 +1,8 @@
+.DS_Store
+node_modules/
+.vercel/
+*.log
+calcutta-app-results.png
+visual-refresh-preview.png
+silhouette-preview.png
+assets/
