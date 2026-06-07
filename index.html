@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css?v=3" />
+    <link rel="stylesheet" href="./styles.css?v=4" />
   </head>
   <body>
     <div class="app-shell">
@@ -45,6 +45,9 @@
           </div>
           <div class="top-actions">
             <button class="ghost" id="seedDemoButton" type="button">Load Sample</button>
+            <button class="ghost" id="exportButton" type="button">Export</button>
+            <button class="ghost" id="importButton" type="button">Import</button>
+            <input id="importFileInput" type="file" accept="application/json" hidden />
             <button class="danger" id="resetButton" type="button">Reset</button>
           </div>
         </header>
@@ -147,6 +150,21 @@
                   <h3>Current Team</h3>
                 </div>
                 <div class="live-status" id="auctionRoomStatus">Ready</div>
+              </div>
+
+              <div class="deck-table">
+                <div class="playing-card" id="drawnCard" aria-live="polite"></div>
+                <div class="deck-controls">
+                  <div>
+                    <p class="panel-label">Draw Deck</p>
+                    <h3 id="deckStatus">52 cards ready</h3>
+                  </div>
+                  <div class="deck-actions">
+                    <button class="sold-button" id="drawCardButton" type="button">Draw Card</button>
+                    <button class="ghost" id="shuffleDeckButton" type="button">Shuffle</button>
+                    <button class="ghost" id="returnJokersButton" type="button">Return Jokers</button>
+                  </div>
+                </div>
               </div>
 
               <div class="current-team-card" id="currentTeamCard"></div>
@@ -268,6 +286,6 @@
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js?v=3"></script>
+    <script src="./app.js?v=4"></script>
   </body>
 </html>
