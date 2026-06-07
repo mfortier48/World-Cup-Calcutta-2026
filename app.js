@@ -99,6 +99,12 @@ const defaultState = {
       { stage: "group", wins: 0, draws: 0, gf: 0, ga: 0, biggestWin: 0 },
     ]),
   ),
+  auctionRoom: {
+    currentTeamId: teams[0].id,
+    currentBidder: "",
+    currentBid: 1,
+    saleLog: [],
+  },
 };
 
 let state = loadState();
@@ -108,7 +114,14 @@ function loadState() {
   if (!saved) return structuredClone(defaultState);
 
   try {
-    return { ...structuredClone(defaultState), ...JSON.parse(saved) };
+    const parsed = JSON.parse(saved);
+    return {
+      ...structuredClone(defaultState),
+      ...parsed,
+      auction: { ...structuredClone(defaultState).auction, ...(parsed.auction || {}) },
+      results: { ...structuredClone(defaultState).results, ...(parsed.results || {}) },
+      auctionRoom: { ...structuredClone(defaultState).auctionRoom, ...(parsed.auctionRoom || {}) },
+    };
   } catch {
     return structuredClone(defaultState);
   }
@@ -138,6 +151,14 @@ function ownerOptions(selected = "") {
   const options = [`<option value="">Unassigned</option>`]
     .concat(players.map((player) => `<option value="${player}" ${player === selected ? "selected" : ""}>${player}</option>`));
   return options.join("");
+}
+
+function unsoldTeams() {
+  return teams.filter((team) => !state.auction[team.id]?.owner);
+}
+
+function currentTeam() {
+  return teams.find((team) => team.id === state.auctionRoom.currentTeamId) || unsoldTeams()[0] || teams[0];
 }
 
 function stageOptions(selected = "group") {
@@ -219,6 +240,68 @@ function renderAuction() {
       `;
     })
     .join("");
+}
+
+function renderAuctionRoom() {
+  const team = currentTeam();
+  const auction = state.auction[team.id] || { owner: "", price: 0 };
+  const ownerSpend = getOwnerSpend();
+  const unsold = unsoldTeams();
+  const currentBid = Number(state.auctionRoom.currentBid || 0);
+  const selectedBidder = state.auctionRoom.currentBidder;
+  const bidderSpend = selectedBidder ? ownerSpend[selectedBidder] : 0;
+  const bidderRemaining = selectedBidder ? BUDGET_CAP - bidderSpend - currentBid : BUDGET_CAP;
+  const bidClass = selectedBidder && bidderSpend + currentBid > BUDGET_CAP ? "budget-warn" : "budget-ok";
+
+  document.getElementById("auctionRoomStatus").textContent = `${unsold.length} unsold`;
+  document.getElementById("currentTeamCard").innerHTML = `
+    <div class="current-team-main">
+      <span class="current-flag">${team.flag}</span>
+      <div>
+        <p class="eyebrow">${team.confederation}</p>
+        <strong>${team.name}</strong>
+        <span>${auction.owner ? `Sold to ${auction.owner} for ${currency(auction.price)}` : "Available"}</span>
+      </div>
+    </div>
+    <div class="current-bid-summary">
+      <span>Current bid</span>
+      <strong>${currency(currentBid)}</strong>
+      <em class="${bidClass}">${selectedBidder ? `${selectedBidder} would have ${currency(bidderRemaining)} left after this bid` : "Choose a high bidder"}</em>
+    </div>
+  `;
+
+  document.getElementById("liveBidderSelect").innerHTML = ownerOptions(selectedBidder);
+  document.getElementById("liveBidInput").value = currentBid;
+
+  document.getElementById("budgetBoard").innerHTML = players
+    .map((player) => {
+      const spent = ownerSpend[player];
+      const remaining = BUDGET_CAP - spent;
+      return `
+        <div class="budget-row">
+          <span>${player}</span>
+          <strong class="${remaining < 0 ? "budget-warn" : "budget-ok"}">${currency(remaining)}</strong>
+        </div>
+      `;
+    })
+    .join("");
+
+  const saleLog = state.auctionRoom.saleLog || [];
+  document.getElementById("saleLog").innerHTML = saleLog.length
+    ? saleLog
+      .slice(-8)
+      .reverse()
+      .map((sale) => {
+        const soldTeam = teams.find((candidate) => candidate.id === sale.teamId);
+        return `
+          <div class="sale-row">
+            <span>${soldTeam?.flag || ""} ${soldTeam?.name || "Team"}</span>
+            <strong>${sale.owner} · ${currency(sale.price)}</strong>
+          </div>
+        `;
+      })
+      .join("")
+    : `<div class="empty-note">No sales yet.</div>`;
 }
 
 function renderResults() {
@@ -327,10 +410,64 @@ function renderRules() {
 }
 
 function render() {
+  renderAuctionRoom();
   renderAuction();
   renderResults();
   renderDashboard();
   renderRules();
+}
+
+function setCurrentTeam(teamId) {
+  state.auctionRoom.currentTeamId = teamId;
+  const auction = state.auction[teamId] || { owner: "", price: 0 };
+  state.auctionRoom.currentBidder = auction.owner || state.auctionRoom.currentBidder || "";
+  state.auctionRoom.currentBid = Number(auction.price || 1);
+}
+
+function moveCurrentTeam(direction) {
+  const index = teams.findIndex((team) => team.id === currentTeam().id);
+  const step = direction === "prev" ? -1 : 1;
+
+  for (let offset = 1; offset <= teams.length; offset += 1) {
+    const nextIndex = (index + (step * offset) + teams.length) % teams.length;
+    const candidate = teams[nextIndex];
+    if (!state.auction[candidate.id]?.owner) {
+      setCurrentTeam(candidate.id);
+      return;
+    }
+  }
+}
+
+function sellCurrentTeam() {
+  const team = currentTeam();
+  const owner = state.auctionRoom.currentBidder;
+  const price = Number(state.auctionRoom.currentBid || 0);
+  if (!owner || price <= 0) return;
+
+  const previous = { ...state.auction[team.id] };
+  state.auction[team.id] = { owner, price };
+  state.auctionRoom.saleLog = [
+    ...(state.auctionRoom.saleLog || []),
+    { teamId: team.id, owner, price, previous, soldAt: new Date().toISOString() },
+  ];
+
+  const nextUnsold = unsoldTeams()[0];
+  if (nextUnsold) {
+    setCurrentTeam(nextUnsold.id);
+    state.auctionRoom.currentBidder = "";
+    state.auctionRoom.currentBid = 1;
+  }
+}
+
+function undoLastSale() {
+  const saleLog = state.auctionRoom.saleLog || [];
+  const lastSale = saleLog.pop();
+  if (!lastSale) return;
+
+  state.auction[lastSale.teamId] = lastSale.previous || { owner: "", price: 0 };
+  setCurrentTeam(lastSale.teamId);
+  state.auctionRoom.currentBidder = lastSale.owner;
+  state.auctionRoom.currentBid = lastSale.price;
 }
 
 function handleInput(event) {
@@ -342,6 +479,10 @@ function handleInput(event) {
 
   if (kind === "auction") {
     state.auction[team][field] = value;
+    if (team === state.auctionRoom.currentTeamId) {
+      state.auctionRoom.currentBidder = state.auction[team].owner || "";
+      state.auctionRoom.currentBid = Number(state.auction[team].price || 1);
+    }
   }
 
   if (kind === "result") {
@@ -407,6 +548,50 @@ document.querySelectorAll(".nav-item").forEach((button) => {
 document.getElementById("seedDemoButton").addEventListener("click", seedDemo);
 document.getElementById("resetButton").addEventListener("click", () => {
   state = structuredClone(defaultState);
+  saveState();
+  render();
+});
+
+document.getElementById("liveBidderSelect").addEventListener("change", (event) => {
+  state.auctionRoom.currentBidder = event.target.value;
+  saveState();
+  render();
+});
+
+document.getElementById("liveBidInput").addEventListener("input", (event) => {
+  state.auctionRoom.currentBid = Number(event.target.value || 0);
+  saveState();
+  render();
+});
+
+document.querySelectorAll(".bid-step").forEach((button) => {
+  button.addEventListener("click", () => {
+    state.auctionRoom.currentBid = Number(state.auctionRoom.currentBid || 0) + Number(button.dataset.step);
+    saveState();
+    render();
+  });
+});
+
+document.getElementById("prevTeamButton").addEventListener("click", () => {
+  moveCurrentTeam("prev");
+  saveState();
+  render();
+});
+
+document.getElementById("nextTeamButton").addEventListener("click", () => {
+  moveCurrentTeam("next");
+  saveState();
+  render();
+});
+
+document.getElementById("soldButton").addEventListener("click", () => {
+  sellCurrentTeam();
+  saveState();
+  render();
+});
+
+document.getElementById("undoSaleButton").addEventListener("click", () => {
+  undoLastSale();
   saveState();
   render();
 });

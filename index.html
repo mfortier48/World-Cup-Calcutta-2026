@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css?v=2" />
+    <link rel="stylesheet" href="./styles.css?v=3" />
   </head>
   <body>
     <div class="app-shell">
@@ -139,6 +139,56 @@
         </section>
 
         <section id="auction" class="view">
+          <section class="auction-room">
+            <div class="live-board">
+              <div class="section-heading">
+                <div>
+                  <p class="panel-label">Auction Room</p>
+                  <h3>Current Team</h3>
+                </div>
+                <div class="live-status" id="auctionRoomStatus">Ready</div>
+              </div>
+
+              <div class="current-team-card" id="currentTeamCard"></div>
+
+              <div class="bid-controls">
+                <label>
+                  <span>High Bidder</span>
+                  <select id="liveBidderSelect" aria-label="Current high bidder"></select>
+                </label>
+                <label>
+                  <span>Current Bid</span>
+                  <input id="liveBidInput" type="number" min="0" step="1" aria-label="Current bid amount" />
+                </label>
+              </div>
+
+              <div class="bid-button-grid" aria-label="Bid increments">
+                <button class="ghost bid-step" type="button" data-step="1">+$1</button>
+                <button class="ghost bid-step" type="button" data-step="2">+$2</button>
+                <button class="ghost bid-step" type="button" data-step="5">+$5</button>
+                <button class="ghost bid-step" type="button" data-step="10">+$10</button>
+              </div>
+
+              <div class="auction-actions">
+                <button class="ghost" id="prevTeamButton" type="button">Previous</button>
+                <button class="ghost" id="nextTeamButton" type="button">Next Unsold</button>
+                <button class="sold-button" id="soldButton" type="button">Sold</button>
+                <button class="danger" id="undoSaleButton" type="button">Undo Sale</button>
+              </div>
+            </div>
+
+            <aside class="auction-side">
+              <section class="panel">
+                <p class="panel-label">Budget Board</p>
+                <div id="budgetBoard" class="budget-board"></div>
+              </section>
+              <section class="panel">
+                <p class="panel-label">Recent Sales</p>
+                <div id="saleLog" class="sale-log"></div>
+              </section>
+            </aside>
+          </section>
+
           <section class="panel">
             <div class="section-heading">
               <div>
@@ -218,6 +268,6 @@
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js?v=2"></script>
+    <script src="./app.js?v=3"></script>
   </body>
 </html>
