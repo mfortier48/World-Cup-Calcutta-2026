@@ -13,6 +13,7 @@ const players = [
   "Matt",
   "Sergio",
   "Ellie",
+  "Juan Pablo",
 ];
 
 const stages = [
@@ -615,6 +616,18 @@ function renderRules() {
           <div class="bar" aria-hidden="true"><span style="width: ${rule.pct * 4}%"></span></div>
         </div>
       </div>
+    `)
+    .join("");
+
+  const examplePot = players.length * 125;
+  document.getElementById("examplePotTotal").textContent = currency(examplePot);
+  document.getElementById("examplePayoutRows").innerHTML = payoutRules
+    .map((rule) => `
+      <tr>
+        <td>${rule.label}</td>
+        <td>${rule.pct}%</td>
+        <td><strong>${currency(examplePot * (rule.pct / 100))}</strong></td>
+      </tr>
     `)
     .join("");
 }

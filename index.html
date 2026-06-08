@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css?v=4" />
+    <link rel="stylesheet" href="./styles.css?v=5" />
   </head>
   <body>
     <div class="app-shell">
@@ -27,7 +27,7 @@
         <section class="panel compact">
           <p class="panel-label">Prize Pot</p>
           <strong id="potTotal">$0</strong>
-          <span id="budgetStatus">0 of 12 players entered</span>
+          <span id="budgetStatus">0 of 13 players entered</span>
         </section>
 
         <section class="panel compact">
@@ -280,12 +280,34 @@
               <h3>Hybrid Structure</h3>
               <div id="payoutBreakdown" class="payout-breakdown"></div>
             </section>
+
+            <section class="panel payout-example-panel">
+              <p class="panel-label">Example Only</p>
+              <h3>Sample Payouts If Everyone Averages $125</h3>
+              <p class="example-copy">
+                With 13 owners spending an average of $125, the example prize pot would be
+                <strong id="examplePotTotal">$1,625</strong>. Actual payouts will use the real auction total;
+                example amounts are rounded to the nearest dollar.
+              </p>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Payout Category</th>
+                      <th>Share</th>
+                      <th>Example Pool</th>
+                    </tr>
+                  </thead>
+                  <tbody id="examplePayoutRows"></tbody>
+                </table>
+              </div>
+            </section>
           </div>
         </section>
       </main>
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js?v=4"></script>
+    <script src="./app.js?v=5"></script>
   </body>
 </html>

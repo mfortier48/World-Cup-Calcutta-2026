@@ -338,6 +338,20 @@ h3 {
   gap: 14px;
 }
 
+.payout-example-panel {
+  grid-column: 1 / -1;
+}
+
+.example-copy {
+  max-width: 760px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.example-copy strong {
+  color: var(--ink);
+}
+
 .star-silhouette-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
