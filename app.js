@@ -37,60 +37,60 @@ const payoutRules = [
   { key: "champion", label: "Champion", pct: 15, type: "stage", stage: "champion" },
   { key: "mostGoals", label: "Most goals scored", pct: 5, type: "max", field: "gf" },
   { key: "bestDiff", label: "Best goal differential", pct: 4, type: "max", field: "gd" },
-  { key: "biggestWin", label: "Biggest single-match win", pct: 3, type: "max", field: "biggestWin" },
+  { key: "biggestUpset", label: "Biggest single-match upset", pct: 3, type: "max", field: "biggestUpset" },
   { key: "worstDiff", label: "Worst goal differential", pct: 3, type: "min", field: "gd" },
 ];
 
 const teams = [
-  ["arg", "Argentina", "CONMEBOL", "🇦🇷"],
-  ["aus", "Australia", "AFC", "🇦🇺"],
-  ["aut", "Austria", "UEFA", "🇦🇹"],
-  ["bel", "Belgium", "UEFA", "🇧🇪"],
-  ["bih", "Bosnia and Herzegovina", "UEFA", "🇧🇦"],
-  ["bra", "Brazil", "CONMEBOL", "🇧🇷"],
-  ["can", "Canada", "CONCACAF", "🇨🇦"],
-  ["cpv", "Cabo Verde", "CAF", "🇨🇻"],
-  ["col", "Colombia", "CONMEBOL", "🇨🇴"],
-  ["cod", "Congo DR", "CAF", "🇨🇩"],
-  ["crc", "Curacao", "CONCACAF", "🇨🇼"],
-  ["cro", "Croatia", "UEFA", "🇭🇷"],
-  ["cze", "Czechia", "UEFA", "🇨🇿"],
-  ["ecu", "Ecuador", "CONMEBOL", "🇪🇨"],
-  ["egy", "Egypt", "CAF", "🇪🇬"],
-  ["eng", "England", "UEFA", "🏴"],
-  ["fra", "France", "UEFA", "🇫🇷"],
-  ["ger", "Germany", "UEFA", "🇩🇪"],
-  ["gha", "Ghana", "CAF", "🇬🇭"],
-  ["hai", "Haiti", "CONCACAF", "🇭🇹"],
-  ["irn", "IR Iran", "AFC", "🇮🇷"],
-  ["irq", "Iraq", "AFC", "🇮🇶"],
-  ["civ", "Cote d'Ivoire", "CAF", "🇨🇮"],
-  ["jpn", "Japan", "AFC", "🇯🇵"],
-  ["jor", "Jordan", "AFC", "🇯🇴"],
-  ["kor", "Korea Republic", "AFC", "🇰🇷"],
-  ["mex", "Mexico", "CONCACAF", "🇲🇽"],
-  ["mar", "Morocco", "CAF", "🇲🇦"],
-  ["ned", "Netherlands", "UEFA", "🇳🇱"],
-  ["nzl", "New Zealand", "OFC", "🇳🇿"],
-  ["nor", "Norway", "UEFA", "🇳🇴"],
-  ["pan", "Panama", "CONCACAF", "🇵🇦"],
-  ["par", "Paraguay", "CONMEBOL", "🇵🇾"],
-  ["por", "Portugal", "UEFA", "🇵🇹"],
-  ["qat", "Qatar", "AFC", "🇶🇦"],
-  ["ksa", "Saudi Arabia", "AFC", "🇸🇦"],
-  ["sco", "Scotland", "UEFA", "🏴"],
-  ["sen", "Senegal", "CAF", "🇸🇳"],
-  ["rsa", "South Africa", "CAF", "🇿🇦"],
-  ["esp", "Spain", "UEFA", "🇪🇸"],
-  ["swe", "Sweden", "UEFA", "🇸🇪"],
-  ["sui", "Switzerland", "UEFA", "🇨🇭"],
-  ["tun", "Tunisia", "CAF", "🇹🇳"],
-  ["tur", "Turkiye", "UEFA", "🇹🇷"],
-  ["uru", "Uruguay", "CONMEBOL", "🇺🇾"],
-  ["usa", "United States", "CONCACAF", "🇺🇸"],
-  ["uzb", "Uzbekistan", "AFC", "🇺🇿"],
-  ["alg", "Algeria", "CAF", "🇩🇿"],
-].map(([id, name, confederation, flag]) => ({ id, name, confederation, flag }));
+  ["arg", "Argentina", "CONMEBOL", "🇦🇷", 3],
+  ["aus", "Australia", "AFC", "🇦🇺", 27],
+  ["aut", "Austria", "UEFA", "🇦🇹", 24],
+  ["bel", "Belgium", "UEFA", "🇧🇪", 9],
+  ["bih", "Bosnia and Herzegovina", "UEFA", "🇧🇦", 65],
+  ["bra", "Brazil", "CONMEBOL", "🇧🇷", 6],
+  ["can", "Canada", "CONCACAF", "🇨🇦", 30],
+  ["cpv", "Cabo Verde", "CAF", "🇨🇻", 69],
+  ["col", "Colombia", "CONMEBOL", "🇨🇴", 13],
+  ["cod", "Congo DR", "CAF", "🇨🇩", 46],
+  ["crc", "Curacao", "CONCACAF", "🇨🇼", 82],
+  ["cro", "Croatia", "UEFA", "🇭🇷", 11],
+  ["cze", "Czechia", "UEFA", "🇨🇿", 41],
+  ["ecu", "Ecuador", "CONMEBOL", "🇪🇨", 23],
+  ["egy", "Egypt", "CAF", "🇪🇬", 29],
+  ["eng", "England", "UEFA", "🏴", 4],
+  ["fra", "France", "UEFA", "🇫🇷", 1],
+  ["ger", "Germany", "UEFA", "🇩🇪", 10],
+  ["gha", "Ghana", "CAF", "🇬🇭", 74],
+  ["hai", "Haiti", "CONCACAF", "🇭🇹", 83],
+  ["irn", "IR Iran", "AFC", "🇮🇷", 21],
+  ["irq", "Iraq", "AFC", "🇮🇶", 57],
+  ["civ", "Cote d'Ivoire", "CAF", "🇨🇮", 34],
+  ["jpn", "Japan", "AFC", "🇯🇵", 18],
+  ["jor", "Jordan", "AFC", "🇯🇴", 63],
+  ["kor", "Korea Republic", "AFC", "🇰🇷", 25],
+  ["mex", "Mexico", "CONCACAF", "🇲🇽", 15],
+  ["mar", "Morocco", "CAF", "🇲🇦", 8],
+  ["ned", "Netherlands", "UEFA", "🇳🇱", 7],
+  ["nzl", "New Zealand", "OFC", "🇳🇿", 85],
+  ["nor", "Norway", "UEFA", "🇳🇴", 31],
+  ["pan", "Panama", "CONCACAF", "🇵🇦", 33],
+  ["par", "Paraguay", "CONMEBOL", "🇵🇾", 40],
+  ["por", "Portugal", "UEFA", "🇵🇹", 5],
+  ["qat", "Qatar", "AFC", "🇶🇦", 55],
+  ["ksa", "Saudi Arabia", "AFC", "🇸🇦", 61],
+  ["sco", "Scotland", "UEFA", "🏴", 43],
+  ["sen", "Senegal", "CAF", "🇸🇳", 14],
+  ["rsa", "South Africa", "CAF", "🇿🇦", 60],
+  ["esp", "Spain", "UEFA", "🇪🇸", 2],
+  ["swe", "Sweden", "UEFA", "🇸🇪", 38],
+  ["sui", "Switzerland", "UEFA", "🇨🇭", 19],
+  ["tun", "Tunisia", "CAF", "🇹🇳", 44],
+  ["tur", "Turkiye", "UEFA", "🇹🇷", 22],
+  ["uru", "Uruguay", "CONMEBOL", "🇺🇾", 17],
+  ["usa", "United States", "CONCACAF", "🇺🇸", 16],
+  ["uzb", "Uzbekistan", "AFC", "🇺🇿", 50],
+  ["alg", "Algeria", "CAF", "🇩🇿", 28],
+].map(([id, name, confederation, flag, rank]) => ({ id, name, confederation, flag, rank }));
 
 const teamCardRanks = [
   "A", "A", "K", "K", "Q", "Q", "J", "J", "10", "10", "9", "9",
@@ -164,7 +164,7 @@ const defaultState = {
   results: Object.fromEntries(
     teams.map((team) => [
       team.id,
-      { stage: "group", wins: 0, draws: 0, gf: 0, ga: 0, biggestWin: 0 },
+      { stage: "group", wins: 0, draws: 0, gf: 0, ga: 0, biggestUpset: 0 },
     ]),
   ),
   auctionRoom: {
@@ -230,7 +230,11 @@ function stageRank(stage) {
 }
 
 function teamCell(team) {
-  return `<span class="team-cell"><span class="flag">${team.flag}</span>${team.name}</span>`;
+  return `<span class="team-cell"><span class="flag">${team.flag}</span>${teamLabel(team)}</span>`;
+}
+
+function teamLabel(team) {
+  return `${team.name} (${team.rank})`;
 }
 
 function ownerOptions(selected = "") {
@@ -282,7 +286,7 @@ function cardMarkup(cardId, compact = false) {
       <div class="card-corner"><strong>${card.rank}</strong><span>${card.suit}</span></div>
       <div class="card-center">
         <span class="card-logo">${team.flag}</span>
-        <strong>${team.name}</strong>
+        <strong>${teamLabel(team)}</strong>
         <em>${team.confederation}</em>
       </div>
       <div class="card-corner bottom"><strong>${card.rank}</strong><span>${card.suit}</span></div>
@@ -301,6 +305,7 @@ function getTeamMetrics(team) {
   return {
     ...result,
     gd: Number(result.gf) - Number(result.ga),
+    biggestUpset: Number(result.biggestUpset ?? result.biggestWin ?? 0),
   };
 }
 
@@ -396,7 +401,7 @@ function renderAuctionRoom() {
       <span class="current-flag">${team.flag}</span>
       <div>
         <p class="eyebrow">${team.confederation}</p>
-        <strong>${team.name}</strong>
+        <strong>${teamLabel(team)}</strong>
         <span>${auction.owner ? `Sold to ${auction.owner} for ${currency(auction.price)}` : "Available"}</span>
       </div>
     </div>
@@ -432,7 +437,7 @@ function renderAuctionRoom() {
         const soldTeam = teams.find((candidate) => candidate.id === sale.teamId);
         return `
           <div class="sale-row">
-            <span>${soldTeam?.flag || ""} ${soldTeam?.name || "Team"}</span>
+            <span>${soldTeam ? `${soldTeam.flag} ${teamLabel(soldTeam)}` : "Team"}</span>
             <strong>${sale.owner} · ${currency(sale.price)}</strong>
           </div>
         `;
@@ -531,7 +536,7 @@ function renderResults() {
           <td><input type="number" min="0" step="1" value="${result.draws}" data-kind="result" data-field="draws" data-team="${team.id}" aria-label="${team.name} draws" /></td>
           <td><input type="number" min="0" step="1" value="${result.gf}" data-kind="result" data-field="gf" data-team="${team.id}" aria-label="${team.name} goals for" /></td>
           <td><input type="number" min="0" step="1" value="${result.ga}" data-kind="result" data-field="ga" data-team="${team.id}" aria-label="${team.name} goals against" /></td>
-          <td><input type="number" min="0" step="1" value="${result.biggestWin}" data-kind="result" data-field="biggestWin" data-team="${team.id}" aria-label="${team.name} biggest single-match win" /></td>
+          <td><input type="number" min="0" step="1" value="${result.biggestUpset ?? result.biggestWin ?? 0}" data-kind="result" data-field="biggestUpset" data-team="${team.id}" aria-label="${team.name} biggest upset ranking gap" /></td>
         </tr>
       `;
     })
@@ -568,7 +573,7 @@ function renderDashboard() {
   document.getElementById("teamsSold").textContent = `${soldTeams.length} / ${teams.length}`;
   document.getElementById("averagePrice").textContent = currency(soldTeams.length ? pot / soldTeams.length : 0);
   document.getElementById("topTeam").textContent = Number(state.auction[topAuction.id].price || 0)
-    ? `${topAuction.name} (${currency(state.auction[topAuction.id].price)})`
+    ? `${teamLabel(topAuction)} (${currency(state.auction[topAuction.id].price)})`
     : "None yet";
   document.getElementById("projectedLeader").textContent = projectedLeader && projectedLeader.spent
     ? `${projectedLeader.player} (${currency(projectedLeader.net)})`
@@ -777,7 +782,7 @@ function seedDemo() {
       draws,
       gf,
       ga,
-      biggestWin: Math.max(1, Math.ceil((gf - ga) / 2)),
+      biggestUpset: 0,
     };
   }
 

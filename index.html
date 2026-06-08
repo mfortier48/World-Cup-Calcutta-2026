@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css?v=6" />
+    <link rel="stylesheet" href="./styles.css?v=7" />
   </head>
   <body>
     <div class="app-shell">
@@ -251,7 +251,7 @@
                     <th>D</th>
                     <th>GF</th>
                     <th>GA</th>
-                    <th>Big Win</th>
+                    <th>Upset Gap</th>
                   </tr>
                 </thead>
                 <tbody id="resultRows"></tbody>
@@ -304,12 +304,36 @@
                 </table>
               </div>
             </section>
+
+            <section class="panel payout-example-panel">
+              <p class="panel-label">Side-Pot Definitions</p>
+              <h3>How The Fun Payouts Work</h3>
+              <dl class="definition-list">
+                <div>
+                  <dt>Most goals scored</dt>
+                  <dd>Individual team award. The team with the most total goals scored across the tournament wins this side pot. If multiple teams tie, they split it.</dd>
+                </div>
+                <div>
+                  <dt>Best goal differential</dt>
+                  <dd>Individual team award. Goal differential is goals for minus goals against for a single team across the tournament. Best positive differential wins; ties split.</dd>
+                </div>
+                <div>
+                  <dt>Biggest single-match upset</dt>
+                  <dd>Individual team award. An upset is when a lower-ranked team beats a higher-ranked team. The upset gap is winner FIFA rank minus loser FIFA rank, so Haiti (83) beating France (1) would score 82. Largest upset gap wins; ties split.</dd>
+                </div>
+                <div>
+                  <dt>Worst goal differential</dt>
+                  <dd>Individual team award. This is the single team with the worst total goal differential across the tournament. It is not cumulative across an owner&apos;s portfolio. Ties split.</dd>
+                </div>
+              </dl>
+              <p class="example-copy">FIFA rankings are shown in parentheses next to team names and come from FIFA&apos;s World Cup 2026 teams page. They are scheduled to be checked again before the first matches on Thursday, June 11, 2026.</p>
+            </section>
           </div>
         </section>
       </main>
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js?v=6"></script>
+    <script src="./app.js?v=7"></script>
   </body>
 </html>

@@ -352,6 +352,30 @@ h3 {
   color: var(--ink);
 }
 
+.definition-list {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.definition-list div {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.definition-list dt {
+  margin-bottom: 4px;
+  font-weight: 900;
+}
+
+.definition-list dd {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.48;
+}
+
 .star-silhouette-strip {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
