@@ -622,14 +622,43 @@ function renderRules() {
   const examplePot = players.length * 125;
   document.getElementById("examplePotTotal").textContent = currency(examplePot);
   document.getElementById("examplePayoutRows").innerHTML = payoutRules
-    .map((rule) => `
-      <tr>
-        <td>${rule.label}</td>
-        <td>${rule.pct}%</td>
-        <td><strong>${currency(examplePot * (rule.pct / 100))}</strong></td>
-      </tr>
-    `)
+    .map((rule) => {
+      const rulePool = examplePot * (rule.pct / 100);
+      return `
+        <tr>
+          <td>${rule.label}</td>
+          <td>${rule.pct}%</td>
+          <td><strong>${currency(rulePool)}</strong></td>
+          <td>${exampleUnitPayout(rule, rulePool)}</td>
+        </tr>
+      `;
+    })
     .join("");
+}
+
+function exampleUnitPayout(rule, rulePool) {
+  const stageCounts = {
+    r32: 32,
+    r16: 16,
+    qf: 8,
+    sf: 4,
+    final: 2,
+    champion: 1,
+  };
+
+  if (rule.key === "wins") {
+    return `${currency(rulePool / 72)} if all 72 group matches have winners`;
+  }
+
+  if (rule.key === "draws") {
+    return "Variable: pool divided by total team draws";
+  }
+
+  if (rule.type === "stage") {
+    return currency(rulePool / stageCounts[rule.stage]);
+  }
+
+  return `${currency(rulePool)} if one winner; split if tied`;
 }
 
 function render() {
