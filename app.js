@@ -42,7 +42,7 @@ const payoutRules = [
 ];
 
 const teams = [
-  ["arg", "Argentina", "CONMEBOL", "🇦🇷", 3],
+  ["arg", "Argentina", "CONMEBOL", "🇦🇷", 1],
   ["aus", "Australia", "AFC", "🇦🇺", 27],
   ["aut", "Austria", "UEFA", "🇦🇹", 24],
   ["bel", "Belgium", "UEFA", "🇧🇪", 9],
@@ -58,7 +58,7 @@ const teams = [
   ["ecu", "Ecuador", "CONMEBOL", "🇪🇨", 23],
   ["egy", "Egypt", "CAF", "🇪🇬", 29],
   ["eng", "England", "UEFA", "🏴", 4],
-  ["fra", "France", "UEFA", "🇫🇷", 1],
+  ["fra", "France", "UEFA", "🇫🇷", 3],
   ["ger", "Germany", "UEFA", "🇩🇪", 10],
   ["gha", "Ghana", "CAF", "🇬🇭", 74],
   ["hai", "Haiti", "CONCACAF", "🇭🇹", 83],
@@ -69,8 +69,8 @@ const teams = [
   ["jor", "Jordan", "AFC", "🇯🇴", 63],
   ["kor", "Korea Republic", "AFC", "🇰🇷", 25],
   ["mex", "Mexico", "CONCACAF", "🇲🇽", 15],
-  ["mar", "Morocco", "CAF", "🇲🇦", 8],
-  ["ned", "Netherlands", "UEFA", "🇳🇱", 7],
+  ["mar", "Morocco", "CAF", "🇲🇦", 7],
+  ["ned", "Netherlands", "UEFA", "🇳🇱", 8],
   ["nzl", "New Zealand", "OFC", "🇳🇿", 85],
   ["nor", "Norway", "UEFA", "🇳🇴", 31],
   ["pan", "Panama", "CONCACAF", "🇵🇦", 33],
@@ -100,10 +100,10 @@ const teamCardRanks = [
 ];
 
 const teamPowerOrder = [
-  "arg", "fra", "bra", "esp", "eng", "por", "ned", "ger", "bel", "cro", "uru", "col",
-  "mar", "jpn", "usa", "mex", "sui", "sen", "ecu", "aut", "nor", "tur", "kor", "aus",
-  "par", "rsa", "civ", "egy", "tun", "gha", "ksa", "qat", "irn", "uzb", "can", "pan",
-  "nzl", "sco", "swe", "cze", "bih", "irq", "jor", "hai", "crc", "cpv", "cod", "alg",
+  "arg", "esp", "fra", "eng", "por", "bra", "mar", "ned", "bel", "ger", "cro", "col",
+  "sen", "usa", "uru", "mex", "jpn", "sui", "irn", "tur", "ecu", "aut", "kor", "aus",
+  "alg", "egy", "can", "nor", "civ", "pan", "swe", "par", "cze", "sco", "tun", "cod",
+  "uzb", "qat", "irq", "rsa", "ksa", "jor", "bih", "cpv", "crc", "hai", "nzl", "gha",
 ];
 
 const suits = [
