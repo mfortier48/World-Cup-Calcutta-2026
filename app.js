@@ -27,15 +27,15 @@ const stages = [
 ];
 
 const payoutRules = [
-  { key: "wins", label: "Group-stage wins", pct: 15, type: "unit", field: "wins" },
-  { key: "draws", label: "Group-stage draws", pct: 5, type: "unit", field: "draws" },
-  { key: "r32", label: "Reach Round of 32", pct: 8, type: "stage", stage: "r32" },
-  { key: "r16", label: "Reach Round of 16", pct: 10, type: "stage", stage: "r16" },
+  { key: "wins", label: "Group-stage wins", pct: 17, type: "unit", field: "wins" },
+  { key: "draws", label: "Group-stage draws", pct: 3, type: "unit", field: "draws" },
+  { key: "r32", label: "Reach Round of 32", pct: 10, type: "stage", stage: "r32" },
+  { key: "r16", label: "Reach Round of 16", pct: 12, type: "stage", stage: "r16" },
   { key: "qf", label: "Reach Quarterfinals", pct: 12, type: "stage", stage: "qf" },
   { key: "sf", label: "Reach Semifinals", pct: 12, type: "stage", stage: "sf" },
   { key: "final", label: "Reach Final", pct: 8, type: "stage", stage: "final" },
-  { key: "champion", label: "Champion", pct: 15, type: "stage", stage: "champion" },
-  { key: "mostGoals", label: "Most goals scored", pct: 5, type: "max", field: "gf" },
+  { key: "champion", label: "Champion", pct: 12, type: "stage", stage: "champion" },
+  { key: "mostGoals", label: "Most goals scored", pct: 4, type: "max", field: "gf" },
   { key: "bestDiff", label: "Best goal differential", pct: 4, type: "max", field: "gd" },
   { key: "biggestUpset", label: "Biggest single-match upset", pct: 3, type: "max", field: "biggestUpset" },
   { key: "worstDiff", label: "Worst goal differential", pct: 3, type: "min", field: "gd" },
