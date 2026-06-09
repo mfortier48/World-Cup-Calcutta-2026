@@ -26,10 +26,19 @@ const stages = [
   { value: "champion", label: "Champion", rank: 6 },
 ];
 
+const groupFinishes = [
+  { value: "", label: "Not advanced" },
+  { value: "winner", label: "Group winner" },
+  { value: "runnerUp", label: "Group runner-up" },
+  { value: "third", label: "Third-place qualifier" },
+];
+
 const payoutRules = [
   { key: "wins", label: "Group-stage wins", pct: 17, type: "unit", field: "wins" },
   { key: "draws", label: "Group-stage draws", pct: 3, type: "unit", field: "draws" },
-  { key: "r32", label: "Reach Round of 32", pct: 10, type: "stage", stage: "r32" },
+  { key: "r32Winner", label: "Round of 32: group winners", pct: 4.5, type: "groupFinish", finish: "winner" },
+  { key: "r32RunnerUp", label: "Round of 32: group runners-up", pct: 3.5, type: "groupFinish", finish: "runnerUp" },
+  { key: "r32Third", label: "Round of 32: third-place qualifiers", pct: 2, type: "groupFinish", finish: "third" },
   { key: "r16", label: "Reach Round of 16", pct: 12, type: "stage", stage: "r16" },
   { key: "qf", label: "Reach Quarterfinals", pct: 12, type: "stage", stage: "qf" },
   { key: "sf", label: "Reach Semifinals", pct: 12, type: "stage", stage: "sf" },
@@ -164,7 +173,7 @@ const defaultState = {
   results: Object.fromEntries(
     teams.map((team) => [
       team.id,
-      { stage: "group", wins: 0, draws: 0, gf: 0, ga: 0, biggestUpset: 0 },
+      { stage: "group", groupFinish: "", wins: 0, draws: 0, gf: 0, ga: 0, biggestUpset: 0 },
     ]),
   ),
   auctionRoom: {
@@ -300,6 +309,12 @@ function stageOptions(selected = "group") {
     .join("");
 }
 
+function groupFinishOptions(selected = "") {
+  return groupFinishes
+    .map((finish) => `<option value="${finish.value}" ${finish.value === selected ? "selected" : ""}>${finish.label}</option>`)
+    .join("");
+}
+
 function getTeamMetrics(team) {
   const result = state.results[team.id];
   return {
@@ -327,6 +342,17 @@ function calculatePayouts() {
 
     if (rule.type === "stage") {
       const qualifiers = teams.filter((team) => stageRank(state.results[team.id].stage) >= stageRank(rule.stage));
+      if (!qualifiers.length) continue;
+      for (const team of qualifiers) {
+        teamPayouts[team.id] += rulePot / qualifiers.length;
+      }
+    }
+
+    if (rule.type === "groupFinish") {
+      const qualifiers = teams.filter((team) => {
+        return stageRank(state.results[team.id].stage) >= stageRank("r32")
+          && state.results[team.id].groupFinish === rule.finish;
+      });
       if (!qualifiers.length) continue;
       for (const team of qualifiers) {
         teamPayouts[team.id] += rulePot / qualifiers.length;
@@ -532,6 +558,11 @@ function renderResults() {
               ${stageOptions(result.stage)}
             </select>
           </td>
+          <td>
+            <select data-kind="result" data-field="groupFinish" data-team="${team.id}" aria-label="${team.name} group finish">
+              ${groupFinishOptions(result.groupFinish || "")}
+            </select>
+          </td>
           <td><input type="number" min="0" step="1" value="${result.wins}" data-kind="result" data-field="wins" data-team="${team.id}" aria-label="${team.name} wins" /></td>
           <td><input type="number" min="0" step="1" value="${result.draws}" data-kind="result" data-field="draws" data-team="${team.id}" aria-label="${team.name} draws" /></td>
           <td><input type="number" min="0" step="1" value="${result.gf}" data-kind="result" data-field="gf" data-team="${team.id}" aria-label="${team.name} goals for" /></td>
@@ -643,7 +674,6 @@ function renderRules() {
 
 function exampleUnitPayout(rule, rulePool) {
   const stageCounts = {
-    r32: 32,
     r16: 16,
     qf: 8,
     sf: 4,
@@ -657,6 +687,15 @@ function exampleUnitPayout(rule, rulePool) {
 
   if (rule.key === "draws") {
     return "Variable: pool divided by total team draws";
+  }
+
+  if (rule.type === "groupFinish") {
+    const finishCounts = {
+      winner: 12,
+      runnerUp: 12,
+      third: 8,
+    };
+    return currency(rulePool / finishCounts[rule.finish]);
   }
 
   if (rule.type === "stage") {
@@ -754,18 +793,18 @@ function setView(viewId) {
 function seedDemo() {
   state = structuredClone(defaultState);
   const assignments = [
-    ["Argentina", "Meli", 88, "champion", 6, 1, 16, 5],
-    ["France", "Eva", 82, "final", 5, 1, 14, 6],
-    ["Brazil", "Sarah", 76, "sf", 4, 1, 12, 5],
-    ["Spain", "Greg", 72, "sf", 4, 0, 11, 4],
-    ["United States", "Hillary", 42, "r16", 2, 2, 8, 7],
-    ["Mexico", "Gabo", 39, "r32", 1, 2, 5, 5],
-    ["Japan", "Tommy", 35, "qf", 3, 1, 9, 6],
-    ["Morocco", "Fabrice", 34, "qf", 3, 1, 8, 5],
-    ["Canada", "Zach", 23, "group", 1, 1, 4, 6],
-    ["Cabo Verde", "Matt", 7, "group", 0, 1, 2, 9],
-    ["Curacao", "Sergio", 5, "group", 0, 0, 1, 10],
-    ["Haiti", "Ellie", 5, "group", 0, 1, 2, 8],
+    ["Argentina", "Meli", 88, "champion", "winner", 6, 1, 16, 5],
+    ["France", "Eva", 82, "final", "winner", 5, 1, 14, 6],
+    ["Brazil", "Sarah", 76, "sf", "runnerUp", 4, 1, 12, 5],
+    ["Spain", "Greg", 72, "sf", "winner", 4, 0, 11, 4],
+    ["United States", "Hillary", 42, "r16", "runnerUp", 2, 2, 8, 7],
+    ["Mexico", "Gabo", 39, "r32", "third", 1, 2, 5, 5],
+    ["Japan", "Tommy", 35, "qf", "winner", 3, 1, 9, 6],
+    ["Morocco", "Fabrice", 34, "qf", "runnerUp", 3, 1, 8, 5],
+    ["Canada", "Zach", 23, "group", "", 1, 1, 4, 6],
+    ["Cabo Verde", "Matt", 7, "group", "", 0, 1, 2, 9],
+    ["Curacao", "Sergio", 5, "group", "", 0, 0, 1, 10],
+    ["Haiti", "Ellie", 5, "group", "", 0, 1, 2, 8],
   ];
 
   teams.forEach((team, index) => {
@@ -773,11 +812,12 @@ function seedDemo() {
     state.auction[team.id] = { owner: player, price: 2 + (index % 6) };
   });
 
-  for (const [name, owner, price, stage, wins, draws, gf, ga] of assignments) {
+  for (const [name, owner, price, stage, groupFinish, wins, draws, gf, ga] of assignments) {
     const team = teams.find((candidate) => candidate.name === name);
     state.auction[team.id] = { owner, price };
     state.results[team.id] = {
       stage,
+      groupFinish,
       wins,
       draws,
       gf,
