@@ -248,6 +248,10 @@ h3 {
   padding: 30px;
 }
 
+.hero-copy-minimal {
+  min-height: 160px;
+}
+
 .hero-copy .eyebrow {
   color: rgba(255, 255, 255, 0.76);
 }
