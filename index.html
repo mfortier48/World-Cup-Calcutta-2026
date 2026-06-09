@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css?v=10" />
+    <link rel="stylesheet" href="./styles.css?v=12" />
   </head>
   <body>
     <div class="app-shell">
@@ -44,7 +44,7 @@
             <h2 id="viewTitle">Overview</h2>
           </div>
           <div class="top-actions">
-            <button class="ghost" id="seedDemoButton" type="button">Load Sample</button>
+            <button class="ghost" id="seedDemoButton" type="button">Load Draft</button>
             <button class="ghost" id="exportButton" type="button">Export</button>
             <button class="ghost" id="importButton" type="button">Import</button>
             <input id="importFileInput" type="file" accept="application/json" hidden />
@@ -287,8 +287,8 @@
               <p class="panel-label">Example Only</p>
               <h3>Sample Payouts If Everyone Averages $125</h3>
               <p class="example-copy">
-                With 13 owners spending an average of $125, the example prize pot would be
-                <strong id="examplePotTotal">$1,625</strong>. Actual payouts will use the real auction total;
+                With 12 owners spending an average of $125, the example prize pot would be
+                <strong id="examplePotTotal">$1,500</strong>. Actual payouts will use the real auction total;
                 example amounts are rounded to the nearest dollar. The per-unit column shows the approximate
                 payout for one qualifying achievement or winner.
               </p>
@@ -336,6 +336,6 @@
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js?v=10"></script>
+    <script src="./app.js?v=12"></script>
   </body>
 </html>

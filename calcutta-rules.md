@@ -4,7 +4,7 @@
 
 - The pool uses all 48 World Cup 2026 teams.
 - Each team is auctioned individually.
-- There are 13 owners.
+- There are 12 owners.
 - Each owner has a hard $150 spending cap.
 - Owners do not need to spend the full $150.
 - The amount actually spent in the auction becomes the full prize pot.
@@ -110,25 +110,25 @@ These advancement payouts stack. For example, the Champion earns the Round of 32
 
 ## Example Payouts
 
-Assume 13 owners spend an average of $125 each.
+Assume 12 owners spend an average of $125 each.
 
-Example pot: $1,625.
+Example pot: $1,500.
 
 Approximate payouts using the example pot:
 
 | Category | Share | Example Pool | Example Per Unit |
 | --- | ---: | ---: | ---: |
-| Group-stage wins | 17% | $276 | $4 per team win, if all 72 group matches have winners |
-| Group-stage draws | 3% | $49 | Variable: pool divided by total team draws |
-| Round of 32: group winners | 4.5% | $73 | $6 per group winner |
-| Round of 32: group runners-up | 3.5% | $57 | $5 per group runner-up |
-| Round of 32: third-place qualifiers | 2% | $33 | $4 per third-place qualifier |
-| Reach Round of 16 | 12% | $195 | $12 per team |
-| Reach Quarterfinals | 12% | $195 | $24 per team |
-| Reach Semifinals | 12% | $195 | $49 per team |
-| Reach Final | 8% | $130 | $65 per team |
-| Champion | 12% | $195 | $195 |
-| Most goals scored | 4% | $65 | $65 if one winner; split if tied |
-| Best goal differential | 4% | $65 | $65 if one winner; split if tied |
-| Biggest single-match upset | 3% | $49 | $49 if one winner; split if tied |
-| Worst goal differential | 3% | $49 | $49 if one winner; split if tied |
+| Group-stage wins | 17% | $255 | $4 per team win, if all 72 group matches have winners |
+| Group-stage draws | 3% | $45 | Variable: pool divided by total team draws |
+| Round of 32: group winners | 4.5% | $68 | $6 per group winner |
+| Round of 32: group runners-up | 3.5% | $53 | $4 per group runner-up |
+| Round of 32: third-place qualifiers | 2% | $30 | $4 per third-place qualifier |
+| Reach Round of 16 | 12% | $180 | $11 per team |
+| Reach Quarterfinals | 12% | $180 | $23 per team |
+| Reach Semifinals | 12% | $180 | $45 per team |
+| Reach Final | 8% | $120 | $60 per team |
+| Champion | 12% | $180 | $180 |
+| Most goals scored | 4% | $60 | $60 if one winner; split if tied |
+| Best goal differential | 4% | $60 | $60 if one winner; split if tied |
+| Biggest single-match upset | 3% | $45 | $45 if one winner; split if tied |
+| Worst goal differential | 3% | $45 | $45 if one winner; split if tied |

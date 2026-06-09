@@ -1,10 +1,10 @@
 const BUDGET_CAP = 150;
+const STORAGE_KEY = "calcuttaStateDraft20260609Final12";
 
 const players = [
   "Meli",
   "Eva",
   "Sarah",
-  "Greg",
   "Hillary",
   "Gabo",
   "Tommy",
@@ -12,7 +12,7 @@ const players = [
   "Zach",
   "Matt",
   "Sergio",
-  "Ellie",
+  "Ellie & Greg",
   "Juan Pablo",
 ];
 
@@ -101,6 +101,57 @@ const teams = [
   ["alg", "Algeria", "CAF", "🇩🇿", 28],
 ].map(([id, name, confederation, flag, rank]) => ({ id, name, confederation, flag, rank }));
 
+const draftAuction = {
+  arg: { owner: "Eva", price: 80 },
+  aus: { owner: "Fabrice", price: 13 },
+  aut: { owner: "Tommy", price: 26 },
+  bel: { owner: "Fabrice", price: 40 },
+  bih: { owner: "Hillary", price: 13 },
+  bra: { owner: "Meli", price: 70 },
+  can: { owner: "Ellie & Greg", price: 15 },
+  cpv: { owner: "Gabo", price: 10 },
+  col: { owner: "Tommy", price: 45 },
+  cod: { owner: "Ellie & Greg", price: 8 },
+  crc: { owner: "Sergio", price: 5 },
+  cro: { owner: "Juan Pablo", price: 45 },
+  cze: { owner: "Fabrice", price: 11 },
+  ecu: { owner: "Ellie & Greg", price: 40 },
+  egy: { owner: "Tommy", price: 42 },
+  eng: { owner: "Zach", price: 70 },
+  fra: { owner: "Gabo", price: 95 },
+  ger: { owner: "Hillary", price: 45 },
+  gha: { owner: "Sarah", price: 8 },
+  hai: { owner: "Hillary", price: 5 },
+  irn: { owner: "Fabrice", price: 20 },
+  irq: { owner: "Gabo", price: 6 },
+  civ: { owner: "Meli", price: 15 },
+  jpn: { owner: "Matt", price: 35 },
+  jor: { owner: "Gabo", price: 6 },
+  kor: { owner: "Ellie & Greg", price: 20 },
+  mex: { owner: "Sergio", price: 65 },
+  mar: { owner: "Zach", price: 70 },
+  ned: { owner: "Sarah", price: 70 },
+  nzl: { owner: "Sarah", price: 10 },
+  nor: { owner: "Ellie & Greg", price: 25 },
+  pan: { owner: "Fabrice", price: 8 },
+  par: { owner: "Matt", price: 15 },
+  por: { owner: "Hillary", price: 65 },
+  qat: { owner: "Fabrice", price: 6 },
+  ksa: { owner: "Fabrice", price: 3 },
+  sco: { owner: "Sarah", price: 26 },
+  sen: { owner: "Fabrice", price: 29 },
+  rsa: { owner: "Fabrice", price: 6 },
+  esp: { owner: "Matt", price: 80 },
+  swe: { owner: "Sarah", price: 13 },
+  sui: { owner: "Meli", price: 60 },
+  tun: { owner: "Gabo", price: 23 },
+  tur: { owner: "Tommy", price: 35 },
+  uru: { owner: "Juan Pablo", price: 55 },
+  usa: { owner: "Sergio", price: 40 },
+  uzb: { owner: "Ellie & Greg", price: 8 },
+  alg: { owner: "Matt", price: 13 },
+};
+
 const teamCardRanks = [
   "A", "A", "K", "K", "Q", "Q", "J", "J", "10", "10", "9", "9",
   "8", "8", "7", "7", "6", "6", "5", "5", "4", "4", "3", "3",
@@ -169,7 +220,7 @@ function freshDeckState() {
 const cardById = Object.fromEntries(buildDeck().map((card) => [card.id, card]));
 
 const defaultState = {
-  auction: Object.fromEntries(teams.map((team) => [team.id, { owner: "", price: 0 }])),
+  auction: Object.fromEntries(teams.map((team) => [team.id, draftAuction[team.id] || { owner: "", price: 0 }])),
   results: Object.fromEntries(
     teams.map((team) => [
       team.id,
@@ -188,7 +239,7 @@ const defaultState = {
 let state = loadState();
 
 function loadState() {
-  const saved = localStorage.getItem("calcuttaState");
+  const saved = localStorage.getItem(STORAGE_KEY);
   if (!saved) return structuredClone(defaultState);
 
   try {
@@ -213,7 +264,7 @@ function loadState() {
 }
 
 function saveState() {
-  localStorage.setItem("calcuttaState", JSON.stringify(state));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
 function downloadText(filename, text) {
@@ -792,41 +843,6 @@ function setView(viewId) {
 
 function seedDemo() {
   state = structuredClone(defaultState);
-  const assignments = [
-    ["Argentina", "Meli", 88, "champion", "winner", 6, 1, 16, 5],
-    ["France", "Eva", 82, "final", "winner", 5, 1, 14, 6],
-    ["Brazil", "Sarah", 76, "sf", "runnerUp", 4, 1, 12, 5],
-    ["Spain", "Greg", 72, "sf", "winner", 4, 0, 11, 4],
-    ["United States", "Hillary", 42, "r16", "runnerUp", 2, 2, 8, 7],
-    ["Mexico", "Gabo", 39, "r32", "third", 1, 2, 5, 5],
-    ["Japan", "Tommy", 35, "qf", "winner", 3, 1, 9, 6],
-    ["Morocco", "Fabrice", 34, "qf", "runnerUp", 3, 1, 8, 5],
-    ["Canada", "Zach", 23, "group", "", 1, 1, 4, 6],
-    ["Cabo Verde", "Matt", 7, "group", "", 0, 1, 2, 9],
-    ["Curacao", "Sergio", 5, "group", "", 0, 0, 1, 10],
-    ["Haiti", "Ellie", 5, "group", "", 0, 1, 2, 8],
-  ];
-
-  teams.forEach((team, index) => {
-    const player = players[index % players.length];
-    state.auction[team.id] = { owner: player, price: 2 + (index % 6) };
-  });
-
-  for (const [name, owner, price, stage, groupFinish, wins, draws, gf, ga] of assignments) {
-    const team = teams.find((candidate) => candidate.name === name);
-    state.auction[team.id] = { owner, price };
-    state.results[team.id] = {
-      stage,
-      groupFinish,
-      wins,
-      draws,
-      gf,
-      ga,
-      biggestUpset: 0,
-    };
-  }
-
-  state.auctionRoom.deckState = freshDeckState();
   saveState();
   render();
 }
