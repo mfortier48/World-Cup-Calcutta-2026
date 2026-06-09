@@ -152,6 +152,89 @@ const draftAuction = {
   alg: { owner: "Matt", price: 13 },
 };
 
+const groupMatches = [
+  [1, "2026-06-11", "15:00 ET", "A", "mex", "rsa", "Mexico City"],
+  [2, "2026-06-12", "22:00 ET", "A", "kor", "cze", "Guadalajara"],
+  [3, "2026-06-12", "15:00 ET", "B", "can", "bih", "Toronto"],
+  [4, "2026-06-13", "21:00 ET", "D", "usa", "par", "Los Angeles"],
+  [8, "2026-06-13", "15:00 ET", "B", "qat", "sui", "San Francisco Bay Area"],
+  [5, "2026-06-14", "18:00 ET", "C", "bra", "mar", "New York/New Jersey"],
+  [6, "2026-06-14", "21:00 ET", "C", "hai", "sco", "Boston"],
+  [7, "2026-06-14", "00:00 ET", "D", "aus", "tur", "Vancouver"],
+  [9, "2026-06-14", "13:00 ET", "E", "ger", "crc", "Houston"],
+  [10, "2026-06-14", "16:00 ET", "F", "ned", "jpn", "Dallas"],
+  [11, "2026-06-15", "19:00 ET", "E", "civ", "ecu", "Philadelphia"],
+  [12, "2026-06-15", "22:00 ET", "F", "swe", "tun", "Monterrey"],
+  [13, "2026-06-15", "12:00 ET", "H", "esp", "cpv", "Atlanta"],
+  [14, "2026-06-15", "15:00 ET", "G", "bel", "egy", "Seattle"],
+  [15, "2026-06-16", "18:00 ET", "H", "ksa", "uru", "Miami"],
+  [16, "2026-06-16", "21:00 ET", "G", "irn", "nzl", "Los Angeles"],
+  [17, "2026-06-16", "15:00 ET", "I", "fra", "sen", "New York/New Jersey"],
+  [18, "2026-06-17", "18:00 ET", "I", "irq", "nor", "Boston"],
+  [19, "2026-06-17", "21:00 ET", "J", "arg", "alg", "Kansas City"],
+  [20, "2026-06-17", "00:00 ET", "J", "aut", "jor", "San Francisco Bay Area"],
+  [21, "2026-06-17", "13:00 ET", "K", "por", "cod", "Houston"],
+  [22, "2026-06-17", "16:00 ET", "L", "eng", "cro", "Dallas"],
+  [23, "2026-06-18", "19:00 ET", "L", "gha", "pan", "Toronto"],
+  [24, "2026-06-18", "22:00 ET", "K", "uzb", "col", "Mexico City"],
+  [25, "2026-06-18", "12:00 ET", "A", "cze", "rsa", "Atlanta"],
+  [26, "2026-06-18", "15:00 ET", "B", "sui", "bih", "Los Angeles"],
+  [27, "2026-06-19", "18:00 ET", "B", "can", "qat", "Vancouver"],
+  [28, "2026-06-19", "21:00 ET", "A", "mex", "kor", "Guadalajara"],
+  [29, "2026-06-19", "15:00 ET", "D", "usa", "aus", "Seattle"],
+  [30, "2026-06-20", "18:00 ET", "C", "sco", "mar", "Boston"],
+  [31, "2026-06-20", "20:30 ET", "C", "bra", "hai", "Philadelphia"],
+  [32, "2026-06-20", "23:00 ET", "D", "tur", "par", "San Francisco Bay Area"],
+  [33, "2026-06-20", "13:00 ET", "F", "ned", "swe", "Houston"],
+  [34, "2026-06-20", "16:00 ET", "E", "ger", "civ", "Toronto"],
+  [35, "2026-06-21", "20:00 ET", "E", "ecu", "crc", "Kansas City"],
+  [36, "2026-06-21", "00:00 ET", "F", "tun", "jpn", "Monterrey"],
+  [37, "2026-06-21", "12:00 ET", "H", "esp", "ksa", "Atlanta"],
+  [38, "2026-06-21", "15:00 ET", "G", "bel", "irn", "Los Angeles"],
+  [39, "2026-06-22", "18:00 ET", "H", "uru", "cpv", "Miami"],
+  [40, "2026-06-22", "21:00 ET", "G", "nzl", "egy", "Vancouver"],
+  [41, "2026-06-22", "13:00 ET", "J", "arg", "aut", "Dallas"],
+  [42, "2026-06-23", "17:00 ET", "I", "fra", "irq", "Philadelphia"],
+  [43, "2026-06-23", "20:00 ET", "I", "nor", "sen", "New York/New Jersey"],
+  [44, "2026-06-23", "23:00 ET", "J", "jor", "alg", "San Francisco Bay Area"],
+  [45, "2026-06-23", "13:00 ET", "K", "por", "uzb", "Houston"],
+  [46, "2026-06-23", "16:00 ET", "L", "eng", "gha", "Boston"],
+  [47, "2026-06-24", "19:00 ET", "L", "pan", "cro", "Toronto"],
+  [48, "2026-06-24", "22:00 ET", "K", "col", "cod", "Guadalajara"],
+  [49, "2026-06-24", "15:00 ET", "B", "sui", "can", "Vancouver"],
+  [50, "2026-06-24", "15:00 ET", "B", "bih", "qat", "Seattle"],
+  [51, "2026-06-25", "18:00 ET", "C", "sco", "bra", "Miami"],
+  [52, "2026-06-25", "18:00 ET", "C", "mar", "hai", "Atlanta"],
+  [53, "2026-06-25", "21:00 ET", "A", "cze", "mex", "Mexico City"],
+  [54, "2026-06-25", "21:00 ET", "A", "rsa", "kor", "Monterrey"],
+  [55, "2026-06-25", "16:00 ET", "E", "crc", "civ", "Philadelphia"],
+  [56, "2026-06-25", "16:00 ET", "E", "ecu", "ger", "New York/New Jersey"],
+  [57, "2026-06-26", "19:00 ET", "F", "jpn", "swe", "Dallas"],
+  [58, "2026-06-26", "19:00 ET", "F", "tun", "ned", "Kansas City"],
+  [59, "2026-06-26", "22:00 ET", "D", "tur", "usa", "Los Angeles"],
+  [60, "2026-06-26", "22:00 ET", "D", "par", "aus", "San Francisco Bay Area"],
+  [61, "2026-06-26", "15:00 ET", "I", "nor", "fra", "Boston"],
+  [62, "2026-06-26", "15:00 ET", "I", "sen", "irq", "Toronto"],
+  [63, "2026-06-27", "20:00 ET", "H", "cpv", "ksa", "Houston"],
+  [64, "2026-06-27", "20:00 ET", "H", "uru", "esp", "Guadalajara"],
+  [65, "2026-06-27", "23:00 ET", "G", "egy", "irn", "Seattle"],
+  [66, "2026-06-27", "23:00 ET", "G", "nzl", "bel", "Vancouver"],
+  [67, "2026-06-28", "17:00 ET", "L", "pan", "eng", "New York/New Jersey"],
+  [68, "2026-06-28", "17:00 ET", "L", "cro", "gha", "Philadelphia"],
+  [69, "2026-06-28", "19:30 ET", "K", "col", "por", "Miami"],
+  [70, "2026-06-28", "19:30 ET", "K", "cod", "uzb", "Atlanta"],
+  [71, "2026-06-28", "22:00 ET", "J", "alg", "aut", "Kansas City"],
+  [72, "2026-06-28", "22:00 ET", "J", "jor", "arg", "Dallas"],
+].map(([matchNumber, date, time, group, homeId, awayId, venue]) => ({
+  matchNumber,
+  date,
+  time,
+  group,
+  homeId,
+  awayId,
+  venue,
+}));
+
 const teamCardRanks = [
   "A", "A", "K", "K", "Q", "Q", "J", "J", "10", "10", "9", "9",
   "8", "8", "7", "7", "6", "6", "5", "5", "4", "4", "3", "3",
@@ -295,6 +378,15 @@ function teamCell(team) {
 
 function teamLabel(team) {
   return `${team.name} (${team.rank})`;
+}
+
+function teamById(teamId) {
+  return teams.find((team) => team.id === teamId);
+}
+
+function teamOwner(teamId) {
+  const owner = state.auction[teamId]?.owner;
+  return owner || "Unassigned";
 }
 
 function ownerOptions(selected = "") {
@@ -625,6 +717,63 @@ function renderResults() {
     .join("");
 }
 
+function gameStatus(match) {
+  const today = new Date();
+  const matchDate = new Date(`${match.date}T12:00:00`);
+  const todayKey = today.toISOString().slice(0, 10);
+  if (match.date === todayKey) return "Today";
+  return matchDate < new Date(`${todayKey}T00:00:00`) ? "Past" : "Upcoming";
+}
+
+function gameCard(match, compact = false) {
+  const home = teamById(match.homeId);
+  const away = teamById(match.awayId);
+  const status = gameStatus(match);
+  return `
+    <article class="game-card ${compact ? "compact-game" : ""}">
+      <div class="game-meta">
+        <span class="game-status ${status.toLowerCase()}">${status}</span>
+        <strong>Match ${match.matchNumber}</strong>
+        <span>Group ${match.group} · ${match.date} · ${match.time}</span>
+      </div>
+      <div class="game-matchup">
+        <div class="game-team">
+          <span class="game-flag">${home.flag}</span>
+          <div>
+            <strong>${teamLabel(home)}</strong>
+            <span>${teamOwner(home.id)}</span>
+          </div>
+        </div>
+        <span class="versus">vs</span>
+        <div class="game-team">
+          <span class="game-flag">${away.flag}</span>
+          <div>
+            <strong>${teamLabel(away)}</strong>
+            <span>${teamOwner(away.id)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="game-venue">${match.venue}</div>
+    </article>
+  `;
+}
+
+function renderGames() {
+  document.getElementById("gameList").innerHTML = groupMatches
+    .map((match) => gameCard(match))
+    .join("");
+}
+
+function renderMatchTicker() {
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const nextMatches = groupMatches
+    .filter((match) => match.date >= todayKey)
+    .slice(0, 4);
+  document.getElementById("matchTicker").innerHTML = nextMatches.length
+    ? nextMatches.map((match) => gameCard(match, true)).join("")
+    : `<div class="empty-note">Group-stage schedule complete.</div>`;
+}
+
 function getOwnerSpend() {
   return players.reduce((totals, player) => {
     totals[player] = teams.reduce((sum, team) => {
@@ -744,24 +893,30 @@ function renderDashboard() {
     `)
     .join("");
 
-  document.getElementById("teamLeaderboard").innerHTML = teams
+  const auctionRows = teams
     .map((team) => ({
       team,
       owner: state.auction[team.id].owner || "-",
       cost: Number(state.auction[team.id].price || 0),
       payout: teamPayouts[team.id],
     }))
-    .sort((a, b) => b.payout - a.payout)
+    .sort((a, b) => b.cost - a.cost || b.payout - a.payout)
     .slice(0, 12)
-    .map((row) => `
-      <tr>
-        <td>${teamCell(row.team)}</td>
-        <td>${row.owner}</td>
-        <td>${currency(row.cost)}</td>
-        <td><strong>${currency(row.payout)}</strong></td>
-      </tr>
-    `)
-    .join("");
+    .map((row, index) => `
+      <article class="mvp-team-card">
+        <span class="mvp-rank">#${index + 1}</span>
+        <div class="mvp-team-main">
+          <span>${row.team.flag}</span>
+          <div>
+            <strong>${teamLabel(row.team)}</strong>
+            <em>${row.owner}</em>
+          </div>
+        </div>
+        <div class="mvp-price">${currency(row.cost)}</div>
+      </article>
+    `);
+
+  document.getElementById("teamLeaderboard").innerHTML = auctionRows.join("");
 }
 
 function renderRules() {
@@ -828,10 +983,11 @@ function exampleUnitPayout(rule, rulePool) {
 }
 
 function render() {
-  renderAuctionRoom();
+  renderMatchTicker();
   renderAuctionSummary();
   renderAuction();
   renderResults();
+  renderGames();
   renderDashboard();
   renderRules();
 }
@@ -926,44 +1082,49 @@ document.querySelectorAll(".nav-item").forEach((button) => {
   button.addEventListener("click", () => setView(button.dataset.view));
 });
 
-document.getElementById("seedDemoButton").addEventListener("click", seedDemo);
-document.getElementById("exportButton").addEventListener("click", exportState);
-document.getElementById("importButton").addEventListener("click", () => document.getElementById("importFileInput").click());
-document.getElementById("importFileInput").addEventListener("change", (event) => {
+function bindIfPresent(id, event, handler) {
+  const element = document.getElementById(id);
+  if (element) element.addEventListener(event, handler);
+}
+
+bindIfPresent("seedDemoButton", "click", seedDemo);
+bindIfPresent("exportButton", "click", exportState);
+bindIfPresent("importButton", "click", () => document.getElementById("importFileInput").click());
+bindIfPresent("importFileInput", "change", (event) => {
   importState(event.target.files[0]);
   event.target.value = "";
 });
-document.getElementById("resetButton").addEventListener("click", () => {
+bindIfPresent("resetButton", "click", () => {
   state = structuredClone(defaultState);
   saveState();
   render();
 });
 
-document.getElementById("drawCardButton").addEventListener("click", () => {
+bindIfPresent("drawCardButton", "click", () => {
   drawCard();
   saveState();
   render();
 });
 
-document.getElementById("shuffleDeckButton").addEventListener("click", () => {
+bindIfPresent("shuffleDeckButton", "click", () => {
   shuffleDeck();
   saveState();
   render();
 });
 
-document.getElementById("returnJokersButton").addEventListener("click", () => {
+bindIfPresent("returnJokersButton", "click", () => {
   returnJokersToDeck();
   saveState();
   render();
 });
 
-document.getElementById("liveBidderSelect").addEventListener("change", (event) => {
+bindIfPresent("liveBidderSelect", "change", (event) => {
   state.auctionRoom.currentBidder = event.target.value;
   saveState();
   render();
 });
 
-document.getElementById("liveBidInput").addEventListener("input", (event) => {
+bindIfPresent("liveBidInput", "input", (event) => {
   state.auctionRoom.currentBid = Number(event.target.value || 0);
   saveState();
   render();
@@ -977,25 +1138,25 @@ document.querySelectorAll(".bid-step").forEach((button) => {
   });
 });
 
-document.getElementById("prevTeamButton").addEventListener("click", () => {
+bindIfPresent("prevTeamButton", "click", () => {
   moveCurrentTeam("prev");
   saveState();
   render();
 });
 
-document.getElementById("nextTeamButton").addEventListener("click", () => {
+bindIfPresent("nextTeamButton", "click", () => {
   moveCurrentTeam("next");
   saveState();
   render();
 });
 
-document.getElementById("soldButton").addEventListener("click", () => {
+bindIfPresent("soldButton", "click", () => {
   sellCurrentTeam();
   saveState();
   render();
 });
 
-document.getElementById("undoSaleButton").addEventListener("click", () => {
+bindIfPresent("undoSaleButton", "click", () => {
   undoLastSale();
   saveState();
   render();

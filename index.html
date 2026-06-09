@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css?v=13" />
+    <link rel="stylesheet" href="./styles.css?v=14" />
   </head>
   <body>
     <div class="app-shell">
@@ -20,7 +20,7 @@
         <nav class="nav" aria-label="Primary">
           <button class="nav-item active" data-view="dashboard">Overview</button>
           <button class="nav-item" data-view="auction">Auction</button>
-          <button class="nav-item" data-view="results">Results</button>
+          <button class="nav-item" data-view="results">Games</button>
           <button class="nav-item" data-view="rules">Rules</button>
         </nav>
 
@@ -30,11 +30,6 @@
           <span id="budgetStatus">0 of 12 players entered</span>
         </section>
 
-        <section class="panel compact">
-          <p class="panel-label">Data Mode</p>
-          <strong>Manual MVP</strong>
-          <span>Designed for API sync plus commissioner overrides later.</span>
-        </section>
       </aside>
 
       <main class="workspace">
@@ -43,23 +38,16 @@
             <p class="eyebrow">Private league tracker</p>
             <h2 id="viewTitle">Overview</h2>
           </div>
-          <div class="top-actions">
-            <button class="ghost" id="seedDemoButton" type="button">Load Draft</button>
-            <button class="ghost" id="exportButton" type="button">Export</button>
-            <button class="ghost" id="importButton" type="button">Import</button>
-            <input id="importFileInput" type="file" accept="application/json" hidden />
-            <button class="danger" id="resetButton" type="button">Reset</button>
-          </div>
+          <input id="importFileInput" type="file" accept="application/json" hidden />
         </header>
 
         <section id="dashboard" class="view active">
           <section class="hero-panel" aria-label="World Cup Calcutta overview">
             <div class="hero-copy">
-              <p class="eyebrow">Auction night energy</p>
-              <h3>48 teams, 12 owners, one gloriously irrational market.</h3>
+              <p class="eyebrow">Draft aftermath</p>
+              <h3>One Argentina moonshot, one bargain hunter, and a whole lot of nervous group-stage math.</h3>
               <p>
-                Track every bid, every upset, every group-stage lifeline, and every weird side-pot swing
-                as the tournament unfolds.
+                Eva went all-in on Argentina, Fabrice built the budget-basement buffet, Zach walked out with England and Morocco, and Tommy spent like the cap was chasing him.
               </p>
             </div>
             <div class="hero-stats" aria-label="Payout mix">
@@ -67,6 +55,16 @@
               <div><strong>20%</strong><span>Group Stage</span></div>
               <div><strong>14%</strong><span>Side Pots</span></div>
             </div>
+          </section>
+
+          <section class="match-strip-panel" aria-label="Upcoming games">
+            <div class="section-heading">
+              <div>
+                <p class="panel-label">Match Watch</p>
+                <h3>Next Up</h3>
+              </div>
+            </div>
+            <div id="matchTicker" class="match-ticker"></div>
           </section>
 
           <div class="metric-grid">
@@ -120,23 +118,11 @@
             <section class="panel">
               <div class="section-heading">
                 <div>
-                  <p class="panel-label">Most Valuable Teams</p>
-                  <h3>Team Payouts</h3>
+                  <p class="panel-label">Draft Headliners</p>
+                  <h3>MVP Teams</h3>
                 </div>
               </div>
-              <div class="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Team</th>
-                      <th>Owner</th>
-                      <th>Cost</th>
-                      <th>Payout</th>
-                    </tr>
-                  </thead>
-                  <tbody id="teamLeaderboard"></tbody>
-                </table>
-              </div>
+              <div id="teamLeaderboard" class="mvp-team-grid"></div>
             </section>
           </div>
         </section>
@@ -166,71 +152,6 @@
             <div id="auctionOwnerSummary" class="owner-summary-grid"></div>
           </section>
 
-          <section class="auction-room">
-            <div class="live-board">
-              <div class="section-heading">
-                <div>
-                  <p class="panel-label">Auction Room</p>
-                  <h3>Current Team</h3>
-                </div>
-                <div class="live-status" id="auctionRoomStatus">Ready</div>
-              </div>
-
-              <div class="deck-table">
-                <div class="playing-card" id="drawnCard" aria-live="polite"></div>
-                <div class="deck-controls">
-                  <div>
-                    <p class="panel-label">Draw Deck</p>
-                    <h3 id="deckStatus">52 cards ready</h3>
-                  </div>
-                  <div class="deck-actions">
-                    <button class="sold-button" id="drawCardButton" type="button">Draw Card</button>
-                    <button class="ghost" id="shuffleDeckButton" type="button">Shuffle</button>
-                    <button class="ghost" id="returnJokersButton" type="button">Return Jokers</button>
-                  </div>
-                </div>
-              </div>
-
-              <div class="current-team-card" id="currentTeamCard"></div>
-
-              <div class="bid-controls">
-                <label>
-                  <span>High Bidder</span>
-                  <select id="liveBidderSelect" aria-label="Current high bidder"></select>
-                </label>
-                <label>
-                  <span>Current Bid</span>
-                  <input id="liveBidInput" type="number" min="0" step="1" aria-label="Current bid amount" />
-                </label>
-              </div>
-
-              <div class="bid-button-grid" aria-label="Bid increments">
-                <button class="ghost bid-step" type="button" data-step="1">+$1</button>
-                <button class="ghost bid-step" type="button" data-step="2">+$2</button>
-                <button class="ghost bid-step" type="button" data-step="5">+$5</button>
-                <button class="ghost bid-step" type="button" data-step="10">+$10</button>
-              </div>
-
-              <div class="auction-actions">
-                <button class="ghost" id="prevTeamButton" type="button">Previous</button>
-                <button class="ghost" id="nextTeamButton" type="button">Next Unsold</button>
-                <button class="sold-button" id="soldButton" type="button">Sold</button>
-                <button class="danger" id="undoSaleButton" type="button">Undo Sale</button>
-              </div>
-            </div>
-
-            <aside class="auction-side">
-              <section class="panel">
-                <p class="panel-label">Budget Board</p>
-                <div id="budgetBoard" class="budget-board"></div>
-              </section>
-              <section class="panel">
-                <p class="panel-label">Recent Sales</p>
-                <div id="saleLog" class="sale-log"></div>
-              </section>
-            </aside>
-          </section>
-
           <section class="panel">
             <div class="section-heading">
               <div>
@@ -257,13 +178,24 @@
         </section>
 
         <section id="results" class="view">
+          <section class="panel games-panel">
+            <div class="section-heading">
+              <div>
+                <p class="panel-label">Schedule</p>
+                <h3>Games And Results</h3>
+              </div>
+              <p class="hint">Group-stage schedule with Calcutta owners attached. Live scores need an API key later.</p>
+            </div>
+            <div id="gameList" class="game-list"></div>
+          </section>
+
           <section class="panel">
             <div class="section-heading">
               <div>
-                <p class="panel-label">Manual Results</p>
-                <h3>Team Stats And Stage</h3>
+                <p class="panel-label">Team Totals</p>
+                <h3>Scoring Inputs</h3>
               </div>
-              <p class="hint">These fields will map cleanly to live API data later.</p>
+              <p class="hint">Use this for payouts once match results are final.</p>
             </div>
             <div class="table-wrap tall">
               <table>
@@ -360,6 +292,6 @@
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js?v=13"></script>
+    <script src="./app.js?v=14"></script>
   </body>
 </html>

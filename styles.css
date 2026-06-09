@@ -383,6 +383,180 @@ h3 {
   margin: 0 0 14px;
 }
 
+.match-strip-panel {
+  margin-bottom: 14px;
+}
+
+.match-ticker,
+.game-list {
+  display: grid;
+  gap: 10px;
+}
+
+.match-ticker {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.game-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.game-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(255, 253, 248, 0.72)),
+    radial-gradient(circle at 100% 0%, rgba(45, 95, 154, 0.1), transparent 9rem);
+}
+
+.compact-game {
+  min-height: 190px;
+}
+
+.game-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.game-status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  color: white;
+  background: var(--blue);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.game-status.today {
+  background: var(--red);
+}
+
+.game-status.past {
+  background: var(--muted);
+}
+
+.game-matchup {
+  display: grid;
+  gap: 10px;
+}
+
+.game-team {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.game-team strong,
+.game-team span {
+  display: block;
+}
+
+.game-team strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game-team div span {
+  color: var(--green);
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.game-flag {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: white;
+}
+
+.versus {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.game-venue {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.mvp-team-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mvp-team-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.mvp-rank {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: white;
+  background: var(--green);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.mvp-team-main {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+
+.mvp-team-main strong,
+.mvp-team-main em {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mvp-team-main em {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.mvp-price {
+  color: var(--green);
+  font-weight: 950;
+}
+
 .silhouette-card {
   position: relative;
   min-height: 164px;
@@ -1086,6 +1260,8 @@ input[type="number"] {
   .metric-grid,
   .hero-panel,
   .auction-room,
+  .match-ticker,
+  .game-list,
   .dashboard-grid,
   .rules-layout,
   .star-silhouette-strip,
@@ -1133,13 +1309,16 @@ input[type="number"] {
   .metric-grid,
   .auction-room,
   .auction-summary-stats,
+  .match-ticker,
+  .game-list,
   .current-team-card,
   .deck-table,
   .bid-controls,
   .dashboard-grid,
   .rules-layout,
   .star-silhouette-strip,
-  .owner-summary-grid {
+  .owner-summary-grid,
+  .mvp-team-grid {
     grid-template-columns: 1fr;
   }
 
