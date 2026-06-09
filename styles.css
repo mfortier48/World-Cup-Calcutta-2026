@@ -447,6 +447,142 @@ h3 {
   margin-bottom: 14px;
 }
 
+.auction-summary-panel {
+  margin-bottom: 14px;
+}
+
+.auction-summary-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(96px, 1fr));
+  gap: 10px;
+  min-width: min(100%, 420px);
+}
+
+.auction-summary-stats div {
+  min-height: 58px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(13, 107, 87, 0.08), rgba(200, 145, 46, 0.08)),
+    rgba(255, 255, 255, 0.74);
+}
+
+.auction-summary-stats span,
+.owner-total span,
+.owner-rank {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.auction-summary-stats strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.25rem;
+}
+
+.owner-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.owner-summary-card {
+  display: grid;
+  gap: 12px;
+  min-height: 190px;
+  padding: 14px;
+  border: 1px solid rgba(23, 33, 31, 0.12);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 253, 248, 0.7)),
+    radial-gradient(circle at 96% 0%, rgba(45, 95, 154, 0.1), transparent 9rem);
+  box-shadow: 0 12px 28px rgba(31, 37, 35, 0.07);
+}
+
+.owner-summary-card.top-spender {
+  border-color: rgba(200, 145, 46, 0.5);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 253, 248, 0.74)),
+    radial-gradient(circle at 94% 0%, rgba(200, 145, 46, 0.2), transparent 10rem);
+}
+
+.owner-summary-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.owner-summary-head h4 {
+  margin: 4px 0 0;
+  font-size: 1.15rem;
+}
+
+.owner-total {
+  text-align: right;
+}
+
+.owner-total strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.2rem;
+}
+
+.owner-budget-line {
+  display: grid;
+  gap: 7px;
+}
+
+.budget-meter {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(105, 115, 111, 0.16);
+}
+
+.budget-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--green), var(--gold));
+}
+
+.owner-team-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.team-pill {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  min-height: 34px;
+  gap: 7px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.82);
+  font-size: 0.88rem;
+  line-height: 1;
+}
+
+.team-pill strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-pill em {
+  color: var(--green);
+  font-style: normal;
+  font-weight: 900;
+}
+
 .live-board {
   min-width: 0;
   padding: 18px;
@@ -952,7 +1088,8 @@ input[type="number"] {
   .auction-room,
   .dashboard-grid,
   .rules-layout,
-  .star-silhouette-strip {
+  .star-silhouette-strip,
+  .owner-summary-grid {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -995,12 +1132,14 @@ input[type="number"] {
   .hero-panel,
   .metric-grid,
   .auction-room,
+  .auction-summary-stats,
   .current-team-card,
   .deck-table,
   .bid-controls,
   .dashboard-grid,
   .rules-layout,
-  .star-silhouette-strip {
+  .star-silhouette-strip,
+  .owner-summary-grid {
     grid-template-columns: 1fr;
   }
 

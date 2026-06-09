@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css?v=12" />
+    <link rel="stylesheet" href="./styles.css?v=13" />
   </head>
   <body>
     <div class="app-shell">
@@ -27,7 +27,7 @@
         <section class="panel compact">
           <p class="panel-label">Prize Pot</p>
           <strong id="potTotal">$0</strong>
-          <span id="budgetStatus">0 of 13 players entered</span>
+          <span id="budgetStatus">0 of 12 players entered</span>
         </section>
 
         <section class="panel compact">
@@ -142,6 +142,30 @@
         </section>
 
         <section id="auction" class="view">
+          <section class="panel auction-summary-panel">
+            <div class="section-heading">
+              <div>
+                <p class="panel-label">Draft Board</p>
+                <h3>Owner Summary</h3>
+              </div>
+              <div class="auction-summary-stats" aria-label="Auction summary totals">
+                <div>
+                  <span>Pot</span>
+                  <strong id="auctionSummaryPot">$0</strong>
+                </div>
+                <div>
+                  <span>Sold</span>
+                  <strong id="auctionSummarySold">0 / 48</strong>
+                </div>
+                <div>
+                  <span>Average</span>
+                  <strong id="auctionSummaryAverage">$0</strong>
+                </div>
+              </div>
+            </div>
+            <div id="auctionOwnerSummary" class="owner-summary-grid"></div>
+          </section>
+
           <section class="auction-room">
             <div class="live-board">
               <div class="section-heading">
@@ -336,6 +360,6 @@
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js?v=12"></script>
+    <script src="./app.js?v=13"></script>
   </body>
 </html>

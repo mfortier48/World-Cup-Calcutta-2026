@@ -635,6 +635,77 @@ function getOwnerSpend() {
   }, {});
 }
 
+function getOwnerPurchases() {
+  return players.map((player) => {
+    const purchases = teams
+      .filter((team) => state.auction[team.id]?.owner === player)
+      .map((team) => ({
+        team,
+        price: Number(state.auction[team.id]?.price || 0),
+      }))
+      .sort((a, b) => b.price - a.price || a.team.name.localeCompare(b.team.name));
+
+    return {
+      player,
+      purchases,
+      total: purchases.reduce((sum, purchase) => sum + purchase.price, 0),
+    };
+  });
+}
+
+function renderAuctionSummary() {
+  const ownerPurchases = getOwnerPurchases();
+  const soldTeams = teams.filter((team) => state.auction[team.id].owner && Number(state.auction[team.id].price) > 0);
+  const pot = ownerPurchases.reduce((sum, owner) => sum + owner.total, 0);
+  const averagePrice = soldTeams.length ? pot / soldTeams.length : 0;
+  const leader = [...ownerPurchases].sort((a, b) => b.total - a.total)[0];
+
+  document.getElementById("auctionSummaryPot").textContent = currency(pot);
+  document.getElementById("auctionSummarySold").textContent = `${soldTeams.length} / ${teams.length}`;
+  document.getElementById("auctionSummaryAverage").textContent = currency(averagePrice);
+
+  document.getElementById("auctionOwnerSummary").innerHTML = ownerPurchases
+    .sort((a, b) => b.total - a.total || a.player.localeCompare(b.player))
+    .map((owner) => {
+      const remaining = BUDGET_CAP - owner.total;
+      const isLeader = leader && owner.player === leader.player && owner.total > 0;
+      const teamsText = owner.purchases.length
+        ? owner.purchases
+          .map(({ team, price }) => `
+            <span class="team-pill" title="${team.name}">
+              <span>${team.flag}</span>
+              <strong>${team.name}</strong>
+              <em>${currency(price)}</em>
+            </span>
+          `)
+          .join("")
+        : `<span class="empty-note">No teams yet.</span>`;
+
+      return `
+        <article class="owner-summary-card ${isLeader ? "top-spender" : ""}">
+          <div class="owner-summary-head">
+            <div>
+              <span class="owner-rank">${owner.purchases.length} team${owner.purchases.length === 1 ? "" : "s"}</span>
+              <h4>${owner.player}</h4>
+            </div>
+            <div class="owner-total">
+              <span>Spent</span>
+              <strong>${currency(owner.total)}</strong>
+            </div>
+          </div>
+          <div class="owner-budget-line">
+            <span class="${remaining < 0 ? "budget-warn" : "budget-ok"}">${currency(remaining)} left</span>
+            <div class="budget-meter" aria-hidden="true">
+              <span style="width: ${Math.min(100, Math.max(0, (owner.total / BUDGET_CAP) * 100))}%"></span>
+            </div>
+          </div>
+          <div class="owner-team-list">${teamsText}</div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
 function renderDashboard() {
   const { pot, teamPayouts } = calculatePayouts();
   const ownerSpend = getOwnerSpend();
@@ -758,6 +829,7 @@ function exampleUnitPayout(rule, rulePool) {
 
 function render() {
   renderAuctionRoom();
+  renderAuctionSummary();
   renderAuction();
   renderResults();
   renderDashboard();
