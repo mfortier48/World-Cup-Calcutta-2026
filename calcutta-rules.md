@@ -106,7 +106,7 @@ These advancement payouts stack. For example, the Champion earns the Round of 32
 
 - FIFA rankings are shown in parentheses next to team names.
 - The FIFA men's world ranking page is the source of truth.
-- Rankings should be checked again after FIFA's next official update and before the first matches on Thursday, June 11, 2026.
+- Rankings were refreshed from FIFA's official June 11, 2026 men's ranking table before kickoff.
 
 ## Example Payouts
 
