@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css?v=16" />
+    <link rel="stylesheet" href="./styles.css?v=17" />
   </head>
   <body>
     <div class="app-shell">
@@ -21,6 +21,7 @@
           <button class="nav-item active" data-view="dashboard">Overview</button>
           <button class="nav-item" data-view="auction">Auction</button>
           <button class="nav-item" data-view="results">Games</button>
+          <button class="nav-item" data-view="calculator">Payout Scenario Calculator</button>
           <button class="nav-item" data-view="rules">Rules</button>
         </nav>
 
@@ -211,6 +212,53 @@
           </section>
         </section>
 
+        <section id="calculator" class="view">
+          <section class="panel calculator-panel">
+            <div class="section-heading">
+              <div>
+                <p class="panel-label">What Ifs</p>
+                <h3>Payout Scenario Calculator</h3>
+              </div>
+              <p class="hint">Build one-team or multi-team scenarios. Draw payouts are estimated because the final draw pool is divided by actual tournament draws.</p>
+            </div>
+
+            <div class="calculator-actions">
+              <button class="sold-button" id="addScenarioButton" type="button">Add Team</button>
+              <button class="ghost" id="saveScenarioButton" type="button">Save</button>
+              <button class="ghost" id="downloadScenarioButton" type="button">Download</button>
+              <button class="danger" id="clearScenarioButton" type="button">Clear</button>
+              <span id="scenarioSaveStatus" class="save-status" aria-live="polite"></span>
+            </div>
+
+            <div id="scenarioRows" class="scenario-list"></div>
+          </section>
+
+          <section class="panel scenario-total-panel">
+            <div class="section-heading">
+              <div>
+                <p class="panel-label">Scenario Total</p>
+                <h3>Projected Portfolio</h3>
+              </div>
+              <p class="hint">Gross payout minus the original auction cost for the selected teams.</p>
+            </div>
+            <div class="scenario-total-grid">
+              <article>
+                <span>Gross Payout</span>
+                <strong id="scenarioGrossTotal">$0</strong>
+              </article>
+              <article>
+                <span>Original Cost</span>
+                <strong id="scenarioCostTotal">$0</strong>
+              </article>
+              <article>
+                <span>Net</span>
+                <strong id="scenarioNetTotal">$0</strong>
+              </article>
+            </div>
+            <p class="example-copy">Side pots assume a single winner; ties split the listed side-pot pool. Advancement payouts stack after the group stage, so a champion also earns the Round of 16, quarterfinal, semifinal, final, and champion payouts.</p>
+          </section>
+        </section>
+
         <section id="rules" class="view">
           <div class="rules-layout">
             <section class="panel">
@@ -286,6 +334,6 @@
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js?v=16"></script>
+    <script src="./app.js?v=17"></script>
   </body>
 </html>

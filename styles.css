@@ -1067,6 +1067,11 @@ h3 {
   font-weight: 900;
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
 .auction-side {
   display: grid;
   gap: 14px;
@@ -1193,6 +1198,166 @@ input[type="number"] {
   font-weight: 850;
 }
 
+.calculator-panel {
+  margin-bottom: 14px;
+}
+
+.calculator-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.save-status {
+  color: var(--green);
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.scenario-list {
+  display: grid;
+  gap: 14px;
+}
+
+.scenario-card {
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid rgba(23, 33, 31, 0.12);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(255, 253, 248, 0.74)),
+    radial-gradient(circle at 100% 0%, rgba(13, 107, 87, 0.1), transparent 10rem);
+}
+
+.scenario-card-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.scenario-card-head h4 {
+  margin: 0;
+  font-size: 1.22rem;
+}
+
+.scenario-card-head span {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.compact-button {
+  min-height: 34px;
+  padding-inline: 10px;
+  font-size: 0.84rem;
+}
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.35fr) repeat(5, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.scenario-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.scenario-field-wide {
+  grid-row: span 2;
+}
+
+.scenario-field span,
+.scenario-output span,
+.scenario-total-grid span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.side-pot-checks {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.side-pot-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.74);
+  font-weight: 800;
+}
+
+.side-pot-check input {
+  width: 18px;
+  min-height: 18px;
+  accent-color: var(--green);
+}
+
+.scenario-output,
+.scenario-total-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.scenario-output div,
+.scenario-total-grid article {
+  min-height: 74px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.scenario-output strong,
+.scenario-total-grid strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.16rem;
+}
+
+.scenario-output em {
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.scenario-warning {
+  margin: -2px 0 0;
+  color: var(--red);
+  font-size: 0.9rem;
+  font-weight: 850;
+}
+
+.scenario-total-panel {
+  background:
+    linear-gradient(135deg, rgba(13, 107, 87, 0.1), rgba(200, 145, 46, 0.12)),
+    rgba(255, 253, 248, 0.9);
+}
+
+.net-positive {
+  color: var(--green);
+}
+
+.net-negative {
+  color: var(--red);
+}
+
 .rules-list {
   display: grid;
   gap: 10px;
@@ -1254,10 +1419,12 @@ input[type="number"] {
   }
 
   .nav {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .nav-item {
+    padding-inline: 8px;
+    line-height: 1.15;
     text-align: center;
   }
 
@@ -1269,7 +1436,11 @@ input[type="number"] {
   .dashboard-grid,
   .rules-layout,
   .star-silhouette-strip,
-  .owner-summary-grid {
+  .owner-summary-grid,
+  .scenario-grid,
+  .side-pot-checks,
+  .scenario-output,
+  .scenario-total-grid {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -1321,9 +1492,17 @@ input[type="number"] {
   .dashboard-grid,
   .rules-layout,
   .star-silhouette-strip,
-  .owner-summary-grid,
-  .mvp-team-grid {
+    .owner-summary-grid,
+    .mvp-team-grid,
+    .scenario-grid,
+    .side-pot-checks,
+    .scenario-output,
+    .scenario-total-grid {
     grid-template-columns: 1fr;
+  }
+
+  .scenario-field-wide {
+    grid-row: auto;
   }
 
   .hero-copy {

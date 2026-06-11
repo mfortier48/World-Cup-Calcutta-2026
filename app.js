@@ -1,5 +1,7 @@
 const BUDGET_CAP = 150;
 const STORAGE_KEY = "calcuttaStateDraft20260609Final12";
+const SCENARIO_KEY = "calcuttaScenarioCalculatorV1";
+const ESTIMATED_DRAW_TEAM_RESULTS = 36;
 
 const players = [
   "Meli",
@@ -31,6 +33,19 @@ const groupFinishes = [
   { value: "winner", label: "Group winner" },
   { value: "runnerUp", label: "Group runner-up" },
   { value: "third", label: "Third-place qualifier" },
+];
+
+const groupResultOptions = [
+  { value: "loss", label: "Loss" },
+  { value: "draw", label: "Draw" },
+  { value: "win", label: "Win" },
+];
+
+const sidePotOptions = [
+  { key: "mostGoals", label: "Most goals scored" },
+  { key: "bestDiff", label: "Best goal differential" },
+  { key: "biggestUpset", label: "Biggest single-match upset" },
+  { key: "worstDiff", label: "Worst goal differential" },
 ];
 
 const payoutRules = [
@@ -320,6 +335,7 @@ const defaultState = {
 };
 
 let state = loadState();
+let scenarioState = loadScenarioState();
 
 function loadState() {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -348,6 +364,46 @@ function loadState() {
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function defaultScenarioEntry(teamId = teams[0].id) {
+  return {
+    id: `scenario-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    teamId,
+    groupResults: ["loss", "loss", "loss"],
+    groupFinish: "",
+    stage: "group",
+    sidePots: Object.fromEntries(sidePotOptions.map((option) => [option.key, false])),
+  };
+}
+
+function loadScenarioState() {
+  const saved = localStorage.getItem(SCENARIO_KEY);
+  if (!saved) return { entries: [defaultScenarioEntry()] };
+
+  try {
+    const parsed = JSON.parse(saved);
+    const entries = Array.isArray(parsed.entries) && parsed.entries.length
+      ? parsed.entries.map((entry) => ({
+        ...defaultScenarioEntry(entry.teamId || teams[0].id),
+        ...entry,
+        groupResults: Array.isArray(entry.groupResults)
+          ? entry.groupResults.slice(0, 3).concat(["loss", "loss", "loss"]).slice(0, 3)
+          : ["loss", "loss", "loss"],
+        sidePots: {
+          ...Object.fromEntries(sidePotOptions.map((option) => [option.key, false])),
+          ...(entry.sidePots || {}),
+        },
+      }))
+      : [defaultScenarioEntry()];
+    return { entries };
+  } catch {
+    return { entries: [defaultScenarioEntry()] };
+  }
+}
+
+function saveScenarioState() {
+  localStorage.setItem(SCENARIO_KEY, JSON.stringify(scenarioState));
 }
 
 function downloadText(filename, text) {
@@ -458,6 +514,22 @@ function groupFinishOptions(selected = "") {
     .join("");
 }
 
+function groupResultSelectOptions(selected = "loss") {
+  return groupResultOptions
+    .map((result) => `<option value="${result.value}" ${result.value === selected ? "selected" : ""}>${result.label}</option>`)
+    .join("");
+}
+
+function scenarioTeamOptions(selected = "") {
+  return teams
+    .map((team) => {
+      const auction = state.auction[team.id] || { owner: "Unassigned", price: 0 };
+      const label = `${teamLabel(team)} - ${auction.owner || "Unassigned"} - ${currency(auction.price)}`;
+      return `<option value="${team.id}" ${team.id === selected ? "selected" : ""}>${label}</option>`;
+    })
+    .join("");
+}
+
 function getTeamMetrics(team) {
   const result = state.results[team.id];
   return {
@@ -517,6 +589,101 @@ function calculatePayouts() {
   }
 
   return { pot, teamPayouts };
+}
+
+function actualPot() {
+  return teams.reduce((sum, team) => sum + Number(state.auction[team.id]?.price || 0), 0);
+}
+
+function payoutRuleByKey(key) {
+  return payoutRules.find((rule) => rule.key === key);
+}
+
+function rulePool(key, pot = actualPot()) {
+  const rule = payoutRuleByKey(key);
+  return rule ? pot * (rule.pct / 100) : 0;
+}
+
+function scenarioTeamCost(teamId) {
+  return Number(state.auction[teamId]?.price || 0);
+}
+
+function scenarioStagePayout(stage, pot) {
+  const stageUnits = {
+    r16: 16,
+    qf: 8,
+    sf: 4,
+    final: 2,
+    champion: 1,
+  };
+  return ["r16", "qf", "sf", "final", "champion"].reduce((sum, stageKey) => {
+    if (stageRank(stage) < stageRank(stageKey)) return sum;
+    return sum + (rulePool(stageKey, pot) / stageUnits[stageKey]);
+  }, 0);
+}
+
+function scenarioGroupFinishPayout(finish, pot) {
+  const finishUnits = {
+    winner: 12,
+    runnerUp: 12,
+    third: 8,
+  };
+  const ruleKeys = {
+    winner: "r32Winner",
+    runnerUp: "r32RunnerUp",
+    third: "r32Third",
+  };
+  return finish && finishUnits[finish] ? rulePool(ruleKeys[finish], pot) / finishUnits[finish] : 0;
+}
+
+function scenarioPayoutBreakdown(entry) {
+  const pot = actualPot();
+  const winCount = entry.groupResults.filter((result) => result === "win").length;
+  const drawCount = entry.groupResults.filter((result) => result === "draw").length;
+  const groupWins = winCount * (rulePool("wins", pot) / 72);
+  const groupDraws = drawCount * (rulePool("draws", pot) / ESTIMATED_DRAW_TEAM_RESULTS);
+  const groupFinish = scenarioGroupFinishPayout(entry.groupFinish, pot);
+  const advancement = scenarioStagePayout(entry.stage, pot);
+  const sidePots = sidePotOptions.reduce((sum, option) => (
+    entry.sidePots?.[option.key] ? sum + rulePool(option.key, pot) : sum
+  ), 0);
+  const gross = groupWins + groupDraws + groupFinish + advancement + sidePots;
+  const cost = scenarioTeamCost(entry.teamId);
+
+  return {
+    pot,
+    winCount,
+    drawCount,
+    groupWins,
+    groupDraws,
+    groupFinish,
+    advancement,
+    sidePots,
+    gross,
+    cost,
+    net: gross - cost,
+  };
+}
+
+function firstUnusedScenarioTeam() {
+  const used = new Set(scenarioState.entries.map((entry) => entry.teamId));
+  return teams.find((team) => !used.has(team.id))?.id || teams[0].id;
+}
+
+function scenarioEntrySummary(entry) {
+  const team = teamById(entry.teamId);
+  const breakdown = scenarioPayoutBreakdown(entry);
+  return {
+    team: team ? teamLabel(team) : entry.teamId,
+    owner: team ? teamOwner(team.id) : "Unassigned",
+    originalCost: Math.round(breakdown.cost),
+    grossPayout: Math.round(breakdown.gross),
+    net: Math.round(breakdown.net),
+    groupResults: entry.groupResults,
+    groupFinish: groupFinishes.find((finish) => finish.value === entry.groupFinish)?.label || "Not advanced",
+    stage: stages.find((stage) => stage.value === entry.stage)?.label || "Group Stage",
+    sidePots: sidePotOptions.filter((option) => entry.sidePots?.[option.key]).map((option) => option.label),
+  };
 }
 
 function renderAuction() {
@@ -949,6 +1116,116 @@ function renderRules() {
     .join("");
 }
 
+function renderScenarioCalculator() {
+  const rows = document.getElementById("scenarioRows");
+  if (!rows) return;
+
+  rows.innerHTML = scenarioState.entries
+    .map((entry, index) => {
+      const team = teamById(entry.teamId) || teams[0];
+      const auction = state.auction[team.id] || { owner: "Unassigned", price: 0 };
+      const breakdown = scenarioPayoutBreakdown(entry);
+      const netClass = breakdown.net >= 0 ? "net-positive" : "net-negative";
+      const needsGroupFinish = stageRank(entry.stage) >= stageRank("r32") && !entry.groupFinish;
+      const sidePotChecks = sidePotOptions
+        .map((option) => `
+          <label class="side-pot-check">
+            <input
+              type="checkbox"
+              data-kind="scenario"
+              data-index="${index}"
+              data-field="sidePot"
+              data-side-pot="${option.key}"
+              ${entry.sidePots?.[option.key] ? "checked" : ""}
+            />
+            <span>${option.label}</span>
+          </label>
+        `)
+        .join("");
+
+      return `
+        <article class="scenario-card">
+          <div class="scenario-card-head">
+            <div>
+              <p class="panel-label">Entry ${index + 1}</p>
+              <h4>${team.flag} ${teamLabel(team)}</h4>
+              <span>${auction.owner || "Unassigned"} paid ${currency(auction.price)}</span>
+            </div>
+            <button class="ghost compact-button" type="button" data-scenario-remove="${index}" ${scenarioState.entries.length === 1 ? "disabled" : ""}>Remove</button>
+          </div>
+
+          <div class="scenario-grid">
+            <label class="scenario-field scenario-field-wide">
+              <span>Team</span>
+              <select data-kind="scenario" data-index="${index}" data-field="teamId" aria-label="Scenario team">
+                ${scenarioTeamOptions(entry.teamId)}
+              </select>
+            </label>
+
+            ${entry.groupResults.map((result, matchIndex) => `
+              <label class="scenario-field">
+                <span>Group Match ${matchIndex + 1}</span>
+                <select data-kind="scenario" data-index="${index}" data-field="groupResult" data-match-index="${matchIndex}" aria-label="${team.name} group match ${matchIndex + 1}">
+                  ${groupResultSelectOptions(result)}
+                </select>
+              </label>
+            `).join("")}
+
+            <label class="scenario-field">
+              <span>Group Finish</span>
+              <select data-kind="scenario" data-index="${index}" data-field="groupFinish" aria-label="${team.name} group finish">
+                ${groupFinishOptions(entry.groupFinish)}
+              </select>
+            </label>
+
+            <label class="scenario-field">
+              <span>Furthest Stage</span>
+              <select data-kind="scenario" data-index="${index}" data-field="stage" aria-label="${team.name} furthest stage">
+                ${stageOptions(entry.stage)}
+              </select>
+            </label>
+          </div>
+
+          <div class="side-pot-checks" aria-label="${team.name} side pots">
+            ${sidePotChecks}
+          </div>
+
+          <div class="scenario-output">
+            <div>
+              <span>Projected Payout</span>
+              <strong>${currency(breakdown.gross)} <em>(${currency(breakdown.cost)} paid)</em></strong>
+            </div>
+            <div>
+              <span>Net</span>
+              <strong class="${netClass}">${currency(breakdown.net)}</strong>
+            </div>
+            <div>
+              <span>Included</span>
+              <strong>${breakdown.winCount}W, ${breakdown.drawCount}D, ${currency(breakdown.advancement + breakdown.groupFinish)} advancement</strong>
+            </div>
+          </div>
+          ${needsGroupFinish ? `<p class="scenario-warning">Pick a group finish to include the Round of 32 advancement tier.</p>` : ""}
+        </article>
+      `;
+    })
+    .join("");
+
+  const totals = scenarioState.entries.reduce((sum, entry) => {
+    const breakdown = scenarioPayoutBreakdown(entry);
+    return {
+      gross: sum.gross + breakdown.gross,
+      cost: sum.cost + breakdown.cost,
+      net: sum.net + breakdown.net,
+    };
+  }, { gross: 0, cost: 0, net: 0 });
+
+  document.getElementById("scenarioGrossTotal").textContent = currency(totals.gross);
+  document.getElementById("scenarioCostTotal").textContent = currency(totals.cost);
+  const netTotal = document.getElementById("scenarioNetTotal");
+  netTotal.textContent = currency(totals.net);
+  netTotal.className = totals.net >= 0 ? "net-positive" : "net-negative";
+}
+
 function exampleUnitPayout(rule, rulePool) {
   const stageCounts = {
     r16: 16,
@@ -990,6 +1267,7 @@ function render() {
   renderGames();
   renderDashboard();
   renderRules();
+  renderScenarioCalculator();
 }
 
 function setCurrentTeam(teamId) {
@@ -1059,6 +1337,29 @@ function handleInput(event) {
     state.results[team][field] = value;
   }
 
+  if (kind === "scenario") {
+    const entry = scenarioState.entries[Number(target.dataset.index)];
+    if (!entry) return;
+
+    if (field === "groupResult") {
+      entry.groupResults[Number(target.dataset.matchIndex)] = target.value;
+    } else if (field === "sidePot") {
+      entry.sidePots[target.dataset.sidePot] = target.checked;
+    } else {
+      entry[field] = target.value;
+      if (field === "groupFinish" && target.value && stageRank(entry.stage) < stageRank("r32")) {
+        entry.stage = "r32";
+      }
+      if (field === "stage" && stageRank(target.value) < stageRank("r32")) {
+        entry.groupFinish = "";
+      }
+    }
+
+    saveScenarioState();
+    render();
+    return;
+  }
+
   saveState();
   render();
 }
@@ -1075,8 +1376,61 @@ function seedDemo() {
   render();
 }
 
+function setScenarioStatus(message) {
+  const status = document.getElementById("scenarioSaveStatus");
+  if (!status) return;
+  status.textContent = message;
+  window.clearTimeout(setScenarioStatus.timeoutId);
+  setScenarioStatus.timeoutId = window.setTimeout(() => {
+    status.textContent = "";
+  }, 2600);
+}
+
+function downloadScenario() {
+  const totals = scenarioState.entries.reduce((sum, entry) => {
+    const breakdown = scenarioPayoutBreakdown(entry);
+    return {
+      gross: sum.gross + breakdown.gross,
+      cost: sum.cost + breakdown.cost,
+      net: sum.net + breakdown.net,
+    };
+  }, { gross: 0, cost: 0, net: 0 });
+
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    app: "World Cup Calcutta 2026",
+    type: "payout-scenario",
+    pot: Math.round(actualPot()),
+    totals: {
+      grossPayout: Math.round(totals.gross),
+      originalCost: Math.round(totals.cost),
+      net: Math.round(totals.net),
+    },
+    entries: scenarioState.entries.map(scenarioEntrySummary),
+    notes: [
+      "Draw payouts are estimated until the tournament's final team-draw count is known.",
+      "Side pots assume a single winner; tied side pots split the pool.",
+      "Advancement payouts stack after the group stage.",
+    ],
+  };
+
+  downloadText(`calcutta-payout-scenario-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(payload, null, 2));
+}
+
+function handleScenarioRemove(event) {
+  const removeButton = event.target.closest("[data-scenario-remove]");
+  if (!removeButton) return;
+
+  const index = Number(removeButton.dataset.scenarioRemove);
+  if (scenarioState.entries.length <= 1) return;
+  scenarioState.entries.splice(index, 1);
+  saveScenarioState();
+  render();
+}
+
 document.addEventListener("input", handleInput);
 document.addEventListener("change", handleInput);
+document.addEventListener("click", handleScenarioRemove);
 
 document.querySelectorAll(".nav-item").forEach((button) => {
   button.addEventListener("click", () => setView(button.dataset.view));
@@ -1098,6 +1452,26 @@ bindIfPresent("resetButton", "click", () => {
   state = structuredClone(defaultState);
   saveState();
   render();
+});
+
+bindIfPresent("addScenarioButton", "click", () => {
+  scenarioState.entries.push(defaultScenarioEntry(firstUnusedScenarioTeam()));
+  saveScenarioState();
+  render();
+});
+
+bindIfPresent("saveScenarioButton", "click", () => {
+  saveScenarioState();
+  setScenarioStatus("Saved in this browser.");
+});
+
+bindIfPresent("downloadScenarioButton", "click", downloadScenario);
+
+bindIfPresent("clearScenarioButton", "click", () => {
+  scenarioState = { entries: [defaultScenarioEntry(firstUnusedScenarioTeam())] };
+  saveScenarioState();
+  render();
+  setScenarioStatus("Scenario cleared.");
 });
 
 bindIfPresent("drawCardButton", "click", () => {
