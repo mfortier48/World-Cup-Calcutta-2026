@@ -171,75 +171,75 @@ const groupMatches = [
   [1, "2026-06-11", "15:00 ET", "A", "mex", "rsa", "Mexico City"],
   [2, "2026-06-11", "22:00 ET", "A", "kor", "cze", "Guadalajara"],
   [3, "2026-06-12", "15:00 ET", "B", "can", "bih", "Toronto"],
-  [4, "2026-06-13", "21:00 ET", "D", "usa", "par", "Los Angeles"],
+  [4, "2026-06-12", "21:00 ET", "D", "usa", "par", "Los Angeles"],
   [8, "2026-06-13", "15:00 ET", "B", "qat", "sui", "San Francisco Bay Area"],
-  [5, "2026-06-14", "18:00 ET", "C", "bra", "mar", "New York/New Jersey"],
-  [6, "2026-06-14", "21:00 ET", "C", "hai", "sco", "Boston"],
+  [5, "2026-06-13", "18:00 ET", "C", "bra", "mar", "New York/New Jersey"],
+  [6, "2026-06-13", "21:00 ET", "C", "hai", "sco", "Boston"],
   [7, "2026-06-14", "00:00 ET", "D", "aus", "tur", "Vancouver"],
   [9, "2026-06-14", "13:00 ET", "E", "ger", "crc", "Houston"],
   [10, "2026-06-14", "16:00 ET", "F", "ned", "jpn", "Dallas"],
-  [11, "2026-06-15", "19:00 ET", "E", "civ", "ecu", "Philadelphia"],
-  [12, "2026-06-15", "22:00 ET", "F", "swe", "tun", "Monterrey"],
+  [11, "2026-06-14", "19:00 ET", "E", "civ", "ecu", "Philadelphia"],
+  [12, "2026-06-14", "22:00 ET", "F", "swe", "tun", "Monterrey"],
   [13, "2026-06-15", "12:00 ET", "H", "esp", "cpv", "Atlanta"],
   [14, "2026-06-15", "15:00 ET", "G", "bel", "egy", "Seattle"],
-  [15, "2026-06-16", "18:00 ET", "H", "ksa", "uru", "Miami"],
-  [16, "2026-06-16", "21:00 ET", "G", "irn", "nzl", "Los Angeles"],
+  [15, "2026-06-15", "18:00 ET", "H", "ksa", "uru", "Miami"],
+  [16, "2026-06-15", "21:00 ET", "G", "irn", "nzl", "Los Angeles"],
   [17, "2026-06-16", "15:00 ET", "I", "fra", "sen", "New York/New Jersey"],
-  [18, "2026-06-17", "18:00 ET", "I", "irq", "nor", "Boston"],
-  [19, "2026-06-17", "21:00 ET", "J", "arg", "alg", "Kansas City"],
+  [18, "2026-06-16", "18:00 ET", "I", "irq", "nor", "Boston"],
+  [19, "2026-06-16", "21:00 ET", "J", "arg", "alg", "Kansas City"],
   [20, "2026-06-17", "00:00 ET", "J", "aut", "jor", "San Francisco Bay Area"],
   [21, "2026-06-17", "13:00 ET", "K", "por", "cod", "Houston"],
   [22, "2026-06-17", "16:00 ET", "L", "eng", "cro", "Dallas"],
-  [23, "2026-06-18", "19:00 ET", "L", "gha", "pan", "Toronto"],
-  [24, "2026-06-18", "22:00 ET", "K", "uzb", "col", "Mexico City"],
+  [23, "2026-06-17", "19:00 ET", "L", "gha", "pan", "Toronto"],
+  [24, "2026-06-17", "22:00 ET", "K", "uzb", "col", "Mexico City"],
   [25, "2026-06-18", "12:00 ET", "A", "cze", "rsa", "Atlanta"],
   [26, "2026-06-18", "15:00 ET", "B", "sui", "bih", "Los Angeles"],
   [27, "2026-06-19", "18:00 ET", "B", "can", "qat", "Vancouver"],
-  [28, "2026-06-19", "21:00 ET", "A", "mex", "kor", "Guadalajara"],
+  [28, "2026-06-18", "21:00 ET", "A", "mex", "kor", "Guadalajara"],
   [29, "2026-06-19", "15:00 ET", "D", "usa", "aus", "Seattle"],
-  [30, "2026-06-20", "18:00 ET", "C", "sco", "mar", "Boston"],
-  [31, "2026-06-20", "20:30 ET", "C", "bra", "hai", "Philadelphia"],
-  [32, "2026-06-20", "23:00 ET", "D", "tur", "par", "San Francisco Bay Area"],
+  [30, "2026-06-19", "18:00 ET", "C", "sco", "mar", "Boston"],
+  [31, "2026-06-19", "20:30 ET", "C", "bra", "hai", "Philadelphia"],
+  [32, "2026-06-19", "23:00 ET", "D", "tur", "par", "San Francisco Bay Area"],
   [33, "2026-06-20", "13:00 ET", "F", "ned", "swe", "Houston"],
   [34, "2026-06-20", "16:00 ET", "E", "ger", "civ", "Toronto"],
-  [35, "2026-06-21", "20:00 ET", "E", "ecu", "crc", "Kansas City"],
+  [35, "2026-06-20", "20:00 ET", "E", "ecu", "crc", "Kansas City"],
   [36, "2026-06-21", "00:00 ET", "F", "tun", "jpn", "Monterrey"],
   [37, "2026-06-21", "12:00 ET", "H", "esp", "ksa", "Atlanta"],
   [38, "2026-06-21", "15:00 ET", "G", "bel", "irn", "Los Angeles"],
-  [39, "2026-06-22", "18:00 ET", "H", "uru", "cpv", "Miami"],
-  [40, "2026-06-22", "21:00 ET", "G", "nzl", "egy", "Vancouver"],
+  [39, "2026-06-21", "18:00 ET", "H", "uru", "cpv", "Miami"],
+  [40, "2026-06-21", "21:00 ET", "G", "nzl", "egy", "Vancouver"],
   [41, "2026-06-22", "13:00 ET", "J", "arg", "aut", "Dallas"],
-  [42, "2026-06-23", "17:00 ET", "I", "fra", "irq", "Philadelphia"],
-  [43, "2026-06-23", "20:00 ET", "I", "nor", "sen", "New York/New Jersey"],
-  [44, "2026-06-23", "23:00 ET", "J", "jor", "alg", "San Francisco Bay Area"],
+  [42, "2026-06-22", "17:00 ET", "I", "fra", "irq", "Philadelphia"],
+  [43, "2026-06-22", "20:00 ET", "I", "nor", "sen", "New York/New Jersey"],
+  [44, "2026-06-22", "23:00 ET", "J", "jor", "alg", "San Francisco Bay Area"],
   [45, "2026-06-23", "13:00 ET", "K", "por", "uzb", "Houston"],
   [46, "2026-06-23", "16:00 ET", "L", "eng", "gha", "Boston"],
-  [47, "2026-06-24", "19:00 ET", "L", "pan", "cro", "Toronto"],
-  [48, "2026-06-24", "22:00 ET", "K", "col", "cod", "Guadalajara"],
+  [47, "2026-06-23", "19:00 ET", "L", "pan", "cro", "Toronto"],
+  [48, "2026-06-23", "22:00 ET", "K", "col", "cod", "Guadalajara"],
   [49, "2026-06-24", "15:00 ET", "B", "sui", "can", "Vancouver"],
   [50, "2026-06-24", "15:00 ET", "B", "bih", "qat", "Seattle"],
-  [51, "2026-06-25", "18:00 ET", "C", "sco", "bra", "Miami"],
-  [52, "2026-06-25", "18:00 ET", "C", "mar", "hai", "Atlanta"],
-  [53, "2026-06-25", "21:00 ET", "A", "cze", "mex", "Mexico City"],
-  [54, "2026-06-25", "21:00 ET", "A", "rsa", "kor", "Monterrey"],
+  [51, "2026-06-24", "18:00 ET", "C", "sco", "bra", "Miami"],
+  [52, "2026-06-24", "18:00 ET", "C", "mar", "hai", "Atlanta"],
+  [53, "2026-06-24", "21:00 ET", "A", "cze", "mex", "Mexico City"],
+  [54, "2026-06-24", "21:00 ET", "A", "rsa", "kor", "Monterrey"],
   [55, "2026-06-25", "16:00 ET", "E", "crc", "civ", "Philadelphia"],
   [56, "2026-06-25", "16:00 ET", "E", "ecu", "ger", "New York/New Jersey"],
-  [57, "2026-06-26", "19:00 ET", "F", "jpn", "swe", "Dallas"],
-  [58, "2026-06-26", "19:00 ET", "F", "tun", "ned", "Kansas City"],
-  [59, "2026-06-26", "22:00 ET", "D", "tur", "usa", "Los Angeles"],
-  [60, "2026-06-26", "22:00 ET", "D", "par", "aus", "San Francisco Bay Area"],
+  [57, "2026-06-25", "19:00 ET", "F", "jpn", "swe", "Dallas"],
+  [58, "2026-06-25", "19:00 ET", "F", "tun", "ned", "Kansas City"],
+  [59, "2026-06-25", "22:00 ET", "D", "tur", "usa", "Los Angeles"],
+  [60, "2026-06-25", "22:00 ET", "D", "par", "aus", "San Francisco Bay Area"],
   [61, "2026-06-26", "15:00 ET", "I", "nor", "fra", "Boston"],
   [62, "2026-06-26", "15:00 ET", "I", "sen", "irq", "Toronto"],
-  [63, "2026-06-27", "20:00 ET", "H", "cpv", "ksa", "Houston"],
-  [64, "2026-06-27", "20:00 ET", "H", "uru", "esp", "Guadalajara"],
-  [65, "2026-06-27", "23:00 ET", "G", "egy", "irn", "Seattle"],
-  [66, "2026-06-27", "23:00 ET", "G", "nzl", "bel", "Vancouver"],
-  [67, "2026-06-28", "17:00 ET", "L", "pan", "eng", "New York/New Jersey"],
-  [68, "2026-06-28", "17:00 ET", "L", "cro", "gha", "Philadelphia"],
-  [69, "2026-06-28", "19:30 ET", "K", "col", "por", "Miami"],
-  [70, "2026-06-28", "19:30 ET", "K", "cod", "uzb", "Atlanta"],
-  [71, "2026-06-28", "22:00 ET", "J", "alg", "aut", "Kansas City"],
-  [72, "2026-06-28", "22:00 ET", "J", "jor", "arg", "Dallas"],
+  [63, "2026-06-26", "20:00 ET", "H", "cpv", "ksa", "Houston"],
+  [64, "2026-06-26", "20:00 ET", "H", "uru", "esp", "Guadalajara"],
+  [65, "2026-06-26", "23:00 ET", "G", "egy", "irn", "Seattle"],
+  [66, "2026-06-26", "23:00 ET", "G", "nzl", "bel", "Vancouver"],
+  [67, "2026-06-27", "17:00 ET", "L", "pan", "eng", "New York/New Jersey"],
+  [68, "2026-06-27", "17:00 ET", "L", "cro", "gha", "Philadelphia"],
+  [69, "2026-06-27", "19:30 ET", "K", "col", "por", "Miami"],
+  [70, "2026-06-27", "19:30 ET", "K", "cod", "uzb", "Atlanta"],
+  [71, "2026-06-27", "22:00 ET", "J", "alg", "aut", "Kansas City"],
+  [72, "2026-06-27", "22:00 ET", "J", "jor", "arg", "Dallas"],
 ].map(([matchNumber, date, time, group, homeId, awayId, venue]) => ({
   matchNumber,
   date,
@@ -885,11 +885,21 @@ function renderResults() {
 }
 
 function gameStatus(match) {
-  const today = new Date();
+  const todayKey = localDateKey();
   const matchDate = new Date(`${match.date}T12:00:00`);
-  const todayKey = today.toISOString().slice(0, 10);
   if (match.date === todayKey) return "Today";
   return matchDate < new Date(`${todayKey}T00:00:00`) ? "Past" : "Upcoming";
+}
+
+function localDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function displayMatchTime(match) {
+  return match.time === "00:00 ET" ? "Midnight ET" : match.time;
 }
 
 function gameCard(match, compact = false) {
@@ -901,7 +911,7 @@ function gameCard(match, compact = false) {
       <div class="game-meta">
         <span class="game-status ${status.toLowerCase()}">${status}</span>
         <strong>Match ${match.matchNumber}</strong>
-        <span>Group ${match.group} · ${match.date} · ${match.time}</span>
+        <span>Group ${match.group} · ${match.date} · ${displayMatchTime(match)}</span>
       </div>
       <div class="game-matchup">
         <div class="game-team">
@@ -932,7 +942,7 @@ function renderGames() {
 }
 
 function renderMatchTicker() {
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const todayKey = localDateKey();
   const nextMatches = groupMatches
     .filter((match) => match.date >= todayKey)
     .slice(0, 4);
