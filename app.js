@@ -1,6 +1,7 @@
 const BUDGET_CAP = 150;
 const STORAGE_KEY = "calcuttaStateDraft20260609Final12";
 const SCENARIO_KEY = "calcuttaScenarioCalculatorV1";
+const RESULTS_VERSION = "2026-06-13-match-4";
 const ESTIMATED_DRAW_TEAM_RESULTS = 36;
 
 const players = [
@@ -250,6 +251,15 @@ const groupMatches = [
   venue,
 }));
 
+const completedMatchScores = [
+  { matchNumber: 1, homeGoals: 2, awayGoals: 0 },
+  { matchNumber: 2, homeGoals: 2, awayGoals: 1 },
+  { matchNumber: 3, homeGoals: 1, awayGoals: 1 },
+  { matchNumber: 4, homeGoals: 4, awayGoals: 1 },
+];
+
+const scoreByMatch = Object.fromEntries(completedMatchScores.map((score) => [score.matchNumber, score]));
+
 const teamCardRanks = [
   "A", "A", "K", "K", "Q", "Q", "J", "J", "10", "10", "9", "9",
   "8", "8", "7", "7", "6", "6", "5", "5", "4", "4", "3", "3",
@@ -317,14 +327,48 @@ function freshDeckState() {
 
 const cardById = Object.fromEntries(buildDeck().map((card) => [card.id, card]));
 
+function blankTeamResult() {
+  return { stage: "group", groupFinish: "", wins: 0, draws: 0, gf: 0, ga: 0, biggestUpset: 0 };
+}
+
+function buildOfficialResults() {
+  const results = Object.fromEntries(teams.map((team) => [team.id, blankTeamResult()]));
+
+  for (const score of completedMatchScores) {
+    const match = groupMatches.find((candidate) => candidate.matchNumber === score.matchNumber);
+    if (!match) continue;
+
+    const home = teams.find((team) => team.id === match.homeId);
+    const away = teams.find((team) => team.id === match.awayId);
+    const homeResult = results[match.homeId];
+    const awayResult = results[match.awayId];
+    homeResult.gf += score.homeGoals;
+    homeResult.ga += score.awayGoals;
+    awayResult.gf += score.awayGoals;
+    awayResult.ga += score.homeGoals;
+
+    if (score.homeGoals === score.awayGoals) {
+      homeResult.draws += 1;
+      awayResult.draws += 1;
+      continue;
+    }
+
+    const winner = score.homeGoals > score.awayGoals ? home : away;
+    const loser = winner.id === home.id ? away : home;
+    const winnerResult = results[winner.id];
+    winnerResult.wins += 1;
+    if (winner.rank > loser.rank) {
+      winnerResult.biggestUpset = Math.max(winnerResult.biggestUpset, winner.rank - loser.rank);
+    }
+  }
+
+  return results;
+}
+
 const defaultState = {
   auction: Object.fromEntries(teams.map((team) => [team.id, draftAuction[team.id] || { owner: "", price: 0 }])),
-  results: Object.fromEntries(
-    teams.map((team) => [
-      team.id,
-      { stage: "group", groupFinish: "", wins: 0, draws: 0, gf: 0, ga: 0, biggestUpset: 0 },
-    ]),
-  ),
+  results: buildOfficialResults(),
+  resultsVersion: RESULTS_VERSION,
   auctionRoom: {
     currentTeamId: teams[0].id,
     currentBidder: "",
@@ -343,11 +387,14 @@ function loadState() {
 
   try {
     const parsed = JSON.parse(saved);
+    const officialResults = buildOfficialResults();
+    const resultsAreCurrent = parsed.resultsVersion === RESULTS_VERSION;
     return {
       ...structuredClone(defaultState),
       ...parsed,
       auction: { ...structuredClone(defaultState).auction, ...(parsed.auction || {}) },
-      results: { ...structuredClone(defaultState).results, ...(parsed.results || {}) },
+      results: resultsAreCurrent ? { ...officialResults, ...(parsed.results || {}) } : officialResults,
+      resultsVersion: RESULTS_VERSION,
       auctionRoom: {
         ...structuredClone(defaultState).auctionRoom,
         ...(parsed.auctionRoom || {}),
@@ -542,6 +589,7 @@ function getTeamMetrics(team) {
 function calculatePayouts() {
   const pot = teams.reduce((sum, team) => sum + Number(state.auction[team.id]?.price || 0), 0);
   const teamPayouts = Object.fromEntries(teams.map((team) => [team.id, 0]));
+  const groupStageComplete = completedMatchScores.length >= 72;
 
   for (const rule of payoutRules) {
     const rulePot = pot * (rule.pct / 100);
@@ -550,8 +598,10 @@ function calculatePayouts() {
     if (rule.type === "unit") {
       const totalUnits = teams.reduce((sum, team) => sum + Number(getTeamMetrics(team)[rule.field] || 0), 0);
       if (!totalUnits) continue;
+      const projectedUnits = rule.key === "wins" ? 72 : ESTIMATED_DRAW_TEAM_RESULTS;
+      const denominator = groupStageComplete ? totalUnits : Math.max(totalUnits, projectedUnits);
       for (const team of teams) {
-        teamPayouts[team.id] += rulePot * (Number(getTeamMetrics(team)[rule.field] || 0) / totalUnits);
+        teamPayouts[team.id] += rulePot * (Number(getTeamMetrics(team)[rule.field] || 0) / denominator);
       }
     }
 
@@ -885,6 +935,7 @@ function renderResults() {
 }
 
 function gameStatus(match) {
+  if (scoreByMatch[match.matchNumber]) return "Final";
   const todayKey = localDateKey();
   const matchDate = new Date(`${match.date}T12:00:00`);
   if (match.date === todayKey) return "Today";
@@ -902,10 +953,15 @@ function displayMatchTime(match) {
   return match.time === "00:00 ET" ? "Midnight ET" : match.time;
 }
 
+function matchScore(match) {
+  return scoreByMatch[match.matchNumber] || null;
+}
+
 function gameCard(match, compact = false) {
   const home = teamById(match.homeId);
   const away = teamById(match.awayId);
   const status = gameStatus(match);
+  const score = matchScore(match);
   return `
     <article class="game-card ${compact ? "compact-game" : ""}">
       <div class="game-meta">
@@ -913,6 +969,13 @@ function gameCard(match, compact = false) {
         <strong>Match ${match.matchNumber}</strong>
         <span>Group ${match.group} · ${match.date} · ${displayMatchTime(match)}</span>
       </div>
+      ${score ? `
+        <div class="game-score" aria-label="Final score">
+          <span>${score.homeGoals}</span>
+          <strong>Final</strong>
+          <span>${score.awayGoals}</span>
+        </div>
+      ` : ""}
       <div class="game-matchup">
         <div class="game-team">
           <span class="game-flag">${home.flag}</span>
@@ -1345,6 +1408,7 @@ function handleInput(event) {
 
   if (kind === "result") {
     state.results[team][field] = value;
+    state.resultsVersion = RESULTS_VERSION;
   }
 
   if (kind === "scenario") {

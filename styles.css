@@ -446,8 +446,39 @@ h3 {
   background: var(--red);
 }
 
+.game-status.final {
+  background: var(--green);
+}
+
 .game-status.past {
   background: var(--muted);
+}
+
+.game-score {
+  display: grid;
+  grid-template-columns: 46px 1fr 46px;
+  align-items: center;
+  min-height: 46px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(13, 107, 87, 0.1), rgba(255, 255, 255, 0.8), rgba(45, 95, 154, 0.1)),
+    rgba(255, 255, 255, 0.82);
+  text-align: center;
+}
+
+.game-score span {
+  font-size: 1.4rem;
+  font-weight: 950;
+}
+
+.game-score strong {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .game-matchup {
