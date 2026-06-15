@@ -1,7 +1,7 @@
 const BUDGET_CAP = 150;
 const STORAGE_KEY = "calcuttaStateDraft20260609Final12";
 const SCENARIO_KEY = "calcuttaScenarioCalculatorV1";
-const RESULTS_VERSION = "2026-06-14-match-9";
+const RESULTS_VERSION = "2026-06-14-match-11";
 const ESTIMATED_DRAW_TEAM_RESULTS = 36;
 
 const players = [
@@ -261,6 +261,8 @@ const completedMatchScores = [
   { matchNumber: 6, homeGoals: 0, awayGoals: 1 },
   { matchNumber: 7, homeGoals: 2, awayGoals: 0 },
   { matchNumber: 9, homeGoals: 7, awayGoals: 1 },
+  { matchNumber: 10, homeGoals: 2, awayGoals: 2 },
+  { matchNumber: 11, homeGoals: 1, awayGoals: 0 },
 ];
 
 const scoreByMatch = Object.fromEntries(completedMatchScores.map((score) => [score.matchNumber, score]));
