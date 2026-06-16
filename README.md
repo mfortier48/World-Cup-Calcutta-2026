@@ -36,23 +36,12 @@ The site is static, so the live update path is:
 
 1. GitHub Actions runs `.github/workflows/update-results.yml` every 15 minutes.
 2. `scripts/update-results.mjs` checks games that are at least 135 minutes past kickoff.
-3. Final scores are fetched from API-Football/API-SPORTS.
+3. Final scores are fetched from ESPN's public FIFA World Cup scoreboard feed.
 4. If new finals are available, the job updates `data/results.json`, commits, and pushes.
 5. Vercel redeploys from the commit.
 6. Open browsers refresh `data/results.json` every 5 minutes and recalculate payouts.
 
-Required GitHub secret:
-
-```text
-API_FOOTBALL_KEY
-```
-
-Optional GitHub variables:
-
-```text
-API_FOOTBALL_LEAGUE_ID=1
-API_FOOTBALL_SEASON=2026
-```
+No API key or GitHub secret is required. The ESPN feed is a public endpoint, so if ESPN changes its response format or coverage during the tournament, the fallback is to update `data/results.json` manually or swap in a different score provider.
 
 ## Next Production Steps
 

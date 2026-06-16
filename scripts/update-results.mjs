@@ -4,11 +4,9 @@ import path from "node:path";
 const ROOT = path.resolve(new URL("..", import.meta.url).pathname);
 const APP_PATH = path.join(ROOT, "app.js");
 const RESULTS_PATH = path.join(ROOT, "data", "results.json");
-const API_KEY = process.env.API_FOOTBALL_KEY;
-const API_HOST = process.env.API_FOOTBALL_HOST || "v3.football.api-sports.io";
-const API_LEAGUE_ID = process.env.API_FOOTBALL_LEAGUE_ID || "1";
-const API_SEASON = process.env.API_FOOTBALL_SEASON || "2026";
 const SCORE_BUFFER_MINUTES = Number(process.env.SCORE_BUFFER_MINUTES || 135);
+const SCOREBOARD_URL = process.env.ESPN_SCOREBOARD_URL
+  || "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
 const FINISHED_STATUSES = new Set(["FT", "AET", "PEN"]);
 
 function normalizeName(value) {
@@ -19,13 +17,12 @@ function normalizeName(value) {
     .replace(/\busa\b/i, "united states")
     .replace(/\bu\.s\.a\.\b/i, "united states")
     .replace(/\bturkiye\b/i, "turkey")
-    .replace(/\bturkiye\b/i, "turkey")
     .replace(/\btürkiye\b/i, "turkey")
+    .replace(/\bcabo verde\b/i, "cape verde")
     .replace(/\bcote d'ivoire\b/i, "ivory coast")
     .replace(/\bcote divoire\b/i, "ivory coast")
     .replace(/\bkorea republic\b/i, "south korea")
     .replace(/\bir iran\b/i, "iran")
-    .replace(/\bcuracao\b/i, "curacao")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
@@ -45,7 +42,10 @@ function parseSchedule(appSource) {
 }
 
 function parseTeams(appSource) {
-  const teamBlock = appSource.slice(appSource.indexOf("const teams = ["), appSource.indexOf("].map(([id, name, confederation, flag, rank])"));
+  const teamBlock = appSource.slice(
+    appSource.indexOf("const teams = ["),
+    appSource.indexOf("].map(([id, name, confederation, flag, rank])"),
+  );
   const teamPattern = /\["([^"]+)", "([^"]+)", "([^"]+)", "([^"]+)", (\d+)\]/g;
   return Object.fromEntries([...teamBlock.matchAll(teamPattern)].map((match) => [
     match[1],
@@ -66,6 +66,10 @@ function isDue(match, now = new Date()) {
   return now.getTime() >= kickoffDate(match).getTime() + (SCORE_BUFFER_MINUTES * 60 * 1000);
 }
 
+function espnDateKey(date) {
+  return date.replaceAll("-", "");
+}
+
 async function readExistingResults() {
   try {
     return JSON.parse(await fs.readFile(RESULTS_PATH, "utf8"));
@@ -74,69 +78,68 @@ async function readExistingResults() {
   }
 }
 
-async function fetchFixtures() {
-  if (!API_KEY) {
-    console.log("API_FOOTBALL_KEY is not set. Skipping score update.");
-    return [];
-  }
+async function fetchEspnScoreboard(date) {
+  const url = new URL(SCOREBOARD_URL);
+  url.searchParams.set("dates", espnDateKey(date));
 
-  const url = new URL(`https://${API_HOST}/fixtures`);
-  url.searchParams.set("league", API_LEAGUE_ID);
-  url.searchParams.set("season", API_SEASON);
-
-  const response = await fetch(url, {
-    headers: {
-      "x-apisports-key": API_KEY,
-    },
-  });
-
+  const response = await fetch(url);
   if (!response.ok) {
-    throw new Error(`API-Football request failed: ${response.status} ${response.statusText}`);
+    throw new Error(`ESPN scoreboard request failed for ${date}: ${response.status} ${response.statusText}`);
   }
 
   const payload = await response.json();
-  if (payload.errors && Object.keys(payload.errors).length) {
-    throw new Error(`API-Football returned errors: ${JSON.stringify(payload.errors)}`);
-  }
-
-  return payload.response || [];
+  return payload.events || [];
 }
 
-function fixtureTeams(fixture) {
+function eventCompetitors(event) {
+  const competitors = event.competitions?.[0]?.competitors || [];
+  const home = competitors.find((competitor) => competitor.homeAway === "home");
+  const away = competitors.find((competitor) => competitor.homeAway === "away");
+  if (!home || !away) return null;
+
   return {
-    home: normalizeName(fixture.teams?.home?.name),
-    away: normalizeName(fixture.teams?.away?.name),
+    home: {
+      name: normalizeName(home.team?.displayName || home.team?.name),
+      score: Number(home.score),
+    },
+    away: {
+      name: normalizeName(away.team?.displayName || away.team?.name),
+      score: Number(away.score),
+    },
+    status: event.status?.type?.shortDetail || event.competitions?.[0]?.status?.type?.shortDetail,
+    completed: Boolean(event.status?.type?.completed || event.competitions?.[0]?.status?.type?.completed),
   };
 }
 
-function findFixtureForMatch(fixtures, match, teams) {
-  const homeName = teams[match.homeId]?.normalizedName;
-  const awayName = teams[match.awayId]?.normalizedName;
-  if (!homeName || !awayName) return null;
+function findEventForMatch(events, match, teams) {
+  const appHome = teams[match.homeId]?.normalizedName;
+  const appAway = teams[match.awayId]?.normalizedName;
+  if (!appHome || !appAway) return null;
 
-  return fixtures.find((fixture) => {
-    const provider = fixtureTeams(fixture);
-    return provider.home === homeName && provider.away === awayName;
-  }) || fixtures.find((fixture) => {
-    const provider = fixtureTeams(fixture);
-    return provider.home === awayName && provider.away === homeName;
+  return events.find((event) => {
+    const competitors = eventCompetitors(event);
+    if (!competitors) return false;
+    return competitors.home.name === appHome && competitors.away.name === appAway;
+  }) || events.find((event) => {
+    const competitors = eventCompetitors(event);
+    if (!competitors) return false;
+    return competitors.home.name === appAway && competitors.away.name === appHome;
   }) || null;
 }
 
-function scoreFromFixture(fixture, match, teams) {
-  const status = fixture.fixture?.status?.short;
-  if (!FINISHED_STATUSES.has(status)) return null;
-  if (!Number.isFinite(Number(fixture.goals?.home)) || !Number.isFinite(Number(fixture.goals?.away))) return null;
+function scoreFromEvent(event, match, teams) {
+  const competitors = eventCompetitors(event);
+  if (!competitors || !competitors.completed || !FINISHED_STATUSES.has(competitors.status)) return null;
+  if (!Number.isFinite(competitors.home.score) || !Number.isFinite(competitors.away.score)) return null;
 
-  const provider = fixtureTeams(fixture);
   const appHome = teams[match.homeId]?.normalizedName;
-  const sameOrientation = provider.home === appHome;
+  const sameOrientation = competitors.home.name === appHome;
 
   return {
     matchNumber: match.matchNumber,
-    homeGoals: Number(sameOrientation ? fixture.goals.home : fixture.goals.away),
-    awayGoals: Number(sameOrientation ? fixture.goals.away : fixture.goals.home),
-    status,
+    homeGoals: sameOrientation ? competitors.home.score : competitors.away.score,
+    awayGoals: sameOrientation ? competitors.away.score : competitors.home.score,
+    status: competitors.status,
   };
 }
 
@@ -159,35 +162,40 @@ async function main() {
   const schedule = parseSchedule(appSource);
   const teams = parseTeams(appSource);
   const existing = await readExistingResults();
-  const fixtures = await fetchFixtures();
-  if (!fixtures.length) return;
-
-  const existingMatchNumbers = new Set((existing.matches || []).map((score) => Number(score.matchNumber)));
+  const existingScores = existing.matches || [];
+  const existingMatchNumbers = new Set(existingScores.map((score) => Number(score.matchNumber)));
   const dueMatches = schedule.filter((match) => isDue(match));
-  const newScores = [];
+  const dates = [...new Set(dueMatches.map((match) => match.date))];
+  const eventsByDate = new Map();
 
+  for (const date of dates) {
+    eventsByDate.set(date, await fetchEspnScoreboard(date));
+  }
+
+  const newScores = [];
   for (const match of dueMatches) {
-    const fixture = findFixtureForMatch(fixtures, match, teams);
-    if (!fixture) continue;
-    const score = scoreFromFixture(fixture, match, teams);
+    const event = findEventForMatch(eventsByDate.get(match.date) || [], match, teams);
+    if (!event) continue;
+
+    const score = scoreFromEvent(event, match, teams);
     if (!score) continue;
 
-    const previous = (existing.matches || []).find((candidate) => Number(candidate.matchNumber) === match.matchNumber);
+    const previous = existingScores.find((candidate) => Number(candidate.matchNumber) === match.matchNumber);
     if (!previous || previous.homeGoals !== score.homeGoals || previous.awayGoals !== score.awayGoals || previous.status !== score.status) {
       newScores.push(score);
     }
   }
 
   if (!newScores.length) {
-    console.log(`No new finals. ${existing.matches?.length || 0} scores already recorded.`);
+    console.log(`No new finals. ${existingScores.length} scores already recorded.`);
     return;
   }
 
-  const matches = mergeScores(existing.matches || [], newScores);
+  const matches = mergeScores(existingScores, newScores);
   const nextPayload = {
     version: buildVersion(matches),
     updatedAt: new Date().toISOString(),
-    source: `api-football:${API_LEAGUE_ID}:${API_SEASON}`,
+    source: "espn:fifa.world",
     matches,
   };
 
@@ -199,7 +207,9 @@ async function main() {
   console.log(`Updated ${RESULTS_PATH}. Added/changed: ${added || "score corrections"}.`);
 }
 
-main().catch((error) => {
+try {
+  await main();
+} catch (error) {
   console.error(error);
   process.exitCode = 1;
-});
+}
