@@ -538,6 +538,14 @@ function teamLabel(team) {
   return `${team.name} (${team.rank})`;
 }
 
+function attrText(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 function teamById(teamId) {
   return teams.find((team) => team.id === teamId);
 }
@@ -644,6 +652,7 @@ function getTeamMetrics(team) {
 function calculatePayouts() {
   const pot = teams.reduce((sum, team) => sum + Number(state.auction[team.id]?.price || 0), 0);
   const teamPayouts = Object.fromEntries(teams.map((team) => [team.id, 0]));
+  const teamPayoutDetails = Object.fromEntries(teams.map((team) => [team.id, []]));
   const groupStageComplete = completedMatchScores.length >= 72;
 
   for (const rule of payoutRules) {
@@ -656,7 +665,16 @@ function calculatePayouts() {
       const projectedUnits = rule.key === "wins" ? 72 : ESTIMATED_DRAW_TEAM_RESULTS;
       const denominator = groupStageComplete ? totalUnits : Math.max(totalUnits, projectedUnits);
       for (const team of teams) {
-        teamPayouts[team.id] += rulePot * (Number(getTeamMetrics(team)[rule.field] || 0) / denominator);
+        const units = Number(getTeamMetrics(team)[rule.field] || 0);
+        const amount = rulePot * (units / denominator);
+        teamPayouts[team.id] += amount;
+        if (amount > 0) {
+          teamPayoutDetails[team.id].push({
+            label: rule.label,
+            amount,
+            note: `${units} ${rule.key === "wins" ? "group-stage win" : "group-stage draw"}${units === 1 ? "" : "s"}`,
+          });
+        }
       }
     }
 
@@ -664,7 +682,13 @@ function calculatePayouts() {
       const qualifiers = teams.filter((team) => stageRank(state.results[team.id].stage) >= stageRank(rule.stage));
       if (!qualifiers.length) continue;
       for (const team of qualifiers) {
-        teamPayouts[team.id] += rulePot / qualifiers.length;
+        const amount = rulePot / qualifiers.length;
+        teamPayouts[team.id] += amount;
+        teamPayoutDetails[team.id].push({
+          label: rule.label,
+          amount,
+          note: `Reached ${stages.find((stage) => stage.value === rule.stage)?.label || rule.stage}`,
+        });
       }
     }
 
@@ -675,7 +699,13 @@ function calculatePayouts() {
       });
       if (!qualifiers.length) continue;
       for (const team of qualifiers) {
-        teamPayouts[team.id] += rulePot / qualifiers.length;
+        const amount = rulePot / qualifiers.length;
+        teamPayouts[team.id] += amount;
+        teamPayoutDetails[team.id].push({
+          label: rule.label,
+          amount,
+          note: groupFinishes.find((finish) => finish.value === rule.finish)?.label || "Group advancement",
+        });
       }
     }
 
@@ -688,12 +718,18 @@ function calculatePayouts() {
         : Math.min(...activeValues.map(({ value }) => value));
       const winners = activeValues.filter(({ value }) => value === target);
       for (const { team } of winners) {
-        teamPayouts[team.id] += rulePot / winners.length;
+        const amount = rulePot / winners.length;
+        teamPayouts[team.id] += amount;
+        teamPayoutDetails[team.id].push({
+          label: rule.label,
+          amount,
+          note: `${rule.label} leader (${target})`,
+        });
       }
     }
   }
 
-  return { pot, teamPayouts };
+  return { pot, teamPayouts, teamPayoutDetails };
 }
 
 function actualPot() {
@@ -1053,16 +1089,66 @@ function gameCard(match, compact = false) {
   `;
 }
 
+function compactHeroGameCard(match) {
+  const home = teamById(match.homeId);
+  const away = teamById(match.awayId);
+  const status = gameStatus(match);
+  const score = matchScore(match);
+  const statusLabel = score ? "Final" : status;
+  return `
+    <article class="hero-game-card ${score ? "is-final" : ""}">
+      <div class="hero-game-meta">
+        <span>${statusLabel}</span>
+        <strong>Group ${match.group}</strong>
+        <em>${match.date} · ${displayMatchTime(match)}</em>
+      </div>
+      <div class="hero-game-row">
+        <span>${home.flag}</span>
+        <strong>${home.name}</strong>
+        <em>${teamOwner(home.id)}</em>
+        <b>${score ? score.homeGoals : ""}</b>
+      </div>
+      <div class="hero-game-row">
+        <span>${away.flag}</span>
+        <strong>${away.name}</strong>
+        <em>${teamOwner(away.id)}</em>
+        <b>${score ? score.awayGoals : ""}</b>
+      </div>
+    </article>
+  `;
+}
+
 function renderGames() {
   document.getElementById("gameList").innerHTML = groupMatches
     .map((match) => gameCard(match))
     .join("");
 }
 
+function renderHeroMatchBoard() {
+  const board = document.getElementById("heroMatchBoard");
+  const sync = document.getElementById("heroSyncStatus");
+  if (!board || !sync) return;
+
+  const todayKey = localDateKey();
+  const recentFinals = groupMatches
+    .filter((match) => matchScore(match))
+    .sort((a, b) => b.matchNumber - a.matchNumber)
+    .slice(0, 3);
+  const todayAndNext = groupMatches
+    .filter((match) => !matchScore(match) && match.date >= todayKey)
+    .slice(0, Math.max(1, 4 - recentFinals.length));
+  const featuredMatches = [...recentFinals, ...todayAndNext].slice(0, 4);
+
+  board.innerHTML = featuredMatches.length
+    ? featuredMatches.map((match) => compactHeroGameCard(match)).join("")
+    : `<div class="empty-note light-empty">No featured matches available.</div>`;
+  sync.textContent = `${completedMatchScores.length} finals loaded`;
+}
+
 function renderMatchTicker() {
   const todayKey = localDateKey();
   const nextMatches = groupMatches
-    .filter((match) => match.date >= todayKey)
+    .filter((match) => !matchScore(match) && match.date >= todayKey)
     .slice(0, 4);
   document.getElementById("matchTicker").innerHTML = nextMatches.length
     ? nextMatches.map((match) => gameCard(match, true)).join("")
@@ -1151,13 +1237,22 @@ function renderAuctionSummary() {
 }
 
 function renderDashboard() {
-  const { pot, teamPayouts } = calculatePayouts();
+  const { pot, teamPayouts, teamPayoutDetails } = calculatePayouts();
   const ownerSpend = getOwnerSpend();
   const ownerPayouts = players.map((player) => {
     const payout = teams.reduce((sum, team) => {
       return sum + (state.auction[team.id].owner === player ? teamPayouts[team.id] : 0);
     }, 0);
-    return { player, spent: ownerSpend[player], payout, net: payout - ownerSpend[player] };
+    const ownedTeams = teams
+      .filter((team) => state.auction[team.id].owner === player)
+      .map((team) => ({
+        team,
+        payout: teamPayouts[team.id],
+        cost: Number(state.auction[team.id].price || 0),
+        details: teamPayoutDetails[team.id],
+      }))
+      .sort((a, b) => b.payout - a.payout || b.cost - a.cost);
+    return { player, spent: ownerSpend[player], payout, net: payout - ownerSpend[player], ownedTeams };
   });
 
   const soldTeams = teams.filter((team) => state.auction[team.id].owner && Number(state.auction[team.id].price) > 0);
@@ -1178,15 +1273,66 @@ function renderDashboard() {
 
   document.getElementById("ownerLeaderboard").innerHTML = ownerPayouts
     .sort((a, b) => b.net - a.net)
-    .map((owner) => `
+    .map((owner, index) => {
+      const tooltip = owner.ownedTeams
+        .filter((entry) => entry.payout > 0)
+        .map((entry) => `${entry.team.name}: ${currency(entry.payout)} from ${entry.details.map((detail) => detail.note).join(", ")}`)
+        .join(" | ") || "No payout events yet.";
+      const topTeam = owner.ownedTeams.find((entry) => entry.payout > 0);
+      return `
       <tr>
-        <td><strong>${owner.player}</strong></td>
+        <td>
+          <div class="owner-rank-cell">
+            <span>${index + 1}</span>
+            <strong>${owner.player}</strong>
+          </div>
+        </td>
         <td class="${owner.spent > BUDGET_CAP ? "budget-warn" : ""}">${currency(owner.spent)}</td>
-        <td>${currency(owner.payout)}</td>
+        <td>
+          <span class="payout-hover" title="${attrText(tooltip)}">${currency(owner.payout)}</span>
+          ${topTeam ? `<em class="leaderboard-note">${topTeam.team.flag} ${topTeam.team.name}</em>` : ""}
+        </td>
         <td class="${owner.net >= 0 ? "budget-ok" : "budget-warn"}">${currency(owner.net)}</td>
       </tr>
-    `)
+    `;
+    })
     .join("");
+
+  const earningRows = teams
+    .map((team) => ({
+      team,
+      owner: state.auction[team.id].owner || "-",
+      cost: Number(state.auction[team.id].price || 0),
+      payout: teamPayouts[team.id],
+      details: teamPayoutDetails[team.id],
+    }))
+    .filter((row) => row.payout > 0 || row.cost > 0)
+    .sort((a, b) => b.payout - a.payout || b.cost - a.cost)
+    .slice(0, 12)
+    .map((row) => {
+      const detailText = row.details.length
+        ? row.details.map((detail) => `${detail.note}: ${currency(detail.amount)}`).join(" | ")
+        : "No payout events yet.";
+      return `
+        <article class="team-earning-card payout-hover" title="${attrText(detailText)}">
+          <div class="team-earning-main">
+            <span class="team-earning-flag">${row.team.flag}</span>
+            <div>
+              <strong>${teamLabel(row.team)}</strong>
+              <em>${row.owner} paid ${currency(row.cost)}</em>
+            </div>
+          </div>
+          <div class="team-earning-money">
+            <span>Payout</span>
+            <strong>${currency(row.payout)}</strong>
+            <em>${currency(row.payout - row.cost)} net</em>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+
+  document.getElementById("teamEarnings").innerHTML = earningRows || `<div class="empty-note">No team payouts yet.</div>`;
 
   const auctionRows = teams
     .map((team) => ({
@@ -1388,6 +1534,7 @@ function exampleUnitPayout(rule, rulePool) {
 }
 
 function render() {
+  renderHeroMatchBoard();
   renderMatchTicker();
   renderAuctionSummary();
   renderAuction();

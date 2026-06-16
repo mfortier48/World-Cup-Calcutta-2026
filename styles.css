@@ -10,6 +10,7 @@
   --blue: #2d5f9a;
   --gold: #c8912e;
   --shadow: 0 20px 50px rgba(31, 37, 35, 0.1);
+  --ball-cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Ccircle cx='14' cy='14' r='11' fill='white' stroke='%2317211f' stroke-width='2'/%3E%3Cpath d='M14 7l4 3-1.5 5h-5L10 10z' fill='%2317211f'/%3E%3Cpath d='M6 13l4-3M18 10l4 3M11.5 15l-3 5M16.5 15l3 5' stroke='%2317211f' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E") 14 14, help;
 }
 
 * {
@@ -228,10 +229,10 @@ h3 {
 .hero-panel {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.55fr);
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 0.42fr);
   gap: 18px;
   align-items: end;
-  min-height: 310px;
+  min-height: 340px;
   margin-bottom: 14px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.38);
@@ -248,8 +249,13 @@ h3 {
   padding: 30px;
 }
 
-.hero-copy-minimal {
-  min-height: 160px;
+.hero-scoreboard {
+  align-self: stretch;
+  display: grid;
+  align-content: end;
+  gap: 16px;
+  max-width: 920px;
+  min-height: 100%;
 }
 
 .hero-copy .eyebrow {
@@ -268,6 +274,120 @@ h3 {
   color: rgba(255, 255, 255, 0.82);
   font-size: 1rem;
   line-height: 1.55;
+}
+
+.hero-board-head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.hero-board-head h3 {
+  max-width: 460px;
+  color: white;
+  font-size: clamp(1.7rem, 3.6vw, 3rem);
+  line-height: 0.98;
+}
+
+.hero-sync-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  color: rgba(255, 255, 255, 0.84);
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 0.78rem;
+  font-weight: 850;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+}
+
+.hero-match-board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.hero-game-card {
+  display: grid;
+  gap: 8px;
+  min-height: 118px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(6, 18, 22, 0.48);
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.16);
+  backdrop-filter: blur(12px);
+}
+
+.hero-game-card.is-final {
+  background:
+    linear-gradient(135deg, rgba(13, 107, 87, 0.62), rgba(6, 18, 22, 0.5)),
+    rgba(6, 18, 22, 0.5);
+}
+
+.hero-game-meta,
+.hero-game-row {
+  display: grid;
+  align-items: center;
+}
+
+.hero-game-meta {
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.hero-game-meta span {
+  min-height: 22px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  color: white;
+  background: var(--green);
+  text-transform: uppercase;
+}
+
+.hero-game-meta em {
+  overflow: hidden;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-style: normal;
+}
+
+.hero-game-row {
+  grid-template-columns: 26px minmax(0, 1fr) minmax(80px, 0.6fr) 24px;
+  gap: 8px;
+  min-width: 0;
+  color: white;
+}
+
+.hero-game-row strong,
+.hero-game-row em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hero-game-row em {
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.hero-game-row b {
+  font-size: 1.25rem;
+  text-align: right;
+}
+
+.light-empty {
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .hero-stats {
@@ -335,11 +455,24 @@ h3 {
   line-height: 1.12;
 }
 
-.dashboard-grid,
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.8fr);
+  gap: 14px;
+}
+
 .rules-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 14px;
+}
+
+.owner-leaderboard-panel {
+  grid-column: span 1;
+}
+
+.team-earnings-panel {
+  grid-column: span 1;
 }
 
 .payout-example-panel {
@@ -538,6 +671,120 @@ h3 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.mvp-bottom-panel {
+  margin-top: 14px;
+}
+
+.compact-mvp-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.owner-rank-cell {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.owner-rank-cell span {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: white;
+  background: var(--green);
+  font-size: 0.76rem;
+  font-weight: 950;
+}
+
+.leaderboard-note {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.payout-hover {
+  cursor: var(--ball-cursor);
+  text-decoration: underline;
+  text-decoration-color: rgba(13, 107, 87, 0.32);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.team-earning-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.team-earning-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  min-height: 72px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 253, 248, 0.72)),
+    radial-gradient(circle at 100% 0%, rgba(13, 107, 87, 0.1), transparent 8rem);
+}
+
+.team-earning-main {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+
+.team-earning-flag {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 30px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: white;
+}
+
+.team-earning-main strong,
+.team-earning-main em,
+.team-earning-money span,
+.team-earning-money em {
+  display: block;
+}
+
+.team-earning-main strong,
+.team-earning-main em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-earning-main em,
+.team-earning-money span,
+.team-earning-money em {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.team-earning-money {
+  min-width: 98px;
+  text-align: right;
+}
+
+.team-earning-money strong {
+  display: block;
+  color: var(--green);
+  font-size: 1.2rem;
 }
 
 .mvp-team-card {
@@ -1162,6 +1409,10 @@ table {
   border-collapse: collapse;
 }
 
+.owner-leaderboard-panel table {
+  min-width: 520px;
+}
+
 th,
 td {
   padding: 12px 12px;
@@ -1461,6 +1712,7 @@ input[type="number"] {
 
   .metric-grid,
   .hero-panel,
+  .hero-match-board,
   .auction-room,
   .match-ticker,
   .game-list,
@@ -1471,7 +1723,8 @@ input[type="number"] {
   .scenario-grid,
   .side-pot-checks,
   .scenario-output,
-  .scenario-total-grid {
+  .scenario-total-grid,
+  .compact-mvp-grid {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -1512,6 +1765,7 @@ input[type="number"] {
 
   .nav,
   .hero-panel,
+  .hero-match-board,
   .metric-grid,
   .auction-room,
   .auction-summary-stats,
@@ -1523,13 +1777,33 @@ input[type="number"] {
   .dashboard-grid,
   .rules-layout,
   .star-silhouette-strip,
-    .owner-summary-grid,
-    .mvp-team-grid,
-    .scenario-grid,
-    .side-pot-checks,
-    .scenario-output,
-    .scenario-total-grid {
+  .owner-summary-grid,
+  .mvp-team-grid,
+  .team-earning-card,
+  .scenario-grid,
+  .side-pot-checks,
+  .scenario-output,
+  .scenario-total-grid {
     grid-template-columns: 1fr;
+  }
+
+  .hero-board-head {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .hero-game-meta,
+  .hero-game-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .hero-game-meta em,
+  .hero-game-row em {
+    display: none;
+  }
+
+  .team-earning-money {
+    text-align: left;
   }
 
   .scenario-field-wide {
@@ -1537,10 +1811,28 @@ input[type="number"] {
   }
 
   .hero-copy {
-    padding: 24px 18px 0;
+    padding: 20px 16px 0;
+  }
+
+  .hero-board-head h3 {
+    font-size: 2rem;
+  }
+
+  .hero-match-board .hero-game-card:nth-child(4) {
+    display: none;
+  }
+
+  .hero-game-card {
+    min-height: 96px;
+    padding: 10px;
   }
 
   .hero-stats {
-    padding: 0 18px 18px;
+    padding: 0 16px 16px;
+  }
+
+  .hero-stats div {
+    min-height: 48px;
+    grid-template-columns: 64px 1fr;
   }
 }
