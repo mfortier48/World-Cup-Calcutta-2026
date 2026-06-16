@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css?v=22" />
+    <link rel="stylesheet" href="./styles.css?v=23" />
   </head>
   <body>
     <div class="app-shell">
@@ -179,7 +179,7 @@
                 <p class="panel-label">Schedule</p>
                 <h3>Games And Results</h3>
               </div>
-              <p class="hint">Group-stage schedule with Calcutta owners attached. Live scores need an API key later.</p>
+              <p id="resultsSyncStatus" class="hint">Loading score sync status...</p>
             </div>
             <div id="gameList" class="game-list"></div>
           </section>
@@ -334,6 +334,6 @@
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js?v=22"></script>
+    <script src="./app.js?v=23"></script>
   </body>
 </html>

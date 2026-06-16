@@ -1,7 +1,9 @@
 const BUDGET_CAP = 150;
 const STORAGE_KEY = "calcuttaStateDraft20260609Final12";
 const SCENARIO_KEY = "calcuttaScenarioCalculatorV1";
-const RESULTS_VERSION = "2026-06-14-match-11";
+const RESULTS_URL = "./data/results.json";
+const RESULTS_REFRESH_MS = 5 * 60 * 1000;
+const FALLBACK_RESULTS_VERSION = "2026-06-14-match-11";
 const ESTIMATED_DRAW_TEAM_RESULTS = 36;
 
 const players = [
@@ -251,7 +253,7 @@ const groupMatches = [
   venue,
 }));
 
-const completedMatchScores = [
+const fallbackCompletedMatchScores = [
   { matchNumber: 1, homeGoals: 2, awayGoals: 0 },
   { matchNumber: 2, homeGoals: 2, awayGoals: 1 },
   { matchNumber: 3, homeGoals: 1, awayGoals: 1 },
@@ -265,7 +267,10 @@ const completedMatchScores = [
   { matchNumber: 11, homeGoals: 1, awayGoals: 0 },
 ];
 
-const scoreByMatch = Object.fromEntries(completedMatchScores.map((score) => [score.matchNumber, score]));
+let completedMatchScores = [...fallbackCompletedMatchScores];
+let scoreByMatch = Object.fromEntries(completedMatchScores.map((score) => [score.matchNumber, score]));
+let activeResultsVersion = FALLBACK_RESULTS_VERSION;
+let activeResultsSource = "fallback";
 
 const teamCardRanks = [
   "A", "A", "K", "K", "Q", "Q", "J", "J", "10", "10", "9", "9",
@@ -334,6 +339,26 @@ function freshDeckState() {
 
 const cardById = Object.fromEntries(buildDeck().map((card) => [card.id, card]));
 
+function normalizeCompletedScores(scores = []) {
+  return scores
+    .filter((score) => Number.isFinite(Number(score.matchNumber)))
+    .map((score) => ({
+      matchNumber: Number(score.matchNumber),
+      homeGoals: Number(score.homeGoals),
+      awayGoals: Number(score.awayGoals),
+      status: score.status || "FT",
+    }))
+    .filter((score) => Number.isFinite(score.homeGoals) && Number.isFinite(score.awayGoals))
+    .sort((a, b) => a.matchNumber - b.matchNumber);
+}
+
+function setCompletedScores(scores, version = FALLBACK_RESULTS_VERSION, source = "manual") {
+  completedMatchScores = normalizeCompletedScores(scores);
+  scoreByMatch = Object.fromEntries(completedMatchScores.map((score) => [score.matchNumber, score]));
+  activeResultsVersion = version;
+  activeResultsSource = source;
+}
+
 function blankTeamResult() {
   return { stage: "group", groupFinish: "", wins: 0, draws: 0, gf: 0, ga: 0, biggestUpset: 0 };
 }
@@ -375,7 +400,7 @@ function buildOfficialResults() {
 const defaultState = {
   auction: Object.fromEntries(teams.map((team) => [team.id, draftAuction[team.id] || { owner: "", price: 0 }])),
   results: buildOfficialResults(),
-  resultsVersion: RESULTS_VERSION,
+  resultsVersion: activeResultsVersion,
   auctionRoom: {
     currentTeamId: teams[0].id,
     currentBidder: "",
@@ -395,13 +420,13 @@ function loadState() {
   try {
     const parsed = JSON.parse(saved);
     const officialResults = buildOfficialResults();
-    const resultsAreCurrent = parsed.resultsVersion === RESULTS_VERSION;
+    const resultsAreCurrent = parsed.resultsVersion === activeResultsVersion;
     return {
       ...structuredClone(defaultState),
       ...parsed,
       auction: { ...structuredClone(defaultState).auction, ...(parsed.auction || {}) },
       results: resultsAreCurrent ? { ...officialResults, ...(parsed.results || {}) } : officialResults,
-      resultsVersion: RESULTS_VERSION,
+      resultsVersion: activeResultsVersion,
       auctionRoom: {
         ...structuredClone(defaultState).auctionRoom,
         ...(parsed.auctionRoom || {}),
@@ -418,6 +443,29 @@ function loadState() {
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function applyResultsPayload(payload) {
+  if (!payload || !Array.isArray(payload.matches)) return false;
+  const nextVersion = payload.version || payload.updatedAt || FALLBACK_RESULTS_VERSION;
+  if (nextVersion === activeResultsVersion && state.resultsVersion === activeResultsVersion) return false;
+
+  setCompletedScores(payload.matches, nextVersion, payload.source || "data/results.json");
+  state.results = buildOfficialResults();
+  state.resultsVersion = activeResultsVersion;
+  saveState();
+  return true;
+}
+
+async function refreshLiveResults() {
+  try {
+    const response = await fetch(`${RESULTS_URL}?t=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) return;
+    const payload = await response.json();
+    if (applyResultsPayload(payload)) render();
+  } catch {
+    // Static fallback data remains usable if the result file cannot be fetched.
+  }
 }
 
 function defaultScenarioEntry(teamId = teams[0].id) {
@@ -1348,6 +1396,13 @@ function render() {
   renderDashboard();
   renderRules();
   renderScenarioCalculator();
+  renderResultsSyncStatus();
+}
+
+function renderResultsSyncStatus() {
+  const status = document.getElementById("resultsSyncStatus");
+  if (!status) return;
+  status.textContent = `${completedMatchScores.length} finals loaded · Source: ${activeResultsSource}`;
 }
 
 function setCurrentTeam(teamId) {
@@ -1415,7 +1470,7 @@ function handleInput(event) {
 
   if (kind === "result") {
     state.results[team][field] = value;
-    state.resultsVersion = RESULTS_VERSION;
+    state.resultsVersion = activeResultsVersion;
   }
 
   if (kind === "scenario") {
@@ -1618,3 +1673,5 @@ bindIfPresent("undoSaleButton", "click", () => {
 });
 
 render();
+refreshLiveResults();
+window.setInterval(refreshLiveResults, RESULTS_REFRESH_MS);

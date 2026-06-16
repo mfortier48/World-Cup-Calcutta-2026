@@ -8,32 +8,58 @@ A first-pass MVP for a private World Cup 2026 Calcutta pool. This version is a s
 - Records auction owner and price for each team.
 - Enforces the $150 budget visually by warning when an owner exceeds it.
 - Calculates the prize pot from actual auction spend.
-- Tracks manual team results: stage reached, group wins, group draws, goals for, and goals against.
+- Tracks team results: stage reached, group wins, group draws, goals for, goals against, and upset gap.
 - Calculates projected payouts using the agreed hybrid formula.
 - Saves data locally in the browser with `localStorage`.
+- Loads final scores from `data/results.json` and refreshes them periodically while the app is open.
 
 ## Payout Formula
 
-- 15%: group-stage wins
-- 5%: group-stage draws
-- 8%: reach Round of 32
-- 10%: reach Round of 16
+- 17%: group-stage wins
+- 3%: group-stage draws
+- 4.5%: Round of 32 group winners
+- 3.5%: Round of 32 group runners-up
+- 2%: Round of 32 third-place qualifiers
+- 12%: reach Round of 16
 - 12%: reach Quarterfinals
 - 12%: reach Semifinals
 - 8%: reach Final
-- 15%: champion
-- 5%: most goals scored
+- 12%: champion
+- 4%: most goals scored
 - 4%: best goal differential
-- 3%: biggest single-match win
+- 3%: biggest single-match upset
 - 3%: worst goal differential
+
+## Automatic Score Updates
+
+The site is static, so the live update path is:
+
+1. GitHub Actions runs `.github/workflows/update-results.yml` every 15 minutes.
+2. `scripts/update-results.mjs` checks games that are at least 135 minutes past kickoff.
+3. Final scores are fetched from API-Football/API-SPORTS.
+4. If new finals are available, the job updates `data/results.json`, commits, and pushes.
+5. Vercel redeploys from the commit.
+6. Open browsers refresh `data/results.json` every 5 minutes and recalculate payouts.
+
+Required GitHub secret:
+
+```text
+API_FOOTBALL_KEY
+```
+
+Optional GitHub variables:
+
+```text
+API_FOOTBALL_LEAGUE_ID=1
+API_FOOTBALL_SEASON=2026
+```
 
 ## Next Production Steps
 
 1. Add real owner names and invite-only authentication.
 2. Move data from browser storage to Supabase.
 3. Add commissioner roles and audit history.
-4. Add a scheduled live-results sync job.
-5. Deploy publicly with private access on Vercel or a similar host.
+4. Deploy publicly with private access on Vercel or a similar host.
 
 ## Local Use
 
