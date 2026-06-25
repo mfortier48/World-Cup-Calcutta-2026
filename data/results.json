@@ -1,6 +1,6 @@
 {
-  "version": "2026-06-25-match-52",
-  "updatedAt": "2026-06-25T01:50:02.886Z",
+  "version": "2026-06-25-match-54",
+  "updatedAt": "2026-06-25T06:06:34.749Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -295,6 +295,18 @@
       "matchNumber": 52,
       "homeGoals": 4,
       "awayGoals": 2,
+      "status": "FT"
+    },
+    {
+      "matchNumber": 53,
+      "homeGoals": 0,
+      "awayGoals": 3,
+      "status": "FT"
+    },
+    {
+      "matchNumber": 54,
+      "homeGoals": 1,
+      "awayGoals": 0,
       "status": "FT"
     }
   ]
