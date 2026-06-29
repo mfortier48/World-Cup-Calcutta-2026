@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css?v=24" />
+    <link rel="stylesheet" href="./styles.css?v=25" />
   </head>
   <body>
     <div class="app-shell">
@@ -69,6 +69,17 @@
               </div>
             </div>
             <div id="matchTicker" class="match-ticker"></div>
+          </section>
+
+          <section class="panel bracket-panel" aria-label="World Cup knockout bracket">
+            <div class="section-heading">
+              <div>
+                <p class="panel-label">Knockout Bracket</p>
+                <h3>Round of 32</h3>
+              </div>
+              <p class="hint">Flags, owners, scores, and winners update from the score feed.</p>
+            </div>
+            <div id="bracketBoard" class="bracket-board"></div>
           </section>
 
           <div class="metric-grid">
@@ -350,6 +361,6 @@
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js?v=24"></script>
+    <script src="./app.js?v=25"></script>
   </body>
 </html>

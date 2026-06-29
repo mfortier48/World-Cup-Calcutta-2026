@@ -524,6 +524,135 @@ h3 {
   margin-bottom: 14px;
 }
 
+.bracket-panel {
+  margin-bottom: 14px;
+  background:
+    linear-gradient(135deg, rgba(13, 107, 87, 0.08), rgba(45, 95, 154, 0.08), rgba(200, 145, 46, 0.08)),
+    rgba(255, 253, 248, 0.9);
+}
+
+.bracket-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
+}
+
+.bracket-card {
+  display: grid;
+  gap: 8px;
+  min-height: 168px;
+  padding: 12px;
+  border: 1px solid rgba(23, 33, 31, 0.12);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 253, 248, 0.75)),
+    radial-gradient(circle at 100% 0%, rgba(45, 95, 154, 0.09), transparent 9rem);
+}
+
+.bracket-card.complete {
+  border-color: rgba(13, 107, 87, 0.32);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(240, 249, 244, 0.8)),
+    radial-gradient(circle at 100% 0%, rgba(13, 107, 87, 0.14), transparent 9rem);
+}
+
+.bracket-meta,
+.bracket-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bracket-meta span {
+  min-height: 24px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: white;
+  background: var(--blue);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bracket-card.complete .bracket-meta span {
+  background: var(--green);
+}
+
+.bracket-meta strong,
+.bracket-footer {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.bracket-team {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 26px;
+  gap: 8px;
+  align-items: center;
+  min-height: 42px;
+  padding: 7px;
+  border: 1px solid rgba(23, 33, 31, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.bracket-team.winner {
+  border-color: rgba(13, 107, 87, 0.4);
+  background: rgba(13, 107, 87, 0.1);
+}
+
+.bracket-flag {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: white;
+}
+
+.bracket-team strong,
+.bracket-team em {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bracket-team em {
+  color: var(--green);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.bracket-team b {
+  font-size: 1.2rem;
+  text-align: right;
+}
+
+.bracket-footer {
+  align-items: end;
+  min-height: 32px;
+}
+
+.bracket-footer span,
+.bracket-footer strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bracket-footer span {
+  white-space: nowrap;
+}
+
+.bracket-footer strong {
+  color: var(--green);
+  text-align: right;
+}
+
 .match-ticker,
 .game-list {
   display: grid;
@@ -1714,6 +1843,7 @@ input[type="number"] {
   .hero-panel,
   .hero-match-board,
   .auction-room,
+  .bracket-board,
   .match-ticker,
   .game-list,
   .dashboard-grid,
@@ -1769,6 +1899,7 @@ input[type="number"] {
   .metric-grid,
   .auction-room,
   .auction-summary-stats,
+  .bracket-board,
   .match-ticker,
   .game-list,
   .current-team-card,

@@ -3,7 +3,7 @@ const STORAGE_KEY = "calcuttaStateDraft20260609Final12";
 const SCENARIO_KEY = "calcuttaScenarioCalculatorV1";
 const RESULTS_URL = "./data/results.json";
 const RESULTS_REFRESH_MS = 5 * 60 * 1000;
-const FALLBACK_RESULTS_VERSION = "2026-06-14-match-11";
+const FALLBACK_RESULTS_VERSION = "2026-06-29-match-75";
 const ESTIMATED_DRAW_TEAM_RESULTS = 36;
 
 const players = [
@@ -271,6 +271,7 @@ let completedMatchScores = [...fallbackCompletedMatchScores];
 let scoreByMatch = Object.fromEntries(completedMatchScores.map((score) => [score.matchNumber, score]));
 let activeResultsVersion = FALLBACK_RESULTS_VERSION;
 let activeResultsSource = "fallback";
+let liveEventMatches = [];
 
 const teamCardRanks = [
   "A", "A", "K", "K", "Q", "Q", "J", "J", "10", "10", "9", "9",
@@ -347,51 +348,204 @@ function normalizeCompletedScores(scores = []) {
       homeGoals: Number(score.homeGoals),
       awayGoals: Number(score.awayGoals),
       status: score.status || "FT",
+      winnerId: score.winnerId || "",
     }))
     .filter((score) => Number.isFinite(score.homeGoals) && Number.isFinite(score.awayGoals))
     .sort((a, b) => a.matchNumber - b.matchNumber);
 }
 
-function setCompletedScores(scores, version = FALLBACK_RESULTS_VERSION, source = "manual") {
+function normalizeEventMatches(events = []) {
+  return events
+    .filter((event) => Number.isFinite(Number(event.matchNumber)) && event.homeId && event.awayId)
+    .map((event) => ({
+      espnId: event.espnId || "",
+      matchNumber: Number(event.matchNumber),
+      date: event.date,
+      time: event.time || "TBD",
+      group: event.group || "",
+      stage: event.stage || (event.group ? "group" : "r32"),
+      homeId: event.homeId,
+      awayId: event.awayId,
+      venue: event.venue || "",
+      status: event.status || "Scheduled",
+      completed: Boolean(event.completed),
+      homeGoals: Number(event.homeGoals || 0),
+      awayGoals: Number(event.awayGoals || 0),
+      winnerId: event.winnerId || "",
+    }))
+    .sort((a, b) => {
+      const dateA = new Date(`${a.date}T${a.time.replace(" ET", "") || "00:00"}:00-04:00`).getTime();
+      const dateB = new Date(`${b.date}T${b.time.replace(" ET", "") || "00:00"}:00-04:00`).getTime();
+      return dateA - dateB || a.matchNumber - b.matchNumber;
+    });
+}
+
+function setCompletedScores(scores, version = FALLBACK_RESULTS_VERSION, source = "manual", events = []) {
   completedMatchScores = normalizeCompletedScores(scores);
   scoreByMatch = Object.fromEntries(completedMatchScores.map((score) => [score.matchNumber, score]));
+  liveEventMatches = normalizeEventMatches(events);
   activeResultsVersion = version;
   activeResultsSource = source;
+}
+
+function tournamentMatches() {
+  if (!liveEventMatches.length) return groupMatches;
+  const byNumber = new Map(groupMatches.map((match) => [match.matchNumber, { ...match, stage: "group" }]));
+  for (const event of liveEventMatches) {
+    byNumber.set(event.matchNumber, {
+      ...event,
+      group: event.group || "",
+    });
+  }
+  return [...byNumber.values()].sort((a, b) => {
+    const dateA = new Date(`${a.date}T${String(a.time || "00:00 ET").replace(" ET", "")}:00-04:00`).getTime();
+    const dateB = new Date(`${b.date}T${String(b.time || "00:00 ET").replace(" ET", "")}:00-04:00`).getTime();
+    return dateA - dateB || a.matchNumber - b.matchNumber;
+  });
+}
+
+function matchByNumber(matchNumber) {
+  return tournamentMatches().find((match) => match.matchNumber === Number(matchNumber));
 }
 
 function blankTeamResult() {
   return { stage: "group", groupFinish: "", wins: 0, draws: 0, gf: 0, ga: 0, biggestUpset: 0 };
 }
 
+function scoreWinnerId(match, score) {
+  if (score.winnerId) return score.winnerId;
+  if (score.homeGoals > score.awayGoals) return match.homeId;
+  if (score.awayGoals > score.homeGoals) return match.awayId;
+  return "";
+}
+
+function applyGoalsAndUpset(results, match, score) {
+  const home = teamById(match.homeId);
+  const away = teamById(match.awayId);
+  if (!home || !away) return;
+
+  const homeResult = results[match.homeId];
+  const awayResult = results[match.awayId];
+  homeResult.gf += score.homeGoals;
+  homeResult.ga += score.awayGoals;
+  awayResult.gf += score.awayGoals;
+  awayResult.ga += score.homeGoals;
+
+  const winnerId = scoreWinnerId(match, score);
+  if (!winnerId) return;
+
+  const winner = winnerId === home.id ? home : away;
+  const loser = winner.id === home.id ? away : home;
+  if (winner.rank > loser.rank) {
+    results[winner.id].biggestUpset = Math.max(results[winner.id].biggestUpset, winner.rank - loser.rank);
+  }
+}
+
+function completedGroupScores() {
+  return groupMatches
+    .map((match) => ({ match, score: scoreByMatch[match.matchNumber] }))
+    .filter(({ score }) => score);
+}
+
+function groupStandings() {
+  const standings = {};
+  for (const match of groupMatches) {
+    standings[match.group] ||= {};
+    standings[match.group][match.homeId] ||= { teamId: match.homeId, points: 0, gf: 0, ga: 0, played: 0 };
+    standings[match.group][match.awayId] ||= { teamId: match.awayId, points: 0, gf: 0, ga: 0, played: 0 };
+  }
+
+  for (const { match, score } of completedGroupScores()) {
+    const home = standings[match.group][match.homeId];
+    const away = standings[match.group][match.awayId];
+    home.played += 1;
+    away.played += 1;
+    home.gf += score.homeGoals;
+    home.ga += score.awayGoals;
+    away.gf += score.awayGoals;
+    away.ga += score.homeGoals;
+
+    if (score.homeGoals === score.awayGoals) {
+      home.points += 1;
+      away.points += 1;
+    } else if (score.homeGoals > score.awayGoals) {
+      home.points += 3;
+    } else {
+      away.points += 3;
+    }
+  }
+
+  return Object.fromEntries(Object.entries(standings).map(([group, rows]) => [
+    group,
+    Object.values(rows).sort((a, b) => {
+      const teamA = teamById(a.teamId);
+      const teamB = teamById(b.teamId);
+      return b.points - a.points
+        || ((b.gf - b.ga) - (a.gf - a.ga))
+        || (b.gf - a.gf)
+        || ((teamA?.rank || 999) - (teamB?.rank || 999));
+    }),
+  ]));
+}
+
 function buildOfficialResults() {
   const results = Object.fromEntries(teams.map((team) => [team.id, blankTeamResult()]));
 
-  for (const score of completedMatchScores) {
-    const match = groupMatches.find((candidate) => candidate.matchNumber === score.matchNumber);
-    if (!match) continue;
+  for (const { match, score } of completedGroupScores()) {
+    applyGoalsAndUpset(results, match, score);
 
-    const home = teams.find((team) => team.id === match.homeId);
-    const away = teams.find((team) => team.id === match.awayId);
     const homeResult = results[match.homeId];
     const awayResult = results[match.awayId];
-    homeResult.gf += score.homeGoals;
-    homeResult.ga += score.awayGoals;
-    awayResult.gf += score.awayGoals;
-    awayResult.ga += score.homeGoals;
 
     if (score.homeGoals === score.awayGoals) {
       homeResult.draws += 1;
       awayResult.draws += 1;
-      continue;
+    } else if (score.homeGoals > score.awayGoals) {
+      homeResult.wins += 1;
+    } else {
+      awayResult.wins += 1;
     }
+  }
 
-    const winner = score.homeGoals > score.awayGoals ? home : away;
-    const loser = winner.id === home.id ? away : home;
-    const winnerResult = results[winner.id];
-    winnerResult.wins += 1;
-    if (winner.rank > loser.rank) {
-      winnerResult.biggestUpset = Math.max(winnerResult.biggestUpset, winner.rank - loser.rank);
-    }
+  const standings = groupStandings();
+  const thirdPlaceRows = [];
+  for (const rows of Object.values(standings)) {
+    rows.forEach((row, index) => {
+      if (index === 0) {
+        results[row.teamId].groupFinish = "winner";
+        results[row.teamId].stage = "r32";
+      }
+      if (index === 1) {
+        results[row.teamId].groupFinish = "runnerUp";
+        results[row.teamId].stage = "r32";
+      }
+      if (index === 2) thirdPlaceRows.push(row);
+    });
+  }
+
+  thirdPlaceRows
+    .sort((a, b) => {
+      const teamA = teamById(a.teamId);
+      const teamB = teamById(b.teamId);
+      return b.points - a.points
+        || ((b.gf - b.ga) - (a.gf - a.ga))
+        || (b.gf - a.gf)
+        || ((teamA?.rank || 999) - (teamB?.rank || 999));
+    })
+    .slice(0, 8)
+    .forEach((row) => {
+      results[row.teamId].groupFinish = "third";
+      results[row.teamId].stage = "r32";
+    });
+
+  for (const score of completedMatchScores) {
+    const match = matchByNumber(score.matchNumber);
+    if (!match) continue;
+    if ((match.stage || "group") === "group") continue;
+
+    applyGoalsAndUpset(results, match, score);
+    const winnerId = scoreWinnerId(match, score);
+    if (winnerId && match.stage === "r32") results[winnerId].stage = "r16";
   }
 
   return results;
@@ -447,10 +601,10 @@ function saveState() {
 
 function applyResultsPayload(payload) {
   if (!payload || !Array.isArray(payload.matches)) return false;
-  const nextVersion = payload.version || payload.updatedAt || FALLBACK_RESULTS_VERSION;
+  const nextVersion = payload.updatedAt || payload.version || FALLBACK_RESULTS_VERSION;
   if (nextVersion === activeResultsVersion && state.resultsVersion === activeResultsVersion) return false;
 
-  setCompletedScores(payload.matches, nextVersion, payload.source || "data/results.json");
+  setCompletedScores(payload.matches, nextVersion, payload.source || "data/results.json", payload.events || []);
   state.results = buildOfficialResults();
   state.resultsVersion = activeResultsVersion;
   saveState();
@@ -653,7 +807,7 @@ function calculatePayouts() {
   const pot = teams.reduce((sum, team) => sum + Number(state.auction[team.id]?.price || 0), 0);
   const teamPayouts = Object.fromEntries(teams.map((team) => [team.id, 0]));
   const teamPayoutDetails = Object.fromEntries(teams.map((team) => [team.id, []]));
-  const groupStageComplete = completedMatchScores.length >= 72;
+  const groupStageComplete = groupMatches.every((match) => Boolean(scoreByMatch[match.matchNumber]));
 
   for (const rule of payoutRules) {
     const rulePot = pot * (rule.pct / 100);
@@ -1048,6 +1202,25 @@ function matchScore(match) {
   return scoreByMatch[match.matchNumber] || null;
 }
 
+function matchStageLabel(match) {
+  if ((match.stage || "group") === "group") return `Group ${match.group}`;
+  if (match.stage === "r32") return "Round of 32";
+  if (match.stage === "r16") return "Round of 16";
+  if (match.stage === "qf") return "Quarterfinal";
+  if (match.stage === "sf") return "Semifinal";
+  if (match.stage === "final") return "Final";
+  return match.stage || "Match";
+}
+
+function scoreDisplayLabel(match, score) {
+  if (!score) return "";
+  if (score.status === "FT-Pens" && score.winnerId) {
+    const winner = teamById(score.winnerId);
+    return `Pens: ${winner?.name || "winner"}`;
+  }
+  return "Final";
+}
+
 function gameCard(match, compact = false) {
   const home = teamById(match.homeId);
   const away = teamById(match.awayId);
@@ -1058,12 +1231,12 @@ function gameCard(match, compact = false) {
       <div class="game-meta">
         <span class="game-status ${status.toLowerCase()}">${status}</span>
         <strong>Match ${match.matchNumber}</strong>
-        <span>Group ${match.group} · ${match.date} · ${displayMatchTime(match)}</span>
+        <span>${matchStageLabel(match)} · ${match.date} · ${displayMatchTime(match)}</span>
       </div>
       ${score ? `
         <div class="game-score" aria-label="Final score">
           <span>${score.homeGoals}</span>
-          <strong>Final</strong>
+          <strong>${scoreDisplayLabel(match, score)}</strong>
           <span>${score.awayGoals}</span>
         </div>
       ` : ""}
@@ -1099,7 +1272,7 @@ function compactHeroGameCard(match) {
     <article class="hero-game-card ${score ? "is-final" : ""}">
       <div class="hero-game-meta">
         <span>${statusLabel}</span>
-        <strong>Group ${match.group}</strong>
+        <strong>${matchStageLabel(match)}</strong>
         <em>${match.date} · ${displayMatchTime(match)}</em>
       </div>
       <div class="hero-game-row">
@@ -1120,6 +1293,7 @@ function compactHeroGameCard(match) {
 
 function renderGames() {
   document.getElementById("gameList").innerHTML = groupMatches
+    .concat(tournamentMatches().filter((match) => (match.stage || "group") !== "group"))
     .map((match) => gameCard(match))
     .join("");
 }
@@ -1131,10 +1305,11 @@ function renderHeroMatchBoard() {
 
   const todayKey = localDateKey();
   const recentFinals = groupMatches
+    .concat(tournamentMatches().filter((match) => (match.stage || "group") !== "group"))
     .filter((match) => matchScore(match))
     .sort((a, b) => b.matchNumber - a.matchNumber)
     .slice(0, 3);
-  const todayAndNext = groupMatches
+  const todayAndNext = tournamentMatches()
     .filter((match) => !matchScore(match) && match.date >= todayKey)
     .slice(0, Math.max(1, 4 - recentFinals.length));
   const featuredMatches = [...recentFinals, ...todayAndNext].slice(0, 4);
@@ -1147,12 +1322,57 @@ function renderHeroMatchBoard() {
 
 function renderMatchTicker() {
   const todayKey = localDateKey();
-  const nextMatches = groupMatches
+  const nextMatches = tournamentMatches()
     .filter((match) => !matchScore(match) && match.date >= todayKey)
     .slice(0, 4);
   document.getElementById("matchTicker").innerHTML = nextMatches.length
     ? nextMatches.map((match) => gameCard(match, true)).join("")
     : `<div class="empty-note">Group-stage schedule complete.</div>`;
+}
+
+function bracketTeamRow(team, match, score, side) {
+  const isWinner = score?.winnerId === team.id
+    || (score && !score.winnerId && ((side === "home" && score.homeGoals > score.awayGoals) || (side === "away" && score.awayGoals > score.homeGoals)));
+  const goals = side === "home" ? score?.homeGoals : score?.awayGoals;
+  return `
+    <div class="bracket-team ${isWinner ? "winner" : ""}">
+      <span class="bracket-flag">${team.flag}</span>
+      <div>
+        <strong>${team.name}</strong>
+        <em>${teamOwner(team.id)}</em>
+      </div>
+      <b>${score ? goals : ""}</b>
+    </div>
+  `;
+}
+
+function renderBracket() {
+  const board = document.getElementById("bracketBoard");
+  if (!board) return;
+  const matches = tournamentMatches().filter((match) => match.stage === "r32");
+  board.innerHTML = matches.length
+    ? matches.map((match) => {
+      const home = teamById(match.homeId);
+      const away = teamById(match.awayId);
+      const score = matchScore(match);
+      const winner = score?.winnerId ? teamById(score.winnerId) : null;
+      const status = score ? scoreDisplayLabel(match, score) : `${match.date} · ${displayMatchTime(match)}`;
+      return `
+        <article class="bracket-card ${score ? "complete" : ""}">
+          <div class="bracket-meta">
+            <span>${status}</span>
+            <strong>Match ${match.matchNumber}</strong>
+          </div>
+          ${bracketTeamRow(home, match, score, "home")}
+          ${bracketTeamRow(away, match, score, "away")}
+          <div class="bracket-footer">
+            <span>${match.venue}</span>
+            ${winner ? `<strong>${winner.flag} ${winner.name} advances</strong>` : `<strong>Winner to Round of 16</strong>`}
+          </div>
+        </article>
+      `;
+    }).join("")
+    : `<div class="empty-note">Round of 32 fixtures will appear here when the score feed publishes them.</div>`;
 }
 
 function getOwnerSpend() {
@@ -1536,6 +1756,7 @@ function exampleUnitPayout(rule, rulePool) {
 function render() {
   renderHeroMatchBoard();
   renderMatchTicker();
+  renderBracket();
   renderAuctionSummary();
   renderAuction();
   renderResults();
