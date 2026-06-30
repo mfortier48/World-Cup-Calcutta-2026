@@ -975,11 +975,24 @@ function currentRuleUnitAmount(rule, pot = actualPot()) {
   return winners.length ? rulePot / winners.length : 0;
 }
 
+function isSidePotKey(key) {
+  return sidePotOptions.some((option) => option.key === key);
+}
+
+function sumPayoutDetails(details = []) {
+  return details.reduce((sum, detail) => sum + Number(detail.amount || 0), 0);
+}
+
+function payoutDetailText(details = [], emptyText = "$0") {
+  if (!details.length) return emptyText;
+  return details.map((detail) => `${detail.note || detail.label}: ${currency(detail.amount)}`).join(" | ");
+}
+
 function scenarioTeamCost(teamId) {
   return Number(state.auction[teamId]?.price || 0);
 }
 
-function scenarioStagePayout(stage, pot) {
+function scenarioStagePayoutDetails(stage, pot) {
   const stageUnits = {
     r16: 16,
     qf: 8,
@@ -987,10 +1000,24 @@ function scenarioStagePayout(stage, pot) {
     final: 2,
     champion: 1,
   };
-  return ["r16", "qf", "sf", "final", "champion"].reduce((sum, stageKey) => {
-    if (stageRank(stage) < stageRank(stageKey)) return sum;
-    return sum + (rulePool(stageKey, pot) / stageUnits[stageKey]);
-  }, 0);
+  return ["r16", "qf", "sf", "final", "champion"].reduce((details, stageKey) => {
+    if (stageRank(stage) < stageRank(stageKey)) return details;
+    const rule = payoutRuleByKey(stageKey);
+    const amount = rulePool(stageKey, pot) / stageUnits[stageKey];
+    if (amount > 0) {
+      details.push({
+        key: stageKey,
+        label: rule?.label || stageKey,
+        amount,
+        note: rule?.label || stageKey,
+      });
+    }
+    return details;
+  }, []);
+}
+
+function scenarioStagePayout(stage, pot) {
+  return sumPayoutDetails(scenarioStagePayoutDetails(stage, pot));
 }
 
 function scenarioGroupFinishPayout(finish, pot) {
@@ -1007,18 +1034,75 @@ function scenarioGroupFinishPayout(finish, pot) {
   return finish && finishUnits[finish] ? rulePool(ruleKeys[finish], pot) / finishUnits[finish] : 0;
 }
 
-function scenarioPayoutBreakdown(entry) {
+function scenarioGroupFinishDetail(finish, pot) {
+  const amount = scenarioGroupFinishPayout(finish, pot);
+  if (!amount) return null;
+  const ruleKeys = {
+    winner: "r32Winner",
+    runnerUp: "r32RunnerUp",
+    third: "r32Third",
+  };
+  const rule = payoutRuleByKey(ruleKeys[finish]);
+  return {
+    key: rule?.key || "groupFinish",
+    label: rule?.label || "Group advancement",
+    amount,
+    note: groupFinishes.find((item) => item.value === finish)?.label || "Group advancement",
+  };
+}
+
+function actualTeamPayoutBreakdown(teamId, payoutData = calculatePayouts()) {
+  const details = payoutData.teamPayoutDetails[teamId] || [];
+  const resultDetails = details.filter((detail) => !isSidePotKey(detail.key));
+  const funPotDetails = details.filter((detail) => isSidePotKey(detail.key));
+  const resultsPayout = sumPayoutDetails(resultDetails);
+  const funPots = sumPayoutDetails(funPotDetails);
+  const cost = scenarioTeamCost(teamId);
+
+  return {
+    pot: payoutData.pot,
+    resultDetails,
+    funPotDetails,
+    resultsPayout,
+    funPots,
+    sidePots: funPots,
+    gross: resultsPayout + funPots,
+    cost,
+    net: resultsPayout + funPots - cost,
+  };
+}
+
+function scenarioPayoutBreakdown(entry, payoutData = calculatePayouts()) {
   const pot = actualPot();
   const winCount = entry.groupResults.filter((result) => result === "win").length;
   const drawCount = entry.groupResults.filter((result) => result === "draw").length;
   const groupWins = winCount * (rulePool("wins", pot) / 72);
   const groupDraws = drawCount * (rulePool("draws", pot) / ESTIMATED_DRAW_TEAM_RESULTS);
-  const groupFinish = scenarioGroupFinishPayout(entry.groupFinish, pot);
-  const advancement = scenarioStagePayout(entry.stage, pot);
-  const sidePots = sidePotOptions.reduce((sum, option) => (
-    entry.sidePots?.[option.key] ? sum + rulePool(option.key, pot) : sum
-  ), 0);
-  const gross = groupWins + groupDraws + groupFinish + advancement + sidePots;
+  const groupFinishDetail = scenarioGroupFinishDetail(entry.groupFinish, pot);
+  const stageDetails = scenarioStagePayoutDetails(entry.stage, pot);
+  const resultDetails = [
+    groupWins > 0 ? {
+      key: "wins",
+      label: "Group-stage wins",
+      amount: groupWins,
+      note: `${winCount} group-stage win${winCount === 1 ? "" : "s"}`,
+    } : null,
+    groupDraws > 0 ? {
+      key: "draws",
+      label: "Group-stage draws",
+      amount: groupDraws,
+      note: `${drawCount} group-stage draw${drawCount === 1 ? "" : "s"}`,
+    } : null,
+    groupFinishDetail,
+    ...stageDetails,
+  ].filter(Boolean);
+  const funPotDetails = (payoutData.teamPayoutDetails[entry.teamId] || [])
+    .filter((detail) => isSidePotKey(detail.key));
+  const groupFinish = groupFinishDetail?.amount || 0;
+  const advancement = sumPayoutDetails(stageDetails);
+  const resultsPayout = sumPayoutDetails(resultDetails);
+  const funPots = sumPayoutDetails(funPotDetails);
+  const gross = resultsPayout + funPots;
   const cost = scenarioTeamCost(entry.teamId);
 
   return {
@@ -1029,7 +1113,11 @@ function scenarioPayoutBreakdown(entry) {
     groupDraws,
     groupFinish,
     advancement,
-    sidePots,
+    sidePots: funPots,
+    funPots,
+    resultsPayout,
+    resultDetails,
+    funPotDetails,
     gross,
     cost,
     net: gross - cost,
@@ -1048,12 +1136,23 @@ function scenarioEntrySummary(entry) {
     team: team ? teamLabel(team) : entry.teamId,
     owner: team ? teamOwner(team.id) : "Unassigned",
     originalCost: Math.round(breakdown.cost),
+    resultsAndAdvancement: Math.round(breakdown.resultsPayout),
+    currentFunPots: Math.round(breakdown.funPots),
     grossPayout: Math.round(breakdown.gross),
     net: Math.round(breakdown.net),
     groupResults: entry.groupResults,
     groupFinish: groupFinishes.find((finish) => finish.value === entry.groupFinish)?.label || "Not advanced",
     stage: stages.find((stage) => stage.value === entry.stage)?.label || "Group Stage",
-    sidePots: sidePotOptions.filter((option) => entry.sidePots?.[option.key]).map((option) => option.label),
+    resultDetails: breakdown.resultDetails.map((detail) => ({
+      label: detail.label,
+      note: detail.note,
+      amount: Math.round(detail.amount),
+    })),
+    funPotDetails: breakdown.funPotDetails.map((detail) => ({
+      label: detail.label,
+      note: detail.note,
+      amount: Math.round(detail.amount),
+    })),
   };
 }
 
@@ -1083,7 +1182,7 @@ function ownerTeamsForScenario(owner) {
     .sort((a, b) => Number(state.auction[b.id]?.price || 0) - Number(state.auction[a.id]?.price || 0));
   return {
     live: owned.filter((team) => !isTeamEliminated(team.id) && stageRank(state.results[team.id]?.stage || "group") < stageRank("champion")),
-    eliminated: owned.filter((team) => isTeamEliminated(team.id)),
+    eliminated: owned.filter((team) => isTeamEliminated(team.id) || stageRank(state.results[team.id]?.stage || "group") >= stageRank("champion")),
   };
 }
 
@@ -1153,6 +1252,70 @@ function syncScenarioEntriesFromBuilder() {
     .map((teamId) => scenarioEntryFromProjection(teamId, scenarioBuilderState.projections[teamId]));
   scenarioState = { entries };
   saveScenarioState();
+}
+
+function scenarioPortfolioRows(payoutData = calculatePayouts()) {
+  if (!scenarioBuilderState.owner) return [];
+  const ownerTeams = ownerTeamsForScenario(scenarioBuilderState.owner);
+  const fixedRows = ownerTeams.eliminated.map((team) => {
+    const breakdown = actualTeamPayoutBreakdown(team.id, payoutData);
+    const result = state.results[team.id] || blankTeamResult();
+    const stageLabel = stages.find((stage) => stage.value === result.stage)?.label || "Final result";
+    return {
+      type: "fixed",
+      team,
+      stageLabel,
+      breakdown,
+      pending: false,
+    };
+  });
+
+  const projectedRows = scenarioBuilderState.selectedTeamIds.map((teamId) => {
+    const team = teamById(teamId);
+    const stage = scenarioBuilderState.projections[teamId];
+    if (!team) return null;
+    if (!stage) {
+      return {
+        type: "projected",
+        team,
+        stageLabel: "Waiting for projected finish",
+        breakdown: null,
+        pending: true,
+      };
+    }
+    const entry = scenarioEntryFromProjection(teamId, stage);
+    const breakdown = scenarioPayoutBreakdown(entry, payoutData);
+    return {
+      type: "projected",
+      team,
+      stageLabel: stages.find((item) => item.value === stage)?.label || stage,
+      breakdown,
+      pending: false,
+    };
+  }).filter(Boolean);
+
+  return [...fixedRows, ...projectedRows];
+}
+
+function scenarioPortfolioTotals(rows = []) {
+  return rows.reduce((sum, row) => {
+    if (row.pending || !row.breakdown) return sum;
+    return {
+      gross: sum.gross + row.breakdown.gross,
+      cost: sum.cost + row.breakdown.cost,
+      net: sum.net + row.breakdown.net,
+      resultsPayout: sum.resultsPayout + row.breakdown.resultsPayout,
+      funPots: sum.funPots + row.breakdown.funPots,
+    };
+  }, { gross: 0, cost: 0, net: 0, resultsPayout: 0, funPots: 0 });
+}
+
+function scenarioRowTitle(row) {
+  if (row.pending || !row.breakdown) return "Pick a projected finish to calculate this team.";
+  return [
+    `Results and advancement: ${payoutDetailText(row.breakdown.resultDetails)}`,
+    `Fun pots: ${payoutDetailText(row.breakdown.funPotDetails)}`,
+  ].join(" | ");
 }
 
 function resetScenarioBuilder() {
@@ -2029,6 +2192,7 @@ function renderScenarioCalculator() {
   const ownerTeams = scenarioBuilderState.owner
     ? ownerTeamsForScenario(scenarioBuilderState.owner)
     : { live: [], eliminated: [] };
+  const payoutData = calculatePayouts();
 
   if (scenarioBuilderState.owner) {
     const liveIds = new Set(ownerTeams.live.map((team) => team.id));
@@ -2041,6 +2205,7 @@ function renderScenarioCalculator() {
   const currentStep = scenarioBuilderStep();
   const selectedTeams = scenarioBuilderState.selectedTeamIds.map(teamById).filter(Boolean);
   syncScenarioEntriesFromBuilder();
+  const portfolioRows = scenarioPortfolioRows(payoutData);
 
   builder.innerHTML = `
     <article class="scenario-step ${scenarioStepClass("owner", currentStep)}">
@@ -2082,7 +2247,20 @@ function renderScenarioCalculator() {
           </div>
         ` : `<div class="empty-note">No unresolved teams left for ${scenarioBuilderState.owner}.</div>`}
         ${ownerTeams.eliminated.length ? `
-          <p class="builder-note">Already decided and hidden: ${ownerTeams.eliminated.map((team) => `${team.flag} ${team.name}`).join(", ")}.</p>
+          <div class="fixed-result-strip">
+            <p class="builder-note">Already decided, included in totals:</p>
+            <div class="fixed-team-chips">
+              ${ownerTeams.eliminated.map((team) => {
+                const breakdown = actualTeamPayoutBreakdown(team.id, payoutData);
+                return `
+                  <span title="${attrText(scenarioRowTitle({ team, breakdown, pending: false }))}">
+                    ${team.flag} ${team.name}
+                    <strong>${currency(breakdown.gross)}</strong>
+                  </span>
+                `;
+              }).join("")}
+            </div>
+          </div>
         ` : ""}
       ` : `<div class="empty-note">Owner choices are above.</div>`}
     </article>
@@ -2123,29 +2301,31 @@ function renderScenarioCalculator() {
     </article>
   `;
 
-  summary.innerHTML = scenarioBuilderState.selectedTeamIds.length
-    ? scenarioBuilderState.selectedTeamIds.map((teamId) => {
-      const team = teamById(teamId);
-      const stage = scenarioBuilderState.projections[teamId];
-      if (!team) return "";
-      if (!stage) {
+  summary.innerHTML = portfolioRows.length
+    ? portfolioRows.map((row) => {
+      const { team, breakdown } = row;
+      if (row.pending || !breakdown) {
         return `
           <article class="scenario-summary-row pending">
             <span>${team.flag}</span>
-            <div><strong>${teamLabel(team)}</strong><em>Waiting for projected finish</em></div>
+            <div><strong>${teamLabel(team)}</strong><em>${row.stageLabel}</em></div>
             <b>Pending</b>
           </article>
         `;
       }
-      const entry = scenarioEntryFromProjection(teamId, stage);
-      const breakdown = scenarioPayoutBreakdown(entry);
-      const stageLabel = stages.find((item) => item.value === stage)?.label || stage;
+      const rowLabel = row.type === "fixed"
+        ? `${row.stageLabel} fixed · ${teamOwner(team.id)} paid ${currency(breakdown.cost)}`
+        : `${row.stageLabel} scenario · ${teamOwner(team.id)} paid ${currency(breakdown.cost)}`;
       return `
-        <article class="scenario-summary-row">
+        <article class="scenario-summary-row ${row.type}" title="${attrText(scenarioRowTitle(row))}">
           <span>${team.flag}</span>
           <div>
             <strong>${teamLabel(team)}</strong>
-            <em>${stageLabel} · ${teamOwner(team.id)} paid ${currency(breakdown.cost)}</em>
+            <em>${rowLabel}</em>
+            <span class="scenario-payout-split">
+              <span>Results ${currency(breakdown.resultsPayout)}</span>
+              <span>Fun pots ${currency(breakdown.funPots)}</span>
+            </span>
           </div>
           <b class="${breakdown.net >= 0 ? "net-positive" : "net-negative"}">${currency(breakdown.gross)} <small>${currency(breakdown.net)} net</small></b>
         </article>
@@ -2154,16 +2334,9 @@ function renderScenarioCalculator() {
     : `<div class="empty-note">Your scenario will appear here after you choose teams.</div>`;
 
   const downloadButton = document.getElementById("downloadScenarioButton");
-  if (downloadButton) downloadButton.disabled = scenarioState.entries.length === 0;
+  if (downloadButton) downloadButton.disabled = portfolioRows.every((row) => row.pending || !row.breakdown);
 
-  const totals = scenarioState.entries.reduce((sum, entry) => {
-    const breakdown = scenarioPayoutBreakdown(entry);
-    return {
-      gross: sum.gross + breakdown.gross,
-      cost: sum.cost + breakdown.cost,
-      net: sum.net + breakdown.net,
-    };
-  }, { gross: 0, cost: 0, net: 0 });
+  const totals = scenarioPortfolioTotals(portfolioRows);
 
   document.getElementById("scenarioGrossTotal").textContent = currency(totals.gross);
   document.getElementById("scenarioCostTotal").textContent = currency(totals.cost);
@@ -2343,29 +2516,59 @@ function setScenarioStatus(message) {
 }
 
 function downloadScenario() {
-  const totals = scenarioState.entries.reduce((sum, entry) => {
-    const breakdown = scenarioPayoutBreakdown(entry);
-    return {
-      gross: sum.gross + breakdown.gross,
-      cost: sum.cost + breakdown.cost,
-      net: sum.net + breakdown.net,
-    };
-  }, { gross: 0, cost: 0, net: 0 });
+  const payoutData = calculatePayouts();
+  const rows = scenarioPortfolioRows(payoutData);
+  const totals = scenarioPortfolioTotals(rows);
 
   const payload = {
     exportedAt: new Date().toISOString(),
     app: "World Cup Calcutta 2026",
     type: "payout-scenario",
+    owner: scenarioBuilderState.owner || "",
     pot: Math.round(actualPot()),
     totals: {
       grossPayout: Math.round(totals.gross),
       originalCost: Math.round(totals.cost),
+      resultsAndAdvancement: Math.round(totals.resultsPayout),
+      currentFunPots: Math.round(totals.funPots),
       net: Math.round(totals.net),
     },
-    entries: scenarioState.entries.map(scenarioEntrySummary),
+    entries: rows.map((row) => {
+      const team = row.team;
+      if (row.pending || !row.breakdown) {
+        return {
+          team: teamLabel(team),
+          owner: teamOwner(team.id),
+          type: row.type,
+          status: row.stageLabel,
+          pending: true,
+        };
+      }
+      return {
+        team: teamLabel(team),
+        owner: teamOwner(team.id),
+        type: row.type,
+        status: row.stageLabel,
+        originalCost: Math.round(row.breakdown.cost),
+        resultsAndAdvancement: Math.round(row.breakdown.resultsPayout),
+        currentFunPots: Math.round(row.breakdown.funPots),
+        grossPayout: Math.round(row.breakdown.gross),
+        net: Math.round(row.breakdown.net),
+        resultDetails: row.breakdown.resultDetails.map((detail) => ({
+          label: detail.label,
+          note: detail.note,
+          amount: Math.round(detail.amount),
+        })),
+        funPotDetails: row.breakdown.funPotDetails.map((detail) => ({
+          label: detail.label,
+          note: detail.note,
+          amount: Math.round(detail.amount),
+        })),
+      };
+    }),
     notes: [
       "Draw payouts are estimated until the tournament's final team-draw count is known.",
-      "Side pots assume a single winner; tied side pots split the pool.",
+      "Fun pots use the current leaders and can still change as later matches add goals and margins.",
       "Advancement payouts stack after the group stage.",
     ],
   };

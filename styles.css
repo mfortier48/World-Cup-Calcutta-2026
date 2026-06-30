@@ -2503,6 +2503,34 @@ input[type="number"] {
   color: var(--green);
 }
 
+.fixed-result-strip {
+  display: grid;
+  gap: 8px;
+}
+
+.fixed-team-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fixed-team-chips span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid rgba(13, 107, 87, 0.16);
+  border-radius: 999px;
+  background: rgba(13, 107, 87, 0.07);
+  color: var(--ink);
+  font-weight: 850;
+}
+
+.fixed-team-chips strong {
+  color: var(--green);
+}
+
 .scenario-builder-summary-panel {
   display: grid;
   gap: 14px;
@@ -2523,6 +2551,11 @@ input[type="number"] {
   border: 1px solid rgba(23, 33, 31, 0.1);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.74);
+}
+
+.scenario-summary-row.fixed {
+  border-color: rgba(13, 107, 87, 0.18);
+  background: rgba(13, 107, 87, 0.06);
 }
 
 .scenario-summary-row > span {
@@ -2554,6 +2587,25 @@ input[type="number"] {
   font-size: 0.78rem;
   font-style: normal;
   font-weight: 800;
+}
+
+.scenario-payout-split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.scenario-payout-split span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: rgba(23, 33, 31, 0.06);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
 }
 
 .scenario-summary-row b {
