@@ -1,6 +1,6 @@
 {
   "version": "2026-06-30-match-77",
-  "updatedAt": "2026-06-30T21:55:21.254Z",
+  "updatedAt": "2026-06-30T23:12:35.908Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -1766,9 +1766,9 @@
       "homeId": "fra",
       "awayId": "swe",
       "venue": "MetLife Stadium",
-      "status": "HT",
-      "completed": false,
-      "homeGoals": 1,
+      "status": "FT",
+      "completed": true,
+      "homeGoals": 3,
       "awayGoals": 0,
       "winnerId": "fra"
     },
@@ -1949,8 +1949,24 @@
       "winnerId": ""
     },
     {
-      "espnId": "760504",
+      "espnId": "760503",
       "matchNumber": 90,
+      "date": "2026-07-04",
+      "time": "17:00 ET",
+      "stage": "r16",
+      "group": "",
+      "homeId": "par",
+      "awayId": "fra",
+      "venue": "Lincoln Financial Field",
+      "status": "Scheduled",
+      "completed": false,
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "winnerId": ""
+    },
+    {
+      "espnId": "760504",
+      "matchNumber": 91,
       "date": "2026-07-05",
       "time": "16:00 ET",
       "stage": "r16",
