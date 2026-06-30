@@ -1,6 +1,6 @@
 {
-  "version": "2026-06-30-match-75",
-  "updatedAt": "2026-06-30T03:11:43.428Z",
+  "version": "2026-06-30-match-76",
+  "updatedAt": "2026-06-30T04:02:17.027Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -507,6 +507,13 @@
       "awayGoals": 1,
       "status": "FT-Pens",
       "winnerId": "par"
+    },
+    {
+      "matchNumber": 76,
+      "homeGoals": 1,
+      "awayGoals": 1,
+      "status": "FT-Pens",
+      "winnerId": "mar"
     }
   ],
   "events": [
@@ -1720,11 +1727,11 @@
       "homeId": "ned",
       "awayId": "mar",
       "venue": "Estadio BBVA",
-      "status": "98'",
-      "completed": false,
+      "status": "FT-Pens",
+      "completed": true,
       "homeGoals": 1,
       "awayGoals": 1,
-      "winnerId": ""
+      "winnerId": "mar"
     },
     {
       "espnId": "760490",
@@ -1912,6 +1919,22 @@
       "homeId": "col",
       "awayId": "gha",
       "venue": "GEHA Field at Arrowhead Stadium",
+      "status": "Scheduled",
+      "completed": false,
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "winnerId": ""
+    },
+    {
+      "espnId": "760502",
+      "matchNumber": 89,
+      "date": "2026-07-04",
+      "time": "13:00 ET",
+      "stage": "r16",
+      "group": "",
+      "homeId": "can",
+      "awayId": "mar",
+      "venue": "NRG Stadium",
       "status": "Scheduled",
       "completed": false,
       "homeGoals": 0,

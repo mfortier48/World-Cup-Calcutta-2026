@@ -575,6 +575,7 @@ const defaultState = {
 
 let state = loadState();
 let scenarioState = loadScenarioState();
+let dashboardSortMode = "payout";
 
 function loadState() {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -1272,6 +1273,24 @@ function matchScore(match) {
   return scoreByMatch[match.matchNumber] || null;
 }
 
+function displayScore(match) {
+  const finalScore = matchScore(match);
+  if (finalScore) return { ...finalScore, isFinal: true };
+  const hasLiveScore = match
+    && match.status
+    && match.status !== "Scheduled"
+    && Number.isFinite(Number(match.homeGoals))
+    && Number.isFinite(Number(match.awayGoals));
+  if (!hasLiveScore) return null;
+  return {
+    homeGoals: Number(match.homeGoals),
+    awayGoals: Number(match.awayGoals),
+    status: match.status,
+    winnerId: match.winnerId || "",
+    isFinal: false,
+  };
+}
+
 function matchStageLabel(match) {
   if ((match.stage || "group") === "group") return `Group ${match.group}`;
   if (match.stage === "r32") return "Round of 32";
@@ -1336,22 +1355,22 @@ function compactHeroGameCard(match) {
   const home = teamById(match.homeId);
   const away = teamById(match.awayId);
   const status = gameStatus(match);
-  const score = matchScore(match);
-  const statusLabel = score ? "Final" : status;
+  const score = displayScore(match);
+  const statusLabel = score ? (score.isFinal ? "Final" : score.status) : status;
   return `
-    <article class="hero-game-card ${score ? "is-final" : ""}">
-      <div class="hero-game-meta">
+    <article class="home-game-card ${score ? "has-score" : ""}">
+      <div class="home-game-meta">
         <span>${statusLabel}</span>
         <strong>${matchStageLabel(match)}</strong>
         <em>${match.date} · ${displayMatchTime(match)}</em>
       </div>
-      <div class="hero-game-row">
+      <div class="home-game-row">
         <span>${home.flag}</span>
         <strong>${home.name}</strong>
         <em>${teamOwner(home.id)}</em>
         <b>${score ? score.homeGoals : ""}</b>
       </div>
-      <div class="hero-game-row">
+      <div class="home-game-row">
         <span>${away.flag}</span>
         <strong>${away.name}</strong>
         <em>${teamOwner(away.id)}</em>
@@ -1374,15 +1393,15 @@ function renderHeroMatchBoard() {
   if (!board || !sync) return;
 
   const todayKey = localDateKey();
-  const recentFinals = groupMatches
-    .concat(tournamentMatches().filter((match) => (match.stage || "group") !== "group"))
+  const allMatches = tournamentMatches();
+  const recentFinals = allMatches
     .filter((match) => matchScore(match))
     .sort((a, b) => b.matchNumber - a.matchNumber)
-    .slice(0, 3);
-  const todayAndNext = tournamentMatches()
+    .slice(0, 2);
+  const todayAndNext = allMatches
     .filter((match) => !matchScore(match) && match.date >= todayKey)
-    .slice(0, Math.max(1, 4 - recentFinals.length));
-  const featuredMatches = [...recentFinals, ...todayAndNext].slice(0, 4);
+    .slice(0, Math.max(2, 4 - recentFinals.length));
+  const featuredMatches = [...todayAndNext, ...recentFinals].slice(0, 4);
 
   board.innerHTML = featuredMatches.length
     ? featuredMatches.map((match) => compactHeroGameCard(match)).join("")
@@ -1391,11 +1410,13 @@ function renderHeroMatchBoard() {
 }
 
 function renderMatchTicker() {
+  const ticker = document.getElementById("matchTicker");
+  if (!ticker) return;
   const todayKey = localDateKey();
   const nextMatches = tournamentMatches()
     .filter((match) => !matchScore(match) && match.date >= todayKey)
     .slice(0, 4);
-  document.getElementById("matchTicker").innerHTML = nextMatches.length
+  ticker.innerHTML = nextMatches.length
     ? nextMatches.map((match) => gameCard(match, true)).join("")
     : `<div class="empty-note">Group-stage schedule complete.</div>`;
 }
@@ -1444,6 +1465,61 @@ function bracketSlotTeam(match) {
   `;
 }
 
+function round32TeamRow(team, match, score, side) {
+  const finalWinner = score?.isFinal && score.winnerId === team.id;
+  const goals = side === "home" ? score?.homeGoals : score?.awayGoals;
+  return `
+    <div class="round32-team ${finalWinner ? "winner" : ""}">
+      <span class="round32-flag">${team.flag}</span>
+      <div>
+        <strong>${team.name}</strong>
+        <em>${teamOwner(team.id)}</em>
+      </div>
+      <b>${score ? goals : ""}</b>
+    </div>
+  `;
+}
+
+function round32MatchCard(match, side = "left") {
+  const home = teamById(match.homeId);
+  const away = teamById(match.awayId);
+  const score = displayScore(match);
+  const finalScore = matchScore(match);
+  const winner = finalScore?.winnerId ? teamById(finalScore.winnerId) : null;
+  const status = score ? (score.isFinal ? scoreDisplayLabel(match, score) : score.status) : displayMatchTime(match);
+  const dateText = new Date(`${match.date}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return `
+    <article class="round32-match ${score?.isFinal ? "is-final" : ""} ${side === "right" ? "right-side" : "left-side"}">
+      <div class="round32-match-head">
+        <strong>${match.venue}</strong>
+        <span>${dateText}</span>
+        <em>${status}</em>
+      </div>
+      ${round32TeamRow(home, match, score, "home")}
+      ${round32TeamRow(away, match, score, "away")}
+      ${winner ? `<div class="round32-winner">${winner.flag} ${winner.name} advances</div>` : ""}
+    </article>
+  `;
+}
+
+function round32SlotCard(matches, index) {
+  const winners = matches
+    .map((match) => {
+      const score = matchScore(match);
+      return score?.winnerId ? teamById(score.winnerId) : null;
+    })
+    .filter(Boolean);
+  const label = winners.length === 2
+    ? `${winners[0].flag} ${winners[0].name} vs ${winners[1].flag} ${winners[1].name}`
+    : matches.map((match) => `Winner M${match.matchNumber}`).join(" / ");
+  return `
+    <article class="round32-slot">
+      <strong>R16 ${index + 1}</strong>
+      <span>${label}</span>
+    </article>
+  `;
+}
+
 function renderBracket() {
   const board = document.getElementById("bracketBoard");
   if (!board) return;
@@ -1456,61 +1532,27 @@ function renderBracket() {
     return;
   }
 
-  const r32Cards = matches.map((match) => {
-      const home = teamById(match.homeId);
-      const away = teamById(match.awayId);
-      const score = matchScore(match);
-      const winner = score?.winnerId ? teamById(score.winnerId) : null;
-      const status = score ? scoreDisplayLabel(match, score) : `${match.date} · ${displayMatchTime(match)}`;
-      return `
-        <article class="bracket-card ${score ? "complete" : ""}">
-          <div class="bracket-meta">
-            <span>${status}</span>
-            <strong>Match ${match.matchNumber}</strong>
-          </div>
-          ${bracketTeamRow(home, match, score, "home")}
-          ${bracketTeamRow(away, match, score, "away")}
-          <div class="bracket-footer">
-            <span>${match.venue}</span>
-            ${winner ? `<strong>${winner.flag} ${winner.name} advances</strong>` : `<strong>Winner to Round of 16</strong>`}
-          </div>
-        </article>
-      `;
-    }).join("");
-
-  const r16Cards = Array.from({ length: Math.ceil(matches.length / 2) }, (_, index) => {
-    const first = matches[index * 2];
-    const second = matches[index * 2 + 1];
-    return `
-      <article class="bracket-card bracket-slot-card">
-        <div class="bracket-meta">
-          <span>Next</span>
-          <strong>R16 Slot ${index + 1}</strong>
-        </div>
-        ${first ? bracketSlotTeam(first) : ""}
-        ${second ? bracketSlotTeam(second) : ""}
-        <div class="bracket-footer">
-          <span>Round of 16</span>
-          <strong>Winners meet here</strong>
-        </div>
-      </article>
-    `;
+  const leftMatches = matches.slice(0, 8);
+  const rightMatches = matches.slice(8, 16);
+  const slotCards = Array.from({ length: 8 }, (_, index) => {
+    const pair = matches.slice(index * 2, index * 2 + 2);
+    return round32SlotCard(pair, index);
   }).join("");
 
   board.innerHTML = `
-    <div class="bracket-round bracket-round-r32">
-      <div class="bracket-round-title">
-        <p class="panel-label">Round of 32</p>
-        <span>16 matches</span>
-      </div>
-      <div class="bracket-round-grid">${r32Cards}</div>
+    <div class="round32-side round32-left">
+      ${leftMatches.map((match) => round32MatchCard(match, "left")).join("")}
     </div>
-    <div class="bracket-round bracket-round-r16">
-      <div class="bracket-round-title">
-        <p class="panel-label">Round of 16</p>
-        <span>8 slots</span>
+    <div class="round32-center">
+      <div class="round32-center-card">
+        <span>World Cup</span>
+        <strong>Round of 32</strong>
+        <em>Calcutta bracket</em>
       </div>
-      <div class="bracket-round-grid bracket-r16-grid">${r16Cards}</div>
+      <div class="round32-slot-grid">${slotCards}</div>
+    </div>
+    <div class="round32-side round32-right">
+      ${rightMatches.map((match) => round32MatchCard(match, "right")).join("")}
     </div>
   `;
 }
@@ -1653,6 +1695,91 @@ function renderSidebarPayouts(pot) {
     .join("");
 }
 
+function ownerPayoutTooltip(owner) {
+  return owner.ownedTeams
+    .filter((entry) => entry.payout > 0)
+    .map((entry) => `${entry.team.name}: ${currency(entry.payout)} from ${entry.details.map((detail) => detail.note).join(", ")}`)
+    .join(" | ") || "No payout events yet.";
+}
+
+function renderHomeLeaderboard(ownerPayouts) {
+  const leaderboard = document.getElementById("homeLeaderboard");
+  if (!leaderboard) return;
+
+  document.querySelectorAll("[data-dashboard-sort]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.dashboardSort === dashboardSortMode);
+  });
+
+  const sortedOwners = [...ownerPayouts].sort((a, b) => {
+    if (dashboardSortMode === "net") return b.net - a.net || b.payout - a.payout;
+    return b.payout - a.payout || b.net - a.net;
+  });
+
+  leaderboard.innerHTML = sortedOwners
+    .slice(0, 6)
+    .map((owner, index) => {
+      const topTeams = owner.ownedTeams
+        .filter((entry) => entry.payout > 0)
+        .slice(0, 3)
+        .map((entry) => `<span title="${attrText(teamLabel(entry.team))}">${entry.team.flag}</span>`)
+        .join("");
+      return `
+        <article class="home-owner-row payout-hover" title="${attrText(ownerPayoutTooltip(owner))}">
+          <span class="home-rank">${index + 1}</span>
+          <div class="home-owner-main">
+            <strong>${owner.player}</strong>
+            <em>${topTeams || `${owner.ownedTeams.length} teams`}</em>
+          </div>
+          <div class="home-owner-money">
+            <strong>${currency(owner.payout)}</strong>
+            <em class="${owner.net >= 0 ? "budget-ok" : "budget-warn"}">${currency(owner.net)} net</em>
+          </div>
+        </article>
+      `;
+    })
+    .join("")
+    + `<p class="home-leaderboard-note">Showing top six by ${dashboardSortMode === "net" ? "net gain" : "gross winnings"}.</p>`;
+}
+
+function sidePotMetricValue(rule, winnerEntry) {
+  if (!winnerEntry) return "Pending";
+  const metrics = getTeamMetrics(winnerEntry.team);
+  if (rule.field === "gd") return `${metrics.gd > 0 ? "+" : ""}${metrics.gd}`;
+  if (rule.field === "gf") return `${metrics.gf} goals`;
+  if (rule.field === "biggestUpset") return `${metrics.biggestUpset} ranking spots`;
+  return String(winnerEntry.value ?? "");
+}
+
+function renderHomeSidePots(pot) {
+  const sidePots = document.getElementById("homeSidePots");
+  if (!sidePots) return;
+
+  const sideRules = payoutRules.filter((rule) => sidePotOptions.some((option) => option.key === rule.key));
+  sidePots.innerHTML = sideRules
+    .map((rule) => {
+      const winners = payoutRuleWinners(rule);
+      const amount = currentRuleUnitAmount(rule, pot);
+      const chips = winners.length
+        ? winners.map(({ team }) => `
+          <span class="home-sidepot-chip" title="${attrText(`${team.name} - ${teamOwner(team.id)}`)}">
+            ${team.flag} ${team.id.toUpperCase()}
+          </span>
+        `).join("")
+        : `<span class="empty-note">Pending</span>`;
+      return `
+        <article class="home-sidepot-row">
+          <div>
+            <strong>${rule.label}</strong>
+            <em>${sidePotMetricValue(rule, winners[0])}</em>
+          </div>
+          <span class="home-sidepot-amount">${currency(amount)}</span>
+          <div class="home-sidepot-teams">${chips}</div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
 function renderDashboard() {
   const { pot, teamPayouts, teamPayoutDetails } = calculatePayouts();
   const ownerSpend = getOwnerSpend();
@@ -1678,6 +1805,12 @@ function renderDashboard() {
   document.getElementById("budgetStatus").textContent = `${playersEntered} of ${players.length} players entered`;
   renderSidebarStandings(ownerPayouts);
   renderSidebarPayouts(pot);
+  renderHomeLeaderboard(ownerPayouts);
+  renderHomeSidePots(pot);
+
+  const teamEarningsElement = document.getElementById("teamEarnings");
+  const teamLeaderboardElement = document.getElementById("teamLeaderboard");
+  if (!teamEarningsElement && !teamLeaderboardElement) return;
 
   const earningRows = teams
     .map((team) => ({
@@ -1713,7 +1846,9 @@ function renderDashboard() {
     })
     .join("");
 
-  document.getElementById("teamEarnings").innerHTML = earningRows || `<div class="empty-note">No team payouts yet.</div>`;
+  if (teamEarningsElement) {
+    teamEarningsElement.innerHTML = earningRows || `<div class="empty-note">No team payouts yet.</div>`;
+  }
 
   const auctionRows = teams
     .map((team) => ({
@@ -1738,7 +1873,9 @@ function renderDashboard() {
       </article>
     `);
 
-  document.getElementById("teamLeaderboard").innerHTML = auctionRows.join("");
+  if (teamLeaderboardElement) {
+    teamLeaderboardElement.innerHTML = auctionRows.join("");
+  }
 }
 
 function renderRules() {
@@ -2093,9 +2230,17 @@ function handleScenarioRemove(event) {
   render();
 }
 
+function handleDashboardSort(event) {
+  const sortButton = event.target.closest("[data-dashboard-sort]");
+  if (!sortButton) return;
+  dashboardSortMode = sortButton.dataset.dashboardSort || "payout";
+  renderDashboard();
+}
+
 document.addEventListener("input", handleInput);
 document.addEventListener("change", handleInput);
 document.addEventListener("click", handleScenarioRemove);
+document.addEventListener("click", handleDashboardSort);
 
 document.querySelectorAll(".nav-item").forEach((button) => {
   button.addEventListener("click", () => setView(button.dataset.view));
