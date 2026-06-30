@@ -94,6 +94,7 @@ These advancement payouts stack. For example, the Champion earns the Round of 32
 - Example: Haiti (83) beating Argentina (1) would score an upset gap of 82.
 - The largest upset gap wins.
 - If multiple teams tie, they split the side pot.
+- Rankings for this award are locked to FIFA's official June 11, 2026 men's ranking table and do not change during the tournament.
 
 ### Worst Goal Differential
 
@@ -104,9 +105,9 @@ These advancement payouts stack. For example, the Champion earns the Round of 32
 
 ## FIFA Rankings
 
-- FIFA rankings are shown in parentheses next to team names.
-- The FIFA men's world ranking page is the source of truth.
-- Rankings were refreshed from FIFA's official June 11, 2026 men's ranking table before kickoff.
+- The ranking shown in parentheses next to each team is its latest visible FIFA men's world ranking and may be refreshed during the tournament.
+- Biggest-upset calculations always use the rankings locked at tournament kickoff from FIFA's official June 11, 2026 table.
+- Later ranking updates cannot retroactively change an earlier upset result.
 
 ## Example Payouts
 
