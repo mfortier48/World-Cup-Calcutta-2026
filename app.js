@@ -576,6 +576,14 @@ const defaultState = {
 let state = loadState();
 let scenarioState = loadScenarioState();
 let dashboardSortMode = "payout";
+let scenarioChatState = {
+  owner: "",
+  selectedTeamIds: [],
+  teamsConfirmed: false,
+  projections: {},
+  step: "owner",
+  error: "",
+};
 
 function loadState() {
   const saved = localStorage.getItem(STORAGE_KEY);
@@ -1050,6 +1058,162 @@ function scenarioEntrySummary(entry) {
     stage: stages.find((stage) => stage.value === entry.stage)?.label || "Group Stage",
     sidePots: sidePotOptions.filter((option) => entry.sidePots?.[option.key]).map((option) => option.label),
   };
+}
+
+function normalizeText(value = "") {
+  return String(value).trim().toLowerCase().replace(/[^a-z0-9& ]+/g, "").replace(/\s+/g, " ");
+}
+
+function matchPlayerName(input) {
+  const normalized = normalizeText(input);
+  if (!normalized) return "";
+  return players.find((player) => {
+    const playerName = normalizeText(player);
+    return playerName === normalized
+      || playerName.split(" ").includes(normalized)
+      || normalized.split(" ").includes(playerName);
+  }) || "";
+}
+
+function teamPlayedKnockoutLoss(teamId) {
+  return tournamentMatches().find((match) => {
+    if ((match.stage || "group") === "group") return false;
+    if (match.homeId !== teamId && match.awayId !== teamId) return false;
+    const score = matchScore(match);
+    return score?.winnerId && score.winnerId !== teamId;
+  });
+}
+
+function groupStageIsComplete() {
+  return groupMatches.every((match) => Boolean(scoreByMatch[match.matchNumber]));
+}
+
+function isTeamEliminated(teamId) {
+  if (teamPlayedKnockoutLoss(teamId)) return true;
+  const result = state.results[teamId] || blankTeamResult();
+  if (groupStageIsComplete() && stageRank(result.stage) < stageRank("r32")) return true;
+  return false;
+}
+
+function ownerTeamsForScenario(owner) {
+  const owned = teams
+    .filter((team) => state.auction[team.id]?.owner === owner)
+    .sort((a, b) => Number(state.auction[b.id]?.price || 0) - Number(state.auction[a.id]?.price || 0));
+  return {
+    live: owned.filter((team) => !isTeamEliminated(team.id) && stageRank(state.results[team.id]?.stage || "group") < stageRank("champion")),
+    eliminated: owned.filter((team) => isTeamEliminated(team.id)),
+  };
+}
+
+function actualGroupResultsForTeam(teamId) {
+  const metrics = getTeamMetrics(teamById(teamId));
+  const wins = Array(Math.max(0, Number(metrics.wins || 0))).fill("win");
+  const draws = Array(Math.max(0, Number(metrics.draws || 0))).fill("draw");
+  const losses = Array(Math.max(0, 3 - wins.length - draws.length)).fill("loss");
+  return wins.concat(draws, losses).slice(0, 3);
+}
+
+function scenarioEntryFromProjection(teamId, stage) {
+  const currentResult = state.results[teamId] || blankTeamResult();
+  return {
+    ...defaultScenarioEntry(teamId),
+    groupResults: actualGroupResultsForTeam(teamId),
+    groupFinish: currentResult.groupFinish || "",
+    stage,
+    sidePots: Object.fromEntries(sidePotOptions.map((option) => [option.key, false])),
+  };
+}
+
+const scenarioProjectionStages = [
+  { value: "r32", label: "Lose in Round of 32" },
+  { value: "r16", label: "Reach Round of 16" },
+  { value: "qf", label: "Reach Quarterfinals" },
+  { value: "sf", label: "Reach Semifinals" },
+  { value: "final", label: "Reach Final" },
+  { value: "champion", label: "Win It All" },
+];
+
+function projectionStagesForTeam(teamId) {
+  const currentStage = state.results[teamId]?.stage || "group";
+  const minimumRank = Math.max(stageRank(currentStage), stageRank("r32"));
+  return scenarioProjectionStages
+    .filter((stage) => stageRank(stage.value) >= minimumRank)
+    .map((stage) => {
+      if (stage.value === currentStage && stage.value !== "champion") {
+        return {
+          ...stage,
+          label: `Lose in ${stages.find((item) => item.value === stage.value)?.label || stage.label}`,
+        };
+      }
+      return stage;
+    });
+}
+
+function parseTeamSelection(input, liveTeams) {
+  const normalized = normalizeText(input);
+  if (!normalized) return [];
+  if (["all", "everyone", "all teams"].includes(normalized)) return liveTeams.map((team) => team.id);
+  return liveTeams
+    .filter((team) => {
+      const names = [team.name, team.id, team.name.replace("Cote", "Ivory")].map(normalizeText);
+      return names.some((name) => normalized.includes(name));
+    })
+    .map((team) => team.id);
+}
+
+function parseProjectionStage(input, teamId) {
+  const text = normalizeText(input);
+  const available = projectionStagesForTeam(teamId);
+  const candidates = [
+    { value: "champion", words: ["champion", "win", "winner", "all", "title"] },
+    { value: "final", words: ["final", "runner up"] },
+    { value: "sf", words: ["semi", "semifinal"] },
+    { value: "qf", words: ["quarter", "qf"] },
+    { value: "r16", words: ["round of 16", "r16", "sixteen", "next round"] },
+    { value: "r32", words: ["round of 32", "r32", "lose", "out"] },
+  ];
+  const match = candidates.find((candidate) => candidate.words.some((word) => text.includes(word)));
+  return match && available.some((stage) => stage.value === match.value) ? match.value : "";
+}
+
+function nextProjectionTeamId() {
+  return scenarioChatState.selectedTeamIds.find((teamId) => !scenarioChatState.projections[teamId]) || "";
+}
+
+function syncScenarioEntriesFromChat() {
+  const entries = scenarioChatState.selectedTeamIds
+    .filter((teamId) => scenarioChatState.projections[teamId])
+    .map((teamId) => scenarioEntryFromProjection(teamId, scenarioChatState.projections[teamId]));
+  scenarioState = { entries };
+  saveScenarioState();
+}
+
+function updateScenarioChatStep() {
+  if (!scenarioChatState.owner) {
+    scenarioChatState.step = "owner";
+  } else if (!scenarioChatState.selectedTeamIds.length) {
+    scenarioChatState.step = "teams";
+  } else if (!scenarioChatState.teamsConfirmed) {
+    scenarioChatState.step = "teams";
+  } else if (nextProjectionTeamId()) {
+    scenarioChatState.step = "stage";
+  } else {
+    scenarioChatState.step = "complete";
+  }
+  syncScenarioEntriesFromChat();
+}
+
+function resetScenarioChat() {
+  scenarioChatState = {
+    owner: "",
+    selectedTeamIds: [],
+    teamsConfirmed: false,
+    projections: {},
+    step: "owner",
+    error: "",
+  };
+  scenarioState = { entries: [] };
+  saveScenarioState();
 }
 
 function renderAuction() {
@@ -1909,98 +2073,138 @@ function renderRules() {
 }
 
 function renderScenarioCalculator() {
-  const rows = document.getElementById("scenarioRows");
-  if (!rows) return;
+  const chatLog = document.getElementById("scenarioChatLog");
+  const summary = document.getElementById("scenarioChatSummary");
+  const input = document.getElementById("scenarioChatInput");
+  if (!chatLog || !summary) return;
 
-  rows.innerHTML = scenarioState.entries
-    .map((entry, index) => {
-      const team = teamById(entry.teamId) || teams[0];
-      const auction = state.auction[team.id] || { owner: "Unassigned", price: 0 };
+  updateScenarioChatStep();
+  const ownerTeams = scenarioChatState.owner
+    ? ownerTeamsForScenario(scenarioChatState.owner)
+    : { live: [], eliminated: [] };
+  const activeTeamId = nextProjectionTeamId();
+  const activeTeam = activeTeamId ? teamById(activeTeamId) : null;
+
+  const messages = [
+    `<div class="chat-bubble bot"><strong>Who are you?</strong><span>Type your name, or tap one below.</span></div>`,
+    `<div class="chat-options owner-options">
+      ${players.map((player) => `<button type="button" data-chat-owner="${attrText(player)}">${player}</button>`).join("")}
+    </div>`,
+  ];
+
+  if (scenarioChatState.owner) {
+    const eliminatedText = ownerTeams.eliminated.length
+      ? ` I am leaving out ${ownerTeams.eliminated.map((team) => `${team.flag} ${team.name}`).join(", ")} because ${ownerTeams.eliminated.length === 1 ? "it is" : "they are"} already eliminated.`
+      : "";
+    messages.push(`<div class="chat-bubble user">${scenarioChatState.owner}</div>`);
+    messages.push(`
+      <div class="chat-bubble bot">
+        <strong>Which team(s) would you like to scenario plan for?</strong>
+        <span>${ownerTeams.live.length ? `I found ${ownerTeams.live.length} live team${ownerTeams.live.length === 1 ? "" : "s"} for ${scenarioChatState.owner}.${eliminatedText}` : `I do not see any unresolved teams for ${scenarioChatState.owner}.${eliminatedText}`}</span>
+      </div>
+    `);
+    if (ownerTeams.live.length) {
+      messages.push(`
+        <div class="chat-options team-options">
+          ${ownerTeams.live.map((team) => {
+            const selected = scenarioChatState.selectedTeamIds.includes(team.id);
+            return `
+              <button type="button" class="${selected ? "selected" : ""}" data-chat-team="${team.id}">
+                <span>${team.flag}</span>
+                <strong>${team.name}</strong>
+                <em>${currency(state.auction[team.id]?.price || 0)}</em>
+              </button>
+            `;
+          }).join("")}
+        </div>
+        <div class="chat-actions">
+          <button class="sold-button" type="button" data-chat-action="continue-teams" ${scenarioChatState.selectedTeamIds.length ? "" : "disabled"}>Continue</button>
+        </div>
+      `);
+    }
+  }
+
+  if (scenarioChatState.selectedTeamIds.length) {
+    messages.push(`
+      <div class="chat-bubble user">
+        ${scenarioChatState.selectedTeamIds.map((teamId) => {
+          const team = teamById(teamId);
+          return team ? `${team.flag} ${team.name}` : teamId;
+        }).join(", ")}
+      </div>
+    `);
+  }
+
+  if (scenarioChatState.step === "stage" && activeTeam) {
+    messages.push(`
+      <div class="chat-bubble bot">
+        <strong>How far does ${activeTeam.flag} ${activeTeam.name} go?</strong>
+        <span>Pick the furthest stage you expect. The calculator keeps their actual group-stage money already earned.</span>
+      </div>
+      <div class="chat-options stage-options">
+        ${projectionStagesForTeam(activeTeam.id).map((stage) => `
+          <button type="button" data-chat-stage="${stage.value}" data-chat-stage-team="${activeTeam.id}">${stage.label}</button>
+        `).join("")}
+      </div>
+    `);
+  }
+
+  if (scenarioChatState.step === "complete" && scenarioChatState.selectedTeamIds.length) {
+    messages.push(`
+      <div class="chat-bubble bot success">
+        <strong>Scenario built.</strong>
+        <span>You can download it, start over, or change the selected teams above.</span>
+      </div>
+    `);
+  }
+
+  if (scenarioChatState.error) {
+    messages.push(`<div class="chat-bubble bot warning">${scenarioChatState.error}</div>`);
+  }
+
+  chatLog.innerHTML = messages.join("");
+  chatLog.scrollTop = chatLog.scrollHeight;
+
+  if (input) {
+    input.placeholder = scenarioChatState.step === "owner"
+      ? "Type your name, e.g. Matt"
+      : scenarioChatState.step === "teams"
+        ? "Type team names, e.g. Spain and Paraguay, or tap above"
+        : scenarioChatState.step === "stage" && activeTeam
+          ? `Type ${activeTeam.name}'s finish, e.g. quarterfinals`
+          : "Start over to build a new scenario";
+    input.disabled = scenarioChatState.step === "complete";
+  }
+
+  summary.innerHTML = scenarioChatState.selectedTeamIds.length
+    ? scenarioChatState.selectedTeamIds.map((teamId) => {
+      const team = teamById(teamId);
+      const stage = scenarioChatState.projections[teamId];
+      if (!team) return "";
+      if (!stage) {
+        return `
+          <article class="scenario-summary-row pending">
+            <span>${team.flag}</span>
+            <div><strong>${teamLabel(team)}</strong><em>Waiting for projected finish</em></div>
+            <b>Pending</b>
+          </article>
+        `;
+      }
+      const entry = scenarioEntryFromProjection(teamId, stage);
       const breakdown = scenarioPayoutBreakdown(entry);
-      const netClass = breakdown.net >= 0 ? "net-positive" : "net-negative";
-      const needsGroupFinish = stageRank(entry.stage) >= stageRank("r32") && !entry.groupFinish;
-      const sidePotChecks = sidePotOptions
-        .map((option) => `
-          <label class="side-pot-check">
-            <input
-              type="checkbox"
-              data-kind="scenario"
-              data-index="${index}"
-              data-field="sidePot"
-              data-side-pot="${option.key}"
-              ${entry.sidePots?.[option.key] ? "checked" : ""}
-            />
-            <span>${option.label}</span>
-          </label>
-        `)
-        .join("");
-
+      const stageLabel = stages.find((item) => item.value === stage)?.label || stage;
       return `
-        <article class="scenario-card">
-          <div class="scenario-card-head">
-            <div>
-              <p class="panel-label">Entry ${index + 1}</p>
-              <h4>${team.flag} ${teamLabel(team)}</h4>
-              <span>${auction.owner || "Unassigned"} paid ${currency(auction.price)}</span>
-            </div>
-            <button class="ghost compact-button" type="button" data-scenario-remove="${index}" ${scenarioState.entries.length === 1 ? "disabled" : ""}>Remove</button>
+        <article class="scenario-summary-row">
+          <span>${team.flag}</span>
+          <div>
+            <strong>${teamLabel(team)}</strong>
+            <em>${stageLabel} · ${teamOwner(team.id)} paid ${currency(breakdown.cost)}</em>
           </div>
-
-          <div class="scenario-grid">
-            <label class="scenario-field scenario-field-wide">
-              <span>Team</span>
-              <select data-kind="scenario" data-index="${index}" data-field="teamId" aria-label="Scenario team">
-                ${scenarioTeamOptions(entry.teamId)}
-              </select>
-            </label>
-
-            ${entry.groupResults.map((result, matchIndex) => `
-              <label class="scenario-field">
-                <span>Group Match ${matchIndex + 1}</span>
-                <select data-kind="scenario" data-index="${index}" data-field="groupResult" data-match-index="${matchIndex}" aria-label="${team.name} group match ${matchIndex + 1}">
-                  ${groupResultSelectOptions(result)}
-                </select>
-              </label>
-            `).join("")}
-
-            <label class="scenario-field">
-              <span>Group Finish</span>
-              <select data-kind="scenario" data-index="${index}" data-field="groupFinish" aria-label="${team.name} group finish">
-                ${groupFinishOptions(entry.groupFinish)}
-              </select>
-            </label>
-
-            <label class="scenario-field">
-              <span>Furthest Stage</span>
-              <select data-kind="scenario" data-index="${index}" data-field="stage" aria-label="${team.name} furthest stage">
-                ${stageOptions(entry.stage)}
-              </select>
-            </label>
-          </div>
-
-          <div class="side-pot-checks" aria-label="${team.name} side pots">
-            ${sidePotChecks}
-          </div>
-
-          <div class="scenario-output">
-            <div>
-              <span>Projected Payout</span>
-              <strong>${currency(breakdown.gross)} <em>(${currency(breakdown.cost)} paid)</em></strong>
-            </div>
-            <div>
-              <span>Net</span>
-              <strong class="${netClass}">${currency(breakdown.net)}</strong>
-            </div>
-            <div>
-              <span>Included</span>
-              <strong>${breakdown.winCount}W, ${breakdown.drawCount}D, ${currency(breakdown.advancement + breakdown.groupFinish)} advancement</strong>
-            </div>
-          </div>
-          ${needsGroupFinish ? `<p class="scenario-warning">Pick a group finish to include the Round of 32 advancement tier.</p>` : ""}
+          <b class="${breakdown.net >= 0 ? "net-positive" : "net-negative"}">${currency(breakdown.gross)} <small>${currency(breakdown.net)} net</small></b>
         </article>
       `;
-    })
-    .join("");
+    }).join("")
+    : `<div class="empty-note">Your scenario will appear here after you choose teams.</div>`;
 
   const totals = scenarioState.entries.reduce((sum, entry) => {
     const breakdown = scenarioPayoutBreakdown(entry);
@@ -2237,10 +2441,105 @@ function handleDashboardSort(event) {
   renderDashboard();
 }
 
+function handleScenarioChatSubmit(event) {
+  const form = event.target.closest("#scenarioChatForm");
+  if (!form) return;
+  event.preventDefault();
+
+  const input = document.getElementById("scenarioChatInput");
+  const value = input?.value || "";
+  scenarioChatState.error = "";
+
+  if (scenarioChatState.step === "owner") {
+    const player = matchPlayerName(value);
+    if (!player) {
+      scenarioChatState.error = "I could not match that to a league owner. Try a first name like Matt, Meli, Hillary, or Zach.";
+    } else {
+      scenarioChatState.owner = player;
+      scenarioChatState.selectedTeamIds = [];
+      scenarioChatState.teamsConfirmed = false;
+      scenarioChatState.projections = {};
+    }
+  } else if (scenarioChatState.step === "teams") {
+    const { live } = ownerTeamsForScenario(scenarioChatState.owner);
+    const parsedTeams = parseTeamSelection(value, live);
+    if (!parsedTeams.length) {
+      scenarioChatState.error = "I could not match that to one of your live teams. Tap a team chip or type something like 'Spain and Paraguay'.";
+    } else {
+      scenarioChatState.selectedTeamIds = [...new Set([...scenarioChatState.selectedTeamIds, ...parsedTeams])];
+    }
+  } else if (scenarioChatState.step === "stage") {
+    const activeTeamId = nextProjectionTeamId();
+    const stage = parseProjectionStage(value, activeTeamId);
+    if (!stage) {
+      const team = teamById(activeTeamId);
+      scenarioChatState.error = `I could not read that finish for ${team?.name || "that team"}. Try champion, final, semifinal, quarterfinal, round of 16, or lose.`;
+    } else {
+      scenarioChatState.projections[activeTeamId] = stage;
+    }
+  }
+
+  if (input) input.value = "";
+  updateScenarioChatStep();
+  renderScenarioCalculator();
+}
+
+function handleScenarioChatClick(event) {
+  const ownerButton = event.target.closest("[data-chat-owner]");
+  const teamButton = event.target.closest("[data-chat-team]");
+  const stageButton = event.target.closest("[data-chat-stage]");
+  const actionButton = event.target.closest("[data-chat-action]");
+  const resetButton = event.target.closest("[data-chat-reset]");
+
+  if (!ownerButton && !teamButton && !stageButton && !actionButton && !resetButton) return;
+  scenarioChatState.error = "";
+
+  if (ownerButton) {
+    scenarioChatState.owner = ownerButton.dataset.chatOwner;
+    scenarioChatState.selectedTeamIds = [];
+    scenarioChatState.teamsConfirmed = false;
+    scenarioChatState.projections = {};
+  }
+
+  if (teamButton) {
+    const teamId = teamButton.dataset.chatTeam;
+    const selected = new Set(scenarioChatState.selectedTeamIds);
+    if (selected.has(teamId)) {
+      selected.delete(teamId);
+      delete scenarioChatState.projections[teamId];
+    } else {
+      selected.add(teamId);
+    }
+    scenarioChatState.selectedTeamIds = [...selected];
+    scenarioChatState.teamsConfirmed = false;
+  }
+
+  if (actionButton?.dataset.chatAction === "continue-teams") {
+    if (!scenarioChatState.selectedTeamIds.length) {
+      scenarioChatState.error = "Pick at least one live team before continuing.";
+    } else {
+      scenarioChatState.teamsConfirmed = true;
+    }
+  }
+
+  if (stageButton) {
+    scenarioChatState.projections[stageButton.dataset.chatStageTeam] = stageButton.dataset.chatStage;
+  }
+
+  if (resetButton) {
+    resetScenarioChat();
+  }
+
+  updateScenarioChatStep();
+  renderScenarioCalculator();
+}
+
 document.addEventListener("input", handleInput);
 document.addEventListener("change", handleInput);
 document.addEventListener("click", handleScenarioRemove);
 document.addEventListener("click", handleDashboardSort);
+document.addEventListener("submit", handleScenarioChatSubmit);
+document.addEventListener("click", handleScenarioChatClick);
 
 document.querySelectorAll(".nav-item").forEach((button) => {
   button.addEventListener("click", () => setView(button.dataset.view));

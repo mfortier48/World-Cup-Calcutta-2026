@@ -2296,8 +2296,15 @@ input[type="number"] {
   font-weight: 850;
 }
 
+.calculator-chat-panel,
 .calculator-panel {
   margin-bottom: 14px;
+}
+
+.calculator-chat-panel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 253, 248, 0.76)),
+    radial-gradient(circle at 100% 0%, rgba(13, 107, 87, 0.08), transparent 13rem);
 }
 
 .calculator-actions {
@@ -2308,10 +2315,222 @@ input[type="number"] {
   margin-bottom: 14px;
 }
 
+.slim-actions {
+  margin-bottom: 0;
+}
+
 .save-status {
   color: var(--green);
   font-size: 0.9rem;
   font-weight: 850;
+}
+
+.scenario-chat-shell {
+  display: grid;
+  gap: 14px;
+}
+
+.scenario-chat-log {
+  display: grid;
+  gap: 12px;
+  max-height: 62vh;
+  overflow: auto;
+  padding: 4px 4px 6px;
+}
+
+.chat-bubble {
+  display: grid;
+  gap: 5px;
+  max-width: min(720px, 88%);
+  padding: 12px 14px;
+  border: 1px solid rgba(23, 33, 31, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.chat-bubble strong,
+.chat-bubble span {
+  display: block;
+}
+
+.chat-bubble span {
+  color: var(--muted);
+  font-weight: 750;
+  line-height: 1.42;
+}
+
+.chat-bubble.bot {
+  justify-self: start;
+}
+
+.chat-bubble.user {
+  justify-self: end;
+  color: white;
+  background: var(--green);
+}
+
+.chat-bubble.user span,
+.chat-bubble.user strong {
+  color: white;
+}
+
+.chat-bubble.success {
+  border-color: rgba(13, 107, 87, 0.24);
+  background: rgba(13, 107, 87, 0.08);
+}
+
+.chat-bubble.warning {
+  color: var(--red);
+  border-color: rgba(178, 58, 72, 0.24);
+  background: rgba(178, 58, 72, 0.08);
+  font-weight: 850;
+}
+
+.chat-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chat-options button,
+.chat-actions button {
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--ink);
+  font-weight: 850;
+}
+
+.owner-options button,
+.stage-options button {
+  padding: 0 12px;
+}
+
+.team-options button {
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 7px;
+  align-items: center;
+  max-width: 240px;
+  min-height: 42px;
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+
+.team-options button strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-options button em {
+  color: var(--green);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.chat-options button:hover,
+.chat-options button.selected {
+  color: white;
+  border-color: var(--green);
+  background: var(--green);
+}
+
+.chat-options button.selected em,
+.chat-options button:hover em {
+  color: white;
+}
+
+.chat-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chat-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.scenario-chat-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.scenario-chat-form input {
+  min-height: 46px;
+}
+
+.scenario-chat-summary-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.scenario-chat-summary {
+  display: grid;
+  gap: 8px;
+}
+
+.scenario-summary-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 58px;
+  padding: 10px;
+  border: 1px solid rgba(23, 33, 31, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.scenario-summary-row > span {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 28px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: white;
+}
+
+.scenario-summary-row strong,
+.scenario-summary-row em,
+.scenario-summary-row b,
+.scenario-summary-row small {
+  display: block;
+}
+
+.scenario-summary-row strong,
+.scenario-summary-row em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scenario-summary-row em {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.scenario-summary-row b {
+  text-align: right;
+}
+
+.scenario-summary-row small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.scenario-summary-row.pending b {
+  color: var(--muted);
 }
 
 .scenario-list {

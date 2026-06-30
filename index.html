@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css?v=27" />
+    <link rel="stylesheet" href="./styles.css?v=28" />
   </head>
   <body>
     <div class="app-shell">
@@ -183,34 +183,37 @@
         </section>
 
         <section id="calculator" class="view">
-          <section class="panel calculator-panel">
-            <div class="section-heading">
+          <section class="panel calculator-chat-panel">
+            <div class="section-heading tight-heading">
               <div>
                 <p class="panel-label">What Ifs</p>
-                <h3>Payout Scenario Calculator</h3>
+                <h3>Scenario Chat</h3>
               </div>
-              <p class="hint">Build one-team or multi-team scenarios. Draw payouts are estimated because the final draw pool is divided by actual tournament draws.</p>
+              <p class="hint">Tell the calculator who you are, pick your live teams, then choose how far each one goes.</p>
             </div>
 
-            <div class="calculator-actions">
-              <button class="sold-button" id="addScenarioButton" type="button">Add Team</button>
-              <button class="ghost" id="saveScenarioButton" type="button">Save</button>
-              <button class="ghost" id="downloadScenarioButton" type="button">Download</button>
-              <button class="danger" id="clearScenarioButton" type="button">Clear</button>
-              <span id="scenarioSaveStatus" class="save-status" aria-live="polite"></span>
+            <div class="scenario-chat-shell">
+              <div id="scenarioChatLog" class="scenario-chat-log" aria-live="polite"></div>
+              <form id="scenarioChatForm" class="scenario-chat-form">
+                <input id="scenarioChatInput" type="text" autocomplete="off" placeholder="Type your name, e.g. Matt" />
+                <button class="sold-button" type="submit">Send</button>
+              </form>
             </div>
-
-            <div id="scenarioRows" class="scenario-list"></div>
           </section>
 
-          <section class="panel scenario-total-panel">
+          <section class="panel scenario-total-panel scenario-chat-summary-panel">
             <div class="section-heading">
               <div>
                 <p class="panel-label">Scenario Total</p>
                 <h3>Projected Portfolio</h3>
               </div>
-              <p class="hint">Gross payout minus the original auction cost for the selected teams.</p>
+              <div class="calculator-actions slim-actions">
+                <button class="ghost" id="downloadScenarioButton" type="button">Download</button>
+                <button class="danger" id="scenarioChatResetButton" type="button" data-chat-reset>Start Over</button>
+                <span id="scenarioSaveStatus" class="save-status" aria-live="polite"></span>
+              </div>
             </div>
+            <div id="scenarioChatSummary" class="scenario-chat-summary"></div>
             <div class="scenario-total-grid">
               <article>
                 <span>Gross Payout</span>
@@ -225,7 +228,7 @@
                 <strong id="scenarioNetTotal">$0</strong>
               </article>
             </div>
-            <p class="example-copy">Side pots assume a single winner; ties split the listed side-pot pool. Advancement payouts stack after the group stage, so a champion also earns the Round of 16, quarterfinal, semifinal, final, and champion payouts.</p>
+            <p class="example-copy">This calculator uses actual group-stage results and current advancement status, then layers on your projected future finish. Side pots are not projected here because they can swing with future goals and margins.</p>
           </section>
         </section>
 
@@ -304,6 +307,6 @@
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js?v=27"></script>
+    <script src="./app.js?v=28"></script>
   </body>
 </html>
