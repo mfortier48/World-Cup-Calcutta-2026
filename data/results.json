@@ -1,6 +1,6 @@
 {
   "version": "2026-06-30-match-77",
-  "updatedAt": "2026-06-30T20:21:54.598Z",
+  "updatedAt": "2026-06-30T21:55:21.254Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -1766,11 +1766,11 @@
       "homeId": "fra",
       "awayId": "swe",
       "venue": "MetLife Stadium",
-      "status": "Scheduled",
+      "status": "HT",
       "completed": false,
-      "homeGoals": 0,
+      "homeGoals": 1,
       "awayGoals": 0,
-      "winnerId": ""
+      "winnerId": "fra"
     },
     {
       "espnId": "760491",
