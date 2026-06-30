@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css?v=25" />
+    <link rel="stylesheet" href="./styles.css?v=26" />
   </head>
   <body>
     <div class="app-shell">
@@ -17,6 +17,28 @@
           </div>
         </div>
 
+        <section class="panel compact">
+          <p class="panel-label">Prize Pot</p>
+          <strong id="potTotal">$0</strong>
+          <span id="budgetStatus">0 of 12 players entered</span>
+        </section>
+
+        <section class="panel sidebar-card">
+          <div class="sidebar-section-head">
+            <p class="panel-label">Standings</p>
+            <strong>Owners</strong>
+          </div>
+          <div id="sidebarStandings" class="sidebar-standings"></div>
+        </section>
+
+        <section class="panel sidebar-card">
+          <div class="sidebar-section-head">
+            <p class="panel-label">Payouts</p>
+            <strong>By Rule</strong>
+          </div>
+          <div id="sidebarPayouts" class="sidebar-payouts"></div>
+        </section>
+
         <nav class="nav" aria-label="Primary">
           <button class="nav-item active" data-view="dashboard">Overview</button>
           <button class="nav-item" data-view="auction">Auction</button>
@@ -24,12 +46,6 @@
           <button class="nav-item" data-view="calculator">Payout Scenario Calculator</button>
           <button class="nav-item" data-view="rules">Rules</button>
         </nav>
-
-        <section class="panel compact">
-          <p class="panel-label">Prize Pot</p>
-          <strong id="potTotal">$0</strong>
-          <span id="budgetStatus">0 of 12 players entered</span>
-        </section>
 
       </aside>
 
@@ -75,56 +91,14 @@
             <div class="section-heading">
               <div>
                 <p class="panel-label">Knockout Bracket</p>
-                <h3>Round of 32</h3>
+                <h3>Live Bracket</h3>
               </div>
               <p class="hint">Flags, owners, scores, and winners update from the score feed.</p>
             </div>
             <div id="bracketBoard" class="bracket-board"></div>
           </section>
 
-          <div class="metric-grid">
-            <article class="metric">
-              <span>Teams Sold</span>
-              <strong id="teamsSold">0 / 48</strong>
-            </article>
-            <article class="metric">
-              <span>Average Price</span>
-              <strong id="averagePrice">$0</strong>
-            </article>
-            <article class="metric">
-              <span>Top Team</span>
-              <strong id="topTeam">None yet</strong>
-            </article>
-            <article class="metric">
-              <span>Projected Leader</span>
-              <strong id="projectedLeader">None yet</strong>
-            </article>
-          </div>
-
           <div class="dashboard-grid">
-            <section class="panel owner-leaderboard-panel">
-              <div class="section-heading">
-                <div>
-                  <p class="panel-label">Payout Leaderboard</p>
-                  <h3>Owner Standings</h3>
-                </div>
-                <p class="hint">Hover payout totals for the money trail.</p>
-              </div>
-              <div class="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Owner</th>
-                      <th>Spent</th>
-                      <th>Payout</th>
-                      <th>Net</th>
-                    </tr>
-                  </thead>
-                  <tbody id="ownerLeaderboard"></tbody>
-                </table>
-              </div>
-            </section>
-
             <section class="panel team-earnings-panel">
               <div class="section-heading">
                 <div>
@@ -361,6 +335,6 @@
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js?v=25"></script>
+    <script src="./app.js?v=26"></script>
   </body>
 </html>

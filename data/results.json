@@ -1,6 +1,6 @@
 {
-  "version": "2026-06-29-match-75",
-  "updatedAt": "2026-06-29T23:59:00.000Z",
+  "version": "2026-06-30-match-75",
+  "updatedAt": "2026-06-30T03:11:43.428Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -31,12 +31,6 @@
       "winnerId": "usa"
     },
     {
-      "matchNumber": 8,
-      "homeGoals": 1,
-      "awayGoals": 1,
-      "status": "FT"
-    },
-    {
       "matchNumber": 5,
       "homeGoals": 1,
       "awayGoals": 1,
@@ -55,6 +49,12 @@
       "awayGoals": 0,
       "status": "FT",
       "winnerId": "aus"
+    },
+    {
+      "matchNumber": 8,
+      "homeGoals": 1,
+      "awayGoals": 1,
+      "status": "FT"
     },
     {
       "matchNumber": 9,
@@ -326,13 +326,6 @@
       "winnerId": "col"
     },
     {
-      "matchNumber": 50,
-      "homeGoals": 3,
-      "awayGoals": 1,
-      "status": "FT",
-      "winnerId": "bih"
-    },
-    {
       "matchNumber": 49,
       "homeGoals": 2,
       "awayGoals": 1,
@@ -340,11 +333,11 @@
       "winnerId": "sui"
     },
     {
-      "matchNumber": 52,
-      "homeGoals": 4,
-      "awayGoals": 2,
+      "matchNumber": 50,
+      "homeGoals": 3,
+      "awayGoals": 1,
       "status": "FT",
-      "winnerId": "mar"
+      "winnerId": "bih"
     },
     {
       "matchNumber": 51,
@@ -352,6 +345,13 @@
       "awayGoals": 3,
       "status": "FT",
       "winnerId": "bra"
+    },
+    {
+      "matchNumber": 52,
+      "homeGoals": 4,
+      "awayGoals": 2,
+      "status": "FT",
+      "winnerId": "mar"
     },
     {
       "matchNumber": 53,
@@ -395,17 +395,17 @@
       "winnerId": "ned"
     },
     {
-      "matchNumber": 60,
-      "homeGoals": 0,
-      "awayGoals": 0,
-      "status": "FT"
-    },
-    {
       "matchNumber": 59,
       "homeGoals": 3,
       "awayGoals": 2,
       "status": "FT",
       "winnerId": "tur"
+    },
+    {
+      "matchNumber": 60,
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "status": "FT"
     },
     {
       "matchNumber": 61,
@@ -448,18 +448,18 @@
       "winnerId": "bel"
     },
     {
-      "matchNumber": 68,
-      "homeGoals": 2,
-      "awayGoals": 1,
-      "status": "FT",
-      "winnerId": "cro"
-    },
-    {
       "matchNumber": 67,
       "homeGoals": 0,
       "awayGoals": 2,
       "status": "FT",
       "winnerId": "eng"
+    },
+    {
+      "matchNumber": 68,
+      "homeGoals": 2,
+      "awayGoals": 1,
+      "status": "FT",
+      "winnerId": "cro"
     },
     {
       "matchNumber": 69,
@@ -1720,10 +1720,10 @@
       "homeId": "ned",
       "awayId": "mar",
       "venue": "Estadio BBVA",
-      "status": "Scheduled",
+      "status": "98'",
       "completed": false,
-      "homeGoals": 0,
-      "awayGoals": 0,
+      "homeGoals": 1,
+      "awayGoals": 1,
       "winnerId": ""
     },
     {

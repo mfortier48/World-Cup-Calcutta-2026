@@ -155,7 +155,7 @@ const draftAuction = {
   par: { owner: "Matt", price: 15 },
   por: { owner: "Hillary", price: 65 },
   qat: { owner: "Fabrice", price: 6 },
-  ksa: { owner: "Fabrice", price: 3 },
+  ksa: { owner: "Fabrice", price: 2 },
   sco: { owner: "Sarah", price: 26 },
   sen: { owner: "Fabrice", price: 29 },
   rsa: { owner: "Fabrice", price: 6 },
@@ -551,8 +551,17 @@ function buildOfficialResults() {
   return results;
 }
 
+function officialAuctionState(savedAuction = {}) {
+  const baseAuction = Object.fromEntries(teams.map((team) => [team.id, draftAuction[team.id] || { owner: "", price: 0 }]));
+  return {
+    ...baseAuction,
+    ...savedAuction,
+    ksa: { owner: "Fabrice", price: 2 },
+  };
+}
+
 const defaultState = {
-  auction: Object.fromEntries(teams.map((team) => [team.id, draftAuction[team.id] || { owner: "", price: 0 }])),
+  auction: officialAuctionState(),
   results: buildOfficialResults(),
   resultsVersion: activeResultsVersion,
   auctionRoom: {
@@ -578,7 +587,7 @@ function loadState() {
     return {
       ...structuredClone(defaultState),
       ...parsed,
-      auction: { ...structuredClone(defaultState).auction, ...(parsed.auction || {}) },
+      auction: officialAuctionState(parsed.auction || {}),
       results: resultsAreCurrent ? { ...officialResults, ...(parsed.results || {}) } : officialResults,
       resultsVersion: activeResultsVersion,
       auctionRoom: {
@@ -824,6 +833,7 @@ function calculatePayouts() {
         teamPayouts[team.id] += amount;
         if (amount > 0) {
           teamPayoutDetails[team.id].push({
+            key: rule.key,
             label: rule.label,
             amount,
             note: `${units} ${rule.key === "wins" ? "group-stage win" : "group-stage draw"}${units === 1 ? "" : "s"}`,
@@ -839,6 +849,7 @@ function calculatePayouts() {
         const amount = rulePot / qualifiers.length;
         teamPayouts[team.id] += amount;
         teamPayoutDetails[team.id].push({
+          key: rule.key,
           label: rule.label,
           amount,
           note: `Reached ${stages.find((stage) => stage.value === rule.stage)?.label || rule.stage}`,
@@ -856,6 +867,7 @@ function calculatePayouts() {
         const amount = rulePot / qualifiers.length;
         teamPayouts[team.id] += amount;
         teamPayoutDetails[team.id].push({
+          key: rule.key,
           label: rule.label,
           amount,
           note: groupFinishes.find((finish) => finish.value === rule.finish)?.label || "Group advancement",
@@ -875,6 +887,7 @@ function calculatePayouts() {
         const amount = rulePot / winners.length;
         teamPayouts[team.id] += amount;
         teamPayoutDetails[team.id].push({
+          key: rule.key,
           label: rule.label,
           amount,
           note: `${rule.label} leader (${target})`,
@@ -897,6 +910,63 @@ function payoutRuleByKey(key) {
 function rulePool(key, pot = actualPot()) {
   const rule = payoutRuleByKey(key);
   return rule ? pot * (rule.pct / 100) : 0;
+}
+
+function payoutRuleWinners(rule) {
+  if (rule.type === "unit") {
+    return teams
+      .map((team) => ({ team, units: Number(getTeamMetrics(team)[rule.field] || 0) }))
+      .filter((entry) => entry.units > 0)
+      .sort((a, b) => b.units - a.units || a.team.name.localeCompare(b.team.name));
+  }
+
+  if (rule.type === "stage") {
+    return teams
+      .filter((team) => stageRank(state.results[team.id].stage) >= stageRank(rule.stage))
+      .map((team) => ({ team, units: 1 }))
+      .sort((a, b) => a.team.name.localeCompare(b.team.name));
+  }
+
+  if (rule.type === "groupFinish") {
+    return teams
+      .filter((team) => (
+        stageRank(state.results[team.id].stage) >= stageRank("r32")
+        && state.results[team.id].groupFinish === rule.finish
+      ))
+      .map((team) => ({ team, units: 1 }))
+      .sort((a, b) => a.team.name.localeCompare(b.team.name));
+  }
+
+  if (rule.type === "max" || rule.type === "min") {
+    const values = teams.map((team) => ({ team, value: Number(getTeamMetrics(team)[rule.field] || 0) }));
+    const activeValues = values.filter(({ value }) => value !== 0);
+    if (!activeValues.length) return [];
+    const target = rule.type === "max"
+      ? Math.max(...activeValues.map(({ value }) => value))
+      : Math.min(...activeValues.map(({ value }) => value));
+    return activeValues
+      .filter(({ value }) => value === target)
+      .map(({ team }) => ({ team, units: 1, value: target }))
+      .sort((a, b) => a.team.name.localeCompare(b.team.name));
+  }
+
+  return [];
+}
+
+function currentRuleUnitAmount(rule, pot = actualPot()) {
+  const rulePot = rulePool(rule.key, pot);
+  if (!rulePot) return 0;
+
+  if (rule.type === "unit") {
+    const totalUnits = teams.reduce((sum, team) => sum + Number(getTeamMetrics(team)[rule.field] || 0), 0);
+    const groupStageComplete = groupMatches.every((match) => Boolean(scoreByMatch[match.matchNumber]));
+    const projectedUnits = rule.key === "wins" ? 72 : ESTIMATED_DRAW_TEAM_RESULTS;
+    const denominator = groupStageComplete ? totalUnits : Math.max(totalUnits, projectedUnits);
+    return denominator ? rulePot / denominator : 0;
+  }
+
+  const winners = payoutRuleWinners(rule);
+  return winners.length ? rulePot / winners.length : 0;
 }
 
 function scenarioTeamCost(teamId) {
@@ -1346,12 +1416,47 @@ function bracketTeamRow(team, match, score, side) {
   `;
 }
 
+function bracketSlotTeam(match) {
+  const score = matchScore(match);
+  const winner = score?.winnerId ? teamById(score.winnerId) : null;
+  if (winner) {
+    return `
+      <div class="bracket-team winner bracket-slot-team">
+        <span class="bracket-flag">${winner.flag}</span>
+        <div>
+          <strong>${teamLabel(winner)}</strong>
+          <em>${teamOwner(winner.id)}</em>
+        </div>
+        <b>✓</b>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="bracket-team bracket-placeholder">
+      <span class="bracket-flag">•</span>
+      <div>
+        <strong>Winner M${match.matchNumber}</strong>
+        <em>${displayMatchTime(match)} ET</em>
+      </div>
+      <b></b>
+    </div>
+  `;
+}
+
 function renderBracket() {
   const board = document.getElementById("bracketBoard");
   if (!board) return;
-  const matches = tournamentMatches().filter((match) => match.stage === "r32");
-  board.innerHTML = matches.length
-    ? matches.map((match) => {
+  const matches = tournamentMatches()
+    .filter((match) => match.stage === "r32")
+    .sort((a, b) => a.matchNumber - b.matchNumber);
+
+  if (!matches.length) {
+    board.innerHTML = `<div class="empty-note">Round of 32 fixtures will appear here when the score feed publishes them.</div>`;
+    return;
+  }
+
+  const r32Cards = matches.map((match) => {
       const home = teamById(match.homeId);
       const away = teamById(match.awayId);
       const score = matchScore(match);
@@ -1371,8 +1476,43 @@ function renderBracket() {
           </div>
         </article>
       `;
-    }).join("")
-    : `<div class="empty-note">Round of 32 fixtures will appear here when the score feed publishes them.</div>`;
+    }).join("");
+
+  const r16Cards = Array.from({ length: Math.ceil(matches.length / 2) }, (_, index) => {
+    const first = matches[index * 2];
+    const second = matches[index * 2 + 1];
+    return `
+      <article class="bracket-card bracket-slot-card">
+        <div class="bracket-meta">
+          <span>Next</span>
+          <strong>R16 Slot ${index + 1}</strong>
+        </div>
+        ${first ? bracketSlotTeam(first) : ""}
+        ${second ? bracketSlotTeam(second) : ""}
+        <div class="bracket-footer">
+          <span>Round of 16</span>
+          <strong>Winners meet here</strong>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  board.innerHTML = `
+    <div class="bracket-round bracket-round-r32">
+      <div class="bracket-round-title">
+        <p class="panel-label">Round of 32</p>
+        <span>16 matches</span>
+      </div>
+      <div class="bracket-round-grid">${r32Cards}</div>
+    </div>
+    <div class="bracket-round bracket-round-r16">
+      <div class="bracket-round-title">
+        <p class="panel-label">Round of 16</p>
+        <span>8 slots</span>
+      </div>
+      <div class="bracket-round-grid bracket-r16-grid">${r16Cards}</div>
+    </div>
+  `;
 }
 
 function getOwnerSpend() {
@@ -1456,6 +1596,63 @@ function renderAuctionSummary() {
     .join("");
 }
 
+function renderSidebarStandings(ownerPayouts) {
+  const sidebar = document.getElementById("sidebarStandings");
+  if (!sidebar) return;
+
+  sidebar.innerHTML = ownerPayouts
+    .sort((a, b) => b.net - a.net || b.payout - a.payout || a.player.localeCompare(b.player))
+    .map((owner, index) => {
+      const topTeam = owner.ownedTeams.find((entry) => entry.payout > 0);
+      const tooltip = owner.ownedTeams
+        .filter((entry) => entry.payout > 0)
+        .map((entry) => `${entry.team.name}: ${currency(entry.payout)} from ${entry.details.map((detail) => detail.note).join(", ")}`)
+        .join(" | ") || "No payout events yet.";
+      return `
+        <div class="sidebar-standing-row payout-hover" title="${attrText(tooltip)}">
+          <span>${index + 1}</span>
+          <div>
+            <strong>${owner.player}</strong>
+            <em>${topTeam ? `${topTeam.team.flag} ${topTeam.team.name}` : `${owner.ownedTeams.length} teams`}</em>
+          </div>
+          <b class="${owner.net >= 0 ? "budget-ok" : "budget-warn"}">${currency(owner.net)}</b>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+function renderSidebarPayouts(pot) {
+  const sidebar = document.getElementById("sidebarPayouts");
+  if (!sidebar) return;
+
+  sidebar.innerHTML = payoutRules
+    .map((rule) => {
+      const winners = payoutRuleWinners(rule);
+      const unitAmount = currentRuleUnitAmount(rule, pot);
+      const chips = winners.length
+        ? winners.map(({ team, units }) => `
+          <span class="payout-team-chip" title="${attrText(teamLabel(team))}">
+            <span>${team.flag}</span>
+            <strong>${team.id.toUpperCase()}</strong>
+            ${units > 1 ? `<em>×${units}</em>` : ""}
+          </span>
+        `).join("")
+        : `<span class="empty-note">Pending</span>`;
+      return `
+        <article class="sidebar-payout-row">
+          <div class="payout-rule-head">
+            <strong>${rule.label}</strong>
+            <span>${currency(unitAmount)}</span>
+          </div>
+          <div class="payout-rule-sub">${rule.pct}% of pot · ${currency(rulePool(rule.key, pot))} pool</div>
+          <div class="payout-team-chips">${chips}</div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
 function renderDashboard() {
   const { pot, teamPayouts, teamPayoutDetails } = calculatePayouts();
   const ownerSpend = getOwnerSpend();
@@ -1475,48 +1672,12 @@ function renderDashboard() {
     return { player, spent: ownerSpend[player], payout, net: payout - ownerSpend[player], ownedTeams };
   });
 
-  const soldTeams = teams.filter((team) => state.auction[team.id].owner && Number(state.auction[team.id].price) > 0);
-  const topAuction = [...teams].sort((a, b) => Number(state.auction[b.id].price || 0) - Number(state.auction[a.id].price || 0))[0];
-  const projectedLeader = [...ownerPayouts].sort((a, b) => b.net - a.net)[0];
   const playersEntered = ownerPayouts.filter((owner) => owner.spent > 0).length;
 
   document.getElementById("potTotal").textContent = currency(pot);
   document.getElementById("budgetStatus").textContent = `${playersEntered} of ${players.length} players entered`;
-  document.getElementById("teamsSold").textContent = `${soldTeams.length} / ${teams.length}`;
-  document.getElementById("averagePrice").textContent = currency(soldTeams.length ? pot / soldTeams.length : 0);
-  document.getElementById("topTeam").textContent = Number(state.auction[topAuction.id].price || 0)
-    ? `${teamLabel(topAuction)} (${currency(state.auction[topAuction.id].price)})`
-    : "None yet";
-  document.getElementById("projectedLeader").textContent = projectedLeader && projectedLeader.spent
-    ? `${projectedLeader.player} (${currency(projectedLeader.net)})`
-    : "None yet";
-
-  document.getElementById("ownerLeaderboard").innerHTML = ownerPayouts
-    .sort((a, b) => b.net - a.net)
-    .map((owner, index) => {
-      const tooltip = owner.ownedTeams
-        .filter((entry) => entry.payout > 0)
-        .map((entry) => `${entry.team.name}: ${currency(entry.payout)} from ${entry.details.map((detail) => detail.note).join(", ")}`)
-        .join(" | ") || "No payout events yet.";
-      const topTeam = owner.ownedTeams.find((entry) => entry.payout > 0);
-      return `
-      <tr>
-        <td>
-          <div class="owner-rank-cell">
-            <span>${index + 1}</span>
-            <strong>${owner.player}</strong>
-          </div>
-        </td>
-        <td class="${owner.spent > BUDGET_CAP ? "budget-warn" : ""}">${currency(owner.spent)}</td>
-        <td>
-          <span class="payout-hover" title="${attrText(tooltip)}">${currency(owner.payout)}</span>
-          ${topTeam ? `<em class="leaderboard-note">${topTeam.team.flag} ${topTeam.team.name}</em>` : ""}
-        </td>
-        <td class="${owner.net >= 0 ? "budget-ok" : "budget-warn"}">${currency(owner.net)}</td>
-      </tr>
-    `;
-    })
-    .join("");
+  renderSidebarStandings(ownerPayouts);
+  renderSidebarPayouts(pot);
 
   const earningRows = teams
     .map((team) => ({
