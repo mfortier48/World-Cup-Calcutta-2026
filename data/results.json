@@ -1,6 +1,6 @@
 {
-  "version": "2026-06-30-match-76",
-  "updatedAt": "2026-06-30T18:14:31.051Z",
+  "version": "2026-06-30-match-77",
+  "updatedAt": "2026-06-30T20:21:54.598Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -514,6 +514,13 @@
       "awayGoals": 1,
       "status": "FT-Pens",
       "winnerId": "mar"
+    },
+    {
+      "matchNumber": 77,
+      "homeGoals": 1,
+      "awayGoals": 2,
+      "status": "FT",
+      "winnerId": "nor"
     }
   ],
   "events": [
@@ -1743,10 +1750,10 @@
       "homeId": "civ",
       "awayId": "nor",
       "venue": "AT&T Stadium",
-      "status": "54'",
-      "completed": false,
-      "homeGoals": 0,
-      "awayGoals": 1,
+      "status": "FT",
+      "completed": true,
+      "homeGoals": 1,
+      "awayGoals": 2,
       "winnerId": "nor"
     },
     {
@@ -1935,6 +1942,22 @@
       "homeId": "can",
       "awayId": "mar",
       "venue": "NRG Stadium",
+      "status": "Scheduled",
+      "completed": false,
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "winnerId": ""
+    },
+    {
+      "espnId": "760504",
+      "matchNumber": 90,
+      "date": "2026-07-05",
+      "time": "16:00 ET",
+      "stage": "r16",
+      "group": "",
+      "homeId": "bra",
+      "awayId": "nor",
+      "venue": "MetLife Stadium",
       "status": "Scheduled",
       "completed": false,
       "homeGoals": 0,
