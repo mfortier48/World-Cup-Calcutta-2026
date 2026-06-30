@@ -1,6 +1,6 @@
 {
   "version": "2026-06-30-match-76",
-  "updatedAt": "2026-06-30T04:02:17.027Z",
+  "updatedAt": "2026-06-30T18:14:31.051Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -1743,11 +1743,11 @@
       "homeId": "civ",
       "awayId": "nor",
       "venue": "AT&T Stadium",
-      "status": "Scheduled",
+      "status": "54'",
       "completed": false,
       "homeGoals": 0,
-      "awayGoals": 0,
-      "winnerId": ""
+      "awayGoals": 1,
+      "winnerId": "nor"
     },
     {
       "espnId": "760492",
