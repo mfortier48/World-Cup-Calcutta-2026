@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css?v=28" />
+    <link rel="stylesheet" href="./styles.css?v=29" />
   </head>
   <body>
     <div class="app-shell">
@@ -183,25 +183,19 @@
         </section>
 
         <section id="calculator" class="view">
-          <section class="panel calculator-chat-panel">
+          <section class="panel calculator-builder-panel">
             <div class="section-heading tight-heading">
               <div>
                 <p class="panel-label">What Ifs</p>
-                <h3>Scenario Chat</h3>
+                <h3>Payout Scenario Builder</h3>
               </div>
-              <p class="hint">Tell the calculator who you are, pick your live teams, then choose how far each one goes.</p>
+              <p class="hint">Choose your name, pick any live teams, then project how far each one goes.</p>
             </div>
 
-            <div class="scenario-chat-shell">
-              <div id="scenarioChatLog" class="scenario-chat-log" aria-live="polite"></div>
-              <form id="scenarioChatForm" class="scenario-chat-form">
-                <input id="scenarioChatInput" type="text" autocomplete="off" placeholder="Type your name, e.g. Matt" />
-                <button class="sold-button" type="submit">Send</button>
-              </form>
-            </div>
+            <div id="scenarioBuilder" class="scenario-builder" aria-live="polite"></div>
           </section>
 
-          <section class="panel scenario-total-panel scenario-chat-summary-panel">
+          <section class="panel scenario-total-panel scenario-builder-summary-panel">
             <div class="section-heading">
               <div>
                 <p class="panel-label">Scenario Total</p>
@@ -209,11 +203,11 @@
               </div>
               <div class="calculator-actions slim-actions">
                 <button class="ghost" id="downloadScenarioButton" type="button">Download</button>
-                <button class="danger" id="scenarioChatResetButton" type="button" data-chat-reset>Start Over</button>
+                <button class="danger" id="scenarioBuilderResetButton" type="button" data-builder-reset>Start Over</button>
                 <span id="scenarioSaveStatus" class="save-status" aria-live="polite"></span>
               </div>
             </div>
-            <div id="scenarioChatSummary" class="scenario-chat-summary"></div>
+            <div id="scenarioBuilderSummary" class="scenario-builder-summary"></div>
             <div class="scenario-total-grid">
               <article>
                 <span>Gross Payout</span>
@@ -307,6 +301,6 @@
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js?v=28"></script>
+    <script src="./app.js?v=29"></script>
   </body>
 </html>

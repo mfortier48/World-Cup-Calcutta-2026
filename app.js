@@ -576,13 +576,10 @@ const defaultState = {
 let state = loadState();
 let scenarioState = loadScenarioState();
 let dashboardSortMode = "payout";
-let scenarioChatState = {
+let scenarioBuilderState = {
   owner: "",
   selectedTeamIds: [],
-  teamsConfirmed: false,
   projections: {},
-  step: "owner",
-  error: "",
 };
 
 function loadState() {
@@ -1060,21 +1057,6 @@ function scenarioEntrySummary(entry) {
   };
 }
 
-function normalizeText(value = "") {
-  return String(value).trim().toLowerCase().replace(/[^a-z0-9& ]+/g, "").replace(/\s+/g, " ");
-}
-
-function matchPlayerName(input) {
-  const normalized = normalizeText(input);
-  if (!normalized) return "";
-  return players.find((player) => {
-    const playerName = normalizeText(player);
-    return playerName === normalized
-      || playerName.split(" ").includes(normalized)
-      || normalized.split(" ").includes(playerName);
-  }) || "";
-}
-
 function teamPlayedKnockoutLoss(teamId) {
   return tournamentMatches().find((match) => {
     if ((match.stage || "group") === "group") return false;
@@ -1149,68 +1131,35 @@ function projectionStagesForTeam(teamId) {
     });
 }
 
-function parseTeamSelection(input, liveTeams) {
-  const normalized = normalizeText(input);
-  if (!normalized) return [];
-  if (["all", "everyone", "all teams"].includes(normalized)) return liveTeams.map((team) => team.id);
-  return liveTeams
-    .filter((team) => {
-      const names = [team.name, team.id, team.name.replace("Cote", "Ivory")].map(normalizeText);
-      return names.some((name) => normalized.includes(name));
-    })
-    .map((team) => team.id);
+function scenarioBuilderStep() {
+  if (!scenarioBuilderState.owner) return "owner";
+  if (!scenarioBuilderState.selectedTeamIds.length) return "teams";
+  if (scenarioBuilderState.selectedTeamIds.some((teamId) => !scenarioBuilderState.projections[teamId])) return "stage";
+  return "complete";
 }
 
-function parseProjectionStage(input, teamId) {
-  const text = normalizeText(input);
-  const available = projectionStagesForTeam(teamId);
-  const candidates = [
-    { value: "champion", words: ["champion", "win", "winner", "all", "title"] },
-    { value: "final", words: ["final", "runner up"] },
-    { value: "sf", words: ["semi", "semifinal"] },
-    { value: "qf", words: ["quarter", "qf"] },
-    { value: "r16", words: ["round of 16", "r16", "sixteen", "next round"] },
-    { value: "r32", words: ["round of 32", "r32", "lose", "out"] },
-  ];
-  const match = candidates.find((candidate) => candidate.words.some((word) => text.includes(word)));
-  return match && available.some((stage) => stage.value === match.value) ? match.value : "";
+function scenarioStepClass(step, currentStep) {
+  const order = ["owner", "teams", "stage", "complete"];
+  const stepIndex = order.indexOf(step);
+  const currentIndex = order.indexOf(currentStep);
+  if (stepIndex < currentIndex) return "complete";
+  if (stepIndex === currentIndex) return "active";
+  return "waiting";
 }
 
-function nextProjectionTeamId() {
-  return scenarioChatState.selectedTeamIds.find((teamId) => !scenarioChatState.projections[teamId]) || "";
-}
-
-function syncScenarioEntriesFromChat() {
-  const entries = scenarioChatState.selectedTeamIds
-    .filter((teamId) => scenarioChatState.projections[teamId])
-    .map((teamId) => scenarioEntryFromProjection(teamId, scenarioChatState.projections[teamId]));
+function syncScenarioEntriesFromBuilder() {
+  const entries = scenarioBuilderState.selectedTeamIds
+    .filter((teamId) => scenarioBuilderState.projections[teamId])
+    .map((teamId) => scenarioEntryFromProjection(teamId, scenarioBuilderState.projections[teamId]));
   scenarioState = { entries };
   saveScenarioState();
 }
 
-function updateScenarioChatStep() {
-  if (!scenarioChatState.owner) {
-    scenarioChatState.step = "owner";
-  } else if (!scenarioChatState.selectedTeamIds.length) {
-    scenarioChatState.step = "teams";
-  } else if (!scenarioChatState.teamsConfirmed) {
-    scenarioChatState.step = "teams";
-  } else if (nextProjectionTeamId()) {
-    scenarioChatState.step = "stage";
-  } else {
-    scenarioChatState.step = "complete";
-  }
-  syncScenarioEntriesFromChat();
-}
-
-function resetScenarioChat() {
-  scenarioChatState = {
+function resetScenarioBuilder() {
+  scenarioBuilderState = {
     owner: "",
     selectedTeamIds: [],
-    teamsConfirmed: false,
     projections: {},
-    step: "owner",
-    error: "",
   };
   scenarioState = { entries: [] };
   saveScenarioState();
@@ -2073,113 +2022,111 @@ function renderRules() {
 }
 
 function renderScenarioCalculator() {
-  const chatLog = document.getElementById("scenarioChatLog");
-  const summary = document.getElementById("scenarioChatSummary");
-  const input = document.getElementById("scenarioChatInput");
-  if (!chatLog || !summary) return;
+  const builder = document.getElementById("scenarioBuilder");
+  const summary = document.getElementById("scenarioBuilderSummary");
+  if (!builder || !summary) return;
 
-  updateScenarioChatStep();
-  const ownerTeams = scenarioChatState.owner
-    ? ownerTeamsForScenario(scenarioChatState.owner)
+  const ownerTeams = scenarioBuilderState.owner
+    ? ownerTeamsForScenario(scenarioBuilderState.owner)
     : { live: [], eliminated: [] };
-  const activeTeamId = nextProjectionTeamId();
-  const activeTeam = activeTeamId ? teamById(activeTeamId) : null;
 
-  const messages = [
-    `<div class="chat-bubble bot"><strong>Who are you?</strong><span>Type your name, or tap one below.</span></div>`,
-    `<div class="chat-options owner-options">
-      ${players.map((player) => `<button type="button" data-chat-owner="${attrText(player)}">${player}</button>`).join("")}
-    </div>`,
-  ];
+  if (scenarioBuilderState.owner) {
+    const liveIds = new Set(ownerTeams.live.map((team) => team.id));
+    scenarioBuilderState.selectedTeamIds = scenarioBuilderState.selectedTeamIds.filter((teamId) => liveIds.has(teamId));
+    Object.keys(scenarioBuilderState.projections).forEach((teamId) => {
+      if (!scenarioBuilderState.selectedTeamIds.includes(teamId)) delete scenarioBuilderState.projections[teamId];
+    });
+  }
 
-  if (scenarioChatState.owner) {
-    const eliminatedText = ownerTeams.eliminated.length
-      ? ` I am leaving out ${ownerTeams.eliminated.map((team) => `${team.flag} ${team.name}`).join(", ")} because ${ownerTeams.eliminated.length === 1 ? "it is" : "they are"} already eliminated.`
-      : "";
-    messages.push(`<div class="chat-bubble user">${scenarioChatState.owner}</div>`);
-    messages.push(`
-      <div class="chat-bubble bot">
-        <strong>Which team(s) would you like to scenario plan for?</strong>
-        <span>${ownerTeams.live.length ? `I found ${ownerTeams.live.length} live team${ownerTeams.live.length === 1 ? "" : "s"} for ${scenarioChatState.owner}.${eliminatedText}` : `I do not see any unresolved teams for ${scenarioChatState.owner}.${eliminatedText}`}</span>
+  const currentStep = scenarioBuilderStep();
+  const selectedTeams = scenarioBuilderState.selectedTeamIds.map(teamById).filter(Boolean);
+  syncScenarioEntriesFromBuilder();
+
+  builder.innerHTML = `
+    <article class="scenario-step ${scenarioStepClass("owner", currentStep)}">
+      <header>
+        <span>1</span>
+        <div>
+          <h4>Who are you?</h4>
+          <p>Choose the league owner whose teams you want to model.</p>
+        </div>
+      </header>
+      <div class="builder-options owner-options">
+        ${players.map((player) => `
+          <button type="button" class="${scenarioBuilderState.owner === player ? "selected" : ""}" data-builder-owner="${attrText(player)}">${player}</button>
+        `).join("")}
       </div>
-    `);
-    if (ownerTeams.live.length) {
-      messages.push(`
-        <div class="chat-options team-options">
-          ${ownerTeams.live.map((team) => {
-            const selected = scenarioChatState.selectedTeamIds.includes(team.id);
+    </article>
+
+    <article class="scenario-step ${scenarioStepClass("teams", currentStep)}">
+      <header>
+        <span>2</span>
+        <div>
+          <h4>Pick live teams</h4>
+          <p>${scenarioBuilderState.owner ? `Only unresolved ${scenarioBuilderState.owner} teams are shown.` : "Choose an owner first."}</p>
+        </div>
+      </header>
+      ${scenarioBuilderState.owner ? `
+        ${ownerTeams.live.length ? `
+          <div class="builder-options team-options">
+            ${ownerTeams.live.map((team) => {
+              const selected = scenarioBuilderState.selectedTeamIds.includes(team.id);
+              return `
+                <button type="button" class="team-choice ${selected ? "selected" : ""}" data-builder-team="${team.id}">
+                  <span class="flag-box">${team.flag}</span>
+                  <strong>${teamLabel(team)}</strong>
+                  <em>${currency(state.auction[team.id]?.price || 0)} paid</em>
+                </button>
+              `;
+            }).join("")}
+          </div>
+        ` : `<div class="empty-note">No unresolved teams left for ${scenarioBuilderState.owner}.</div>`}
+        ${ownerTeams.eliminated.length ? `
+          <p class="builder-note">Already decided and hidden: ${ownerTeams.eliminated.map((team) => `${team.flag} ${team.name}`).join(", ")}.</p>
+        ` : ""}
+      ` : `<div class="empty-note">Owner choices are above.</div>`}
+    </article>
+
+    <article class="scenario-step ${scenarioStepClass("stage", currentStep)}">
+      <header>
+        <span>3</span>
+        <div>
+          <h4>Project each finish</h4>
+          <p>Tap the furthest stage you expect. Actual group-stage money already earned stays included.</p>
+        </div>
+      </header>
+      ${selectedTeams.length ? `
+        <div class="scenario-stage-grid">
+          ${selectedTeams.map((team) => {
+            const projection = scenarioBuilderState.projections[team.id];
+            const currentStage = stages.find((stage) => stage.value === state.results[team.id]?.stage)?.label || "Group Stage";
             return `
-              <button type="button" class="${selected ? "selected" : ""}" data-chat-team="${team.id}">
-                <span>${team.flag}</span>
-                <strong>${team.name}</strong>
-                <em>${currency(state.auction[team.id]?.price || 0)}</em>
-              </button>
+              <article class="scenario-stage-card ${projection ? "complete" : ""}">
+                <div class="scenario-stage-team">
+                  <span class="flag-box">${team.flag}</span>
+                  <div>
+                    <strong>${teamLabel(team)}</strong>
+                    <em>${currentStage} · ${currency(state.auction[team.id]?.price || 0)} paid</em>
+                  </div>
+                </div>
+                <div class="builder-options stage-options">
+                  ${projectionStagesForTeam(team.id).map((stage) => `
+                    <button type="button" class="${projection === stage.value ? "selected" : ""}" data-builder-stage="${stage.value}" data-builder-stage-team="${team.id}">${stage.label}</button>
+                  `).join("")}
+                </div>
+              </article>
             `;
           }).join("")}
         </div>
-        <div class="chat-actions">
-          <button class="sold-button" type="button" data-chat-action="continue-teams" ${scenarioChatState.selectedTeamIds.length ? "" : "disabled"}>Continue</button>
-        </div>
-      `);
-    }
-  }
+        ${currentStep === "complete" ? `<p class="builder-note success">Scenario complete. Change any finish above to revise the numbers.</p>` : ""}
+      ` : `<div class="empty-note">Pick one or more live teams to unlock finish choices.</div>`}
+    </article>
+  `;
 
-  if (scenarioChatState.selectedTeamIds.length) {
-    messages.push(`
-      <div class="chat-bubble user">
-        ${scenarioChatState.selectedTeamIds.map((teamId) => {
-          const team = teamById(teamId);
-          return team ? `${team.flag} ${team.name}` : teamId;
-        }).join(", ")}
-      </div>
-    `);
-  }
-
-  if (scenarioChatState.step === "stage" && activeTeam) {
-    messages.push(`
-      <div class="chat-bubble bot">
-        <strong>How far does ${activeTeam.flag} ${activeTeam.name} go?</strong>
-        <span>Pick the furthest stage you expect. The calculator keeps their actual group-stage money already earned.</span>
-      </div>
-      <div class="chat-options stage-options">
-        ${projectionStagesForTeam(activeTeam.id).map((stage) => `
-          <button type="button" data-chat-stage="${stage.value}" data-chat-stage-team="${activeTeam.id}">${stage.label}</button>
-        `).join("")}
-      </div>
-    `);
-  }
-
-  if (scenarioChatState.step === "complete" && scenarioChatState.selectedTeamIds.length) {
-    messages.push(`
-      <div class="chat-bubble bot success">
-        <strong>Scenario built.</strong>
-        <span>You can download it, start over, or change the selected teams above.</span>
-      </div>
-    `);
-  }
-
-  if (scenarioChatState.error) {
-    messages.push(`<div class="chat-bubble bot warning">${scenarioChatState.error}</div>`);
-  }
-
-  chatLog.innerHTML = messages.join("");
-  chatLog.scrollTop = chatLog.scrollHeight;
-
-  if (input) {
-    input.placeholder = scenarioChatState.step === "owner"
-      ? "Type your name, e.g. Matt"
-      : scenarioChatState.step === "teams"
-        ? "Type team names, e.g. Spain and Paraguay, or tap above"
-        : scenarioChatState.step === "stage" && activeTeam
-          ? `Type ${activeTeam.name}'s finish, e.g. quarterfinals`
-          : "Start over to build a new scenario";
-    input.disabled = scenarioChatState.step === "complete";
-  }
-
-  summary.innerHTML = scenarioChatState.selectedTeamIds.length
-    ? scenarioChatState.selectedTeamIds.map((teamId) => {
+  summary.innerHTML = scenarioBuilderState.selectedTeamIds.length
+    ? scenarioBuilderState.selectedTeamIds.map((teamId) => {
       const team = teamById(teamId);
-      const stage = scenarioChatState.projections[teamId];
+      const stage = scenarioBuilderState.projections[teamId];
       if (!team) return "";
       if (!stage) {
         return `
@@ -2205,6 +2152,9 @@ function renderScenarioCalculator() {
       `;
     }).join("")
     : `<div class="empty-note">Your scenario will appear here after you choose teams.</div>`;
+
+  const downloadButton = document.getElementById("downloadScenarioButton");
+  if (downloadButton) downloadButton.disabled = scenarioState.entries.length === 0;
 
   const totals = scenarioState.entries.reduce((sum, entry) => {
     const breakdown = scenarioPayoutBreakdown(entry);
@@ -2441,96 +2391,40 @@ function handleDashboardSort(event) {
   renderDashboard();
 }
 
-function handleScenarioChatSubmit(event) {
-  const form = event.target.closest("#scenarioChatForm");
-  if (!form) return;
-  event.preventDefault();
-
-  const input = document.getElementById("scenarioChatInput");
-  const value = input?.value || "";
-  scenarioChatState.error = "";
-
-  if (scenarioChatState.step === "owner") {
-    const player = matchPlayerName(value);
-    if (!player) {
-      scenarioChatState.error = "I could not match that to a league owner. Try a first name like Matt, Meli, Hillary, or Zach.";
-    } else {
-      scenarioChatState.owner = player;
-      scenarioChatState.selectedTeamIds = [];
-      scenarioChatState.teamsConfirmed = false;
-      scenarioChatState.projections = {};
-    }
-  } else if (scenarioChatState.step === "teams") {
-    const { live } = ownerTeamsForScenario(scenarioChatState.owner);
-    const parsedTeams = parseTeamSelection(value, live);
-    if (!parsedTeams.length) {
-      scenarioChatState.error = "I could not match that to one of your live teams. Tap a team chip or type something like 'Spain and Paraguay'.";
-    } else {
-      scenarioChatState.selectedTeamIds = [...new Set([...scenarioChatState.selectedTeamIds, ...parsedTeams])];
-    }
-  } else if (scenarioChatState.step === "stage") {
-    const activeTeamId = nextProjectionTeamId();
-    const stage = parseProjectionStage(value, activeTeamId);
-    if (!stage) {
-      const team = teamById(activeTeamId);
-      scenarioChatState.error = `I could not read that finish for ${team?.name || "that team"}. Try champion, final, semifinal, quarterfinal, round of 16, or lose.`;
-    } else {
-      scenarioChatState.projections[activeTeamId] = stage;
-    }
-  }
-
-  if (input) input.value = "";
-  updateScenarioChatStep();
-  renderScenarioCalculator();
-}
-
-function handleScenarioChatClick(event) {
-  const ownerButton = event.target.closest("[data-chat-owner]");
-  const teamButton = event.target.closest("[data-chat-team]");
-  const stageButton = event.target.closest("[data-chat-stage]");
-  const actionButton = event.target.closest("[data-chat-action]");
-  const resetButton = event.target.closest("[data-chat-reset]");
-
-  if (!ownerButton && !teamButton && !stageButton && !actionButton && !resetButton) return;
-  scenarioChatState.error = "";
+function handleScenarioBuilderClick(event) {
+  const ownerButton = event.target.closest("[data-builder-owner]");
+  const teamButton = event.target.closest("[data-builder-team]");
+  const stageButton = event.target.closest("[data-builder-stage]");
+  const resetButton = event.target.closest("[data-builder-reset]");
 
   if (ownerButton) {
-    scenarioChatState.owner = ownerButton.dataset.chatOwner;
-    scenarioChatState.selectedTeamIds = [];
-    scenarioChatState.teamsConfirmed = false;
-    scenarioChatState.projections = {};
+    scenarioBuilderState.owner = ownerButton.dataset.builderOwner;
+    scenarioBuilderState.selectedTeamIds = [];
+    scenarioBuilderState.projections = {};
   }
 
   if (teamButton) {
-    const teamId = teamButton.dataset.chatTeam;
-    const selected = new Set(scenarioChatState.selectedTeamIds);
+    const teamId = teamButton.dataset.builderTeam;
+    const selected = new Set(scenarioBuilderState.selectedTeamIds);
     if (selected.has(teamId)) {
       selected.delete(teamId);
-      delete scenarioChatState.projections[teamId];
+      delete scenarioBuilderState.projections[teamId];
     } else {
       selected.add(teamId);
     }
-    scenarioChatState.selectedTeamIds = [...selected];
-    scenarioChatState.teamsConfirmed = false;
-  }
-
-  if (actionButton?.dataset.chatAction === "continue-teams") {
-    if (!scenarioChatState.selectedTeamIds.length) {
-      scenarioChatState.error = "Pick at least one live team before continuing.";
-    } else {
-      scenarioChatState.teamsConfirmed = true;
-    }
+    scenarioBuilderState.selectedTeamIds = [...selected];
   }
 
   if (stageButton) {
-    scenarioChatState.projections[stageButton.dataset.chatStageTeam] = stageButton.dataset.chatStage;
+    scenarioBuilderState.projections[stageButton.dataset.builderStageTeam] = stageButton.dataset.builderStage;
   }
 
   if (resetButton) {
-    resetScenarioChat();
+    resetScenarioBuilder();
   }
 
-  updateScenarioChatStep();
+  if (!ownerButton && !teamButton && !stageButton && !resetButton) return;
+  syncScenarioEntriesFromBuilder();
   renderScenarioCalculator();
 }
 
@@ -2538,8 +2432,7 @@ document.addEventListener("input", handleInput);
 document.addEventListener("change", handleInput);
 document.addEventListener("click", handleScenarioRemove);
 document.addEventListener("click", handleDashboardSort);
-document.addEventListener("submit", handleScenarioChatSubmit);
-document.addEventListener("click", handleScenarioChatClick);
+document.addEventListener("click", handleScenarioBuilderClick);
 
 document.querySelectorAll(".nav-item").forEach((button) => {
   button.addEventListener("click", () => setView(button.dataset.view));
