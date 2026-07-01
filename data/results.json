@@ -1,6 +1,6 @@
 {
-  "version": "2026-06-30-match-77",
-  "updatedAt": "2026-06-30T23:12:35.908Z",
+  "version": "2026-07-01-match-78",
+  "updatedAt": "2026-07-01T01:33:33.406Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -521,6 +521,13 @@
       "awayGoals": 2,
       "status": "FT",
       "winnerId": "nor"
+    },
+    {
+      "matchNumber": 78,
+      "homeGoals": 3,
+      "awayGoals": 0,
+      "status": "FT",
+      "winnerId": "fra"
     }
   ],
   "events": [
@@ -1776,7 +1783,7 @@
       "espnId": "760491",
       "matchNumber": 79,
       "date": "2026-06-30",
-      "time": "21:00 ET",
+      "time": "22:00 ET",
       "stage": "r32",
       "group": "",
       "homeId": "mex",
