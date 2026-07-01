@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-01-match-78",
-  "updatedAt": "2026-07-01T01:33:33.406Z",
+  "version": "2026-07-01-match-79",
+  "updatedAt": "2026-07-01T06:10:29.469Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -528,6 +528,13 @@
       "awayGoals": 0,
       "status": "FT",
       "winnerId": "fra"
+    },
+    {
+      "matchNumber": 79,
+      "homeGoals": 2,
+      "awayGoals": 0,
+      "status": "FT",
+      "winnerId": "mex"
     }
   ],
   "events": [
@@ -1789,11 +1796,11 @@
       "homeId": "mex",
       "awayId": "ecu",
       "venue": "Estadio Banorte",
-      "status": "Scheduled",
-      "completed": false,
-      "homeGoals": 0,
+      "status": "FT",
+      "completed": true,
+      "homeGoals": 2,
       "awayGoals": 0,
-      "winnerId": ""
+      "winnerId": "mex"
     },
     {
       "espnId": "760495",
