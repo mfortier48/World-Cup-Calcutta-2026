@@ -1,6 +1,6 @@
 {
   "version": "2026-07-01-match-80",
-  "updatedAt": "2026-07-01T19:54:00.753Z",
+  "updatedAt": "2026-07-01T21:27:23.171Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -1835,11 +1835,11 @@
       "homeId": "bel",
       "awayId": "sen",
       "venue": "Lumen Field",
-      "status": "Scheduled",
+      "status": "65'",
       "completed": false,
       "homeGoals": 0,
-      "awayGoals": 0,
-      "winnerId": ""
+      "awayGoals": 2,
+      "winnerId": "sen"
     },
     {
       "espnId": "760494",
