@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-02-match-81",
-  "updatedAt": "2026-07-02T00:05:50.816Z",
+  "version": "2026-07-02-match-82",
+  "updatedAt": "2026-07-02T04:20:56.326Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -549,6 +549,13 @@
       "awayGoals": 2,
       "status": "AET",
       "winnerId": "bel"
+    },
+    {
+      "matchNumber": 82,
+      "homeGoals": 2,
+      "awayGoals": 0,
+      "status": "FT",
+      "winnerId": "usa"
     }
   ],
   "events": [
@@ -1858,11 +1865,11 @@
       "homeId": "usa",
       "awayId": "bih",
       "venue": "Levi's Stadium",
-      "status": "5'",
-      "completed": false,
-      "homeGoals": 0,
+      "status": "FT",
+      "completed": true,
+      "homeGoals": 2,
       "awayGoals": 0,
-      "winnerId": ""
+      "winnerId": "usa"
     },
     {
       "espnId": "760497",
@@ -2018,6 +2025,22 @@
       "homeId": "mex",
       "awayId": "eng",
       "venue": "Estadio Banorte",
+      "status": "Scheduled",
+      "completed": false,
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "winnerId": ""
+    },
+    {
+      "espnId": "760507",
+      "matchNumber": 93,
+      "date": "2026-07-06",
+      "time": "20:00 ET",
+      "stage": "r16",
+      "group": "",
+      "homeId": "usa",
+      "awayId": "bel",
+      "venue": "Lumen Field",
       "status": "Scheduled",
       "completed": false,
       "homeGoals": 0,
