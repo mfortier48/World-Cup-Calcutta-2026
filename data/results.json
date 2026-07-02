@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-01-match-80",
-  "updatedAt": "2026-07-01T22:48:36.213Z",
+  "version": "2026-07-02-match-81",
+  "updatedAt": "2026-07-02T00:05:50.816Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -542,6 +542,13 @@
       "awayGoals": 1,
       "status": "FT",
       "winnerId": "eng"
+    },
+    {
+      "matchNumber": 81,
+      "homeGoals": 3,
+      "awayGoals": 2,
+      "status": "AET",
+      "winnerId": "bel"
     }
   ],
   "events": [
@@ -1835,8 +1842,8 @@
       "homeId": "bel",
       "awayId": "sen",
       "venue": "Lumen Field",
-      "status": "120'+10'",
-      "completed": false,
+      "status": "AET",
+      "completed": true,
       "homeGoals": 3,
       "awayGoals": 2,
       "winnerId": "bel"
@@ -1851,7 +1858,7 @@
       "homeId": "usa",
       "awayId": "bih",
       "venue": "Levi's Stadium",
-      "status": "Scheduled",
+      "status": "5'",
       "completed": false,
       "homeGoals": 0,
       "awayGoals": 0,
