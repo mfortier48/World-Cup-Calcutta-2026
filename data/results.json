@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-02-match-82",
-  "updatedAt": "2026-07-02T20:02:53.963Z",
+  "version": "2026-07-02-match-83",
+  "updatedAt": "2026-07-02T21:32:14.508Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -556,6 +556,13 @@
       "awayGoals": 0,
       "status": "FT",
       "winnerId": "usa"
+    },
+    {
+      "matchNumber": 83,
+      "homeGoals": 3,
+      "awayGoals": 0,
+      "status": "FT",
+      "winnerId": "esp"
     }
   ],
   "events": [
@@ -1881,9 +1888,9 @@
       "homeId": "esp",
       "awayId": "aut",
       "venue": "SoFi Stadium",
-      "status": "HT",
-      "completed": false,
-      "homeGoals": 1,
+      "status": "FT",
+      "completed": true,
+      "homeGoals": 3,
       "awayGoals": 0,
       "winnerId": "esp"
     },
