@@ -1,6 +1,6 @@
 {
   "version": "2026-07-02-match-82",
-  "updatedAt": "2026-07-02T04:20:56.326Z",
+  "updatedAt": "2026-07-02T20:02:53.963Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -1881,11 +1881,11 @@
       "homeId": "esp",
       "awayId": "aut",
       "venue": "SoFi Stadium",
-      "status": "Scheduled",
+      "status": "HT",
       "completed": false,
-      "homeGoals": 0,
+      "homeGoals": 1,
       "awayGoals": 0,
-      "winnerId": ""
+      "winnerId": "esp"
     },
     {
       "espnId": "760496",
