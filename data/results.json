@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-03-match-84",
-  "updatedAt": "2026-07-03T04:07:55.886Z",
+  "version": "2026-07-03-match-85",
+  "updatedAt": "2026-07-03T07:35:37.600Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -570,6 +570,13 @@
       "awayGoals": 1,
       "status": "FT",
       "winnerId": "por"
+    },
+    {
+      "matchNumber": 85,
+      "homeGoals": 2,
+      "awayGoals": 0,
+      "status": "FT",
+      "winnerId": "sui"
     }
   ],
   "events": [
@@ -1927,8 +1934,8 @@
       "homeId": "sui",
       "awayId": "alg",
       "venue": "BC Place",
-      "status": "48'",
-      "completed": false,
+      "status": "FT",
+      "completed": true,
       "homeGoals": 2,
       "awayGoals": 0,
       "winnerId": "sui"
