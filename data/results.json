@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-03-match-83",
-  "updatedAt": "2026-07-03T00:04:38.601Z",
+  "version": "2026-07-03-match-84",
+  "updatedAt": "2026-07-03T04:07:55.886Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -563,6 +563,13 @@
       "awayGoals": 0,
       "status": "FT",
       "winnerId": "esp"
+    },
+    {
+      "matchNumber": 84,
+      "homeGoals": 2,
+      "awayGoals": 1,
+      "status": "FT",
+      "winnerId": "por"
     }
   ],
   "events": [
@@ -1904,11 +1911,11 @@
       "homeId": "por",
       "awayId": "cro",
       "venue": "BMO Field",
-      "status": "HT",
-      "completed": false,
-      "homeGoals": 0,
-      "awayGoals": 0,
-      "winnerId": ""
+      "status": "FT",
+      "completed": true,
+      "homeGoals": 2,
+      "awayGoals": 1,
+      "winnerId": "por"
     },
     {
       "espnId": "760498",
@@ -1920,11 +1927,11 @@
       "homeId": "sui",
       "awayId": "alg",
       "venue": "BC Place",
-      "status": "Scheduled",
+      "status": "48'",
       "completed": false,
-      "homeGoals": 0,
+      "homeGoals": 2,
       "awayGoals": 0,
-      "winnerId": ""
+      "winnerId": "sui"
     },
     {
       "espnId": "760499",
@@ -2039,8 +2046,24 @@
       "winnerId": ""
     },
     {
-      "espnId": "760507",
+      "espnId": "760506",
       "matchNumber": 93,
+      "date": "2026-07-06",
+      "time": "15:00 ET",
+      "stage": "r16",
+      "group": "",
+      "homeId": "por",
+      "awayId": "esp",
+      "venue": "AT&T Stadium",
+      "status": "Scheduled",
+      "completed": false,
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "winnerId": ""
+    },
+    {
+      "espnId": "760507",
+      "matchNumber": 94,
       "date": "2026-07-06",
       "time": "20:00 ET",
       "stage": "r16",
