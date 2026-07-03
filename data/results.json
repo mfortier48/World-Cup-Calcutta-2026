@@ -1,6 +1,6 @@
 {
   "version": "2026-07-03-match-85",
-  "updatedAt": "2026-07-03T07:35:37.600Z",
+  "updatedAt": "2026-07-03T19:20:38.456Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -1950,10 +1950,10 @@
       "homeId": "aus",
       "awayId": "egy",
       "venue": "AT&T Stadium",
-      "status": "Scheduled",
+      "status": "58'",
       "completed": false,
-      "homeGoals": 0,
-      "awayGoals": 0,
+      "homeGoals": 1,
+      "awayGoals": 1,
       "winnerId": ""
     },
     {
