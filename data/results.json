@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-02-match-83",
-  "updatedAt": "2026-07-02T21:32:14.508Z",
+  "version": "2026-07-03-match-83",
+  "updatedAt": "2026-07-03T00:04:38.601Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -1904,7 +1904,7 @@
       "homeId": "por",
       "awayId": "cro",
       "venue": "BMO Field",
-      "status": "Scheduled",
+      "status": "HT",
       "completed": false,
       "homeGoals": 0,
       "awayGoals": 0,
