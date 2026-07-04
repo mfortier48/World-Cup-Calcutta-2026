@@ -1,6 +1,6 @@
 {
   "version": "2026-07-04-match-88",
-  "updatedAt": "2026-07-04T17:45:23.937Z",
+  "updatedAt": "2026-07-04T19:11:04.364Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -2019,11 +2019,11 @@
       "homeId": "can",
       "awayId": "mar",
       "venue": "NRG Stadium",
-      "status": "44'",
-      "completed": false,
+      "status": "FT",
+      "completed": true,
       "homeGoals": 0,
-      "awayGoals": 0,
-      "winnerId": ""
+      "awayGoals": 3,
+      "winnerId": "mar"
     },
     {
       "espnId": "760503",
