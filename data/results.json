@@ -1,6 +1,6 @@
 {
   "version": "2026-07-04-match-89",
-  "updatedAt": "2026-07-04T21:27:36.574Z",
+  "updatedAt": "2026-07-04T22:29:56.560Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -2042,7 +2042,7 @@
       "homeId": "par",
       "awayId": "fra",
       "venue": "Lincoln Financial Field",
-      "status": "23'",
+      "status": "65'",
       "completed": false,
       "homeGoals": 0,
       "awayGoals": 0,
