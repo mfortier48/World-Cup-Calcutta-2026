@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-04-match-86",
-  "updatedAt": "2026-07-04T00:03:22.092Z",
+  "version": "2026-07-04-match-88",
+  "updatedAt": "2026-07-04T04:01:21.646Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -584,6 +584,20 @@
       "awayGoals": 1,
       "status": "FT-Pens",
       "winnerId": "egy"
+    },
+    {
+      "matchNumber": 87,
+      "homeGoals": 3,
+      "awayGoals": 2,
+      "status": "AET",
+      "winnerId": "arg"
+    },
+    {
+      "matchNumber": 88,
+      "homeGoals": 1,
+      "awayGoals": 0,
+      "status": "FT",
+      "winnerId": "col"
     }
   ],
   "events": [
@@ -1973,11 +1987,11 @@
       "homeId": "arg",
       "awayId": "cpv",
       "venue": "Hard Rock Stadium",
-      "status": "ET",
-      "completed": false,
-      "homeGoals": 1,
-      "awayGoals": 1,
-      "winnerId": ""
+      "status": "AET",
+      "completed": true,
+      "homeGoals": 3,
+      "awayGoals": 2,
+      "winnerId": "arg"
     },
     {
       "espnId": "760501",
@@ -1989,11 +2003,11 @@
       "homeId": "col",
       "awayId": "gha",
       "venue": "GEHA Field at Arrowhead Stadium",
-      "status": "Scheduled",
-      "completed": false,
-      "homeGoals": 0,
+      "status": "FT",
+      "completed": true,
+      "homeGoals": 1,
       "awayGoals": 0,
-      "winnerId": ""
+      "winnerId": "col"
     },
     {
       "espnId": "760502",
@@ -2085,6 +2099,38 @@
       "homeId": "usa",
       "awayId": "bel",
       "venue": "Lumen Field",
+      "status": "Scheduled",
+      "completed": false,
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "winnerId": ""
+    },
+    {
+      "espnId": "760509",
+      "matchNumber": 95,
+      "date": "2026-07-07",
+      "time": "12:00 ET",
+      "stage": "r16",
+      "group": "",
+      "homeId": "arg",
+      "awayId": "egy",
+      "venue": "Mercedes-Benz Stadium",
+      "status": "Scheduled",
+      "completed": false,
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "winnerId": ""
+    },
+    {
+      "espnId": "760508",
+      "matchNumber": 96,
+      "date": "2026-07-07",
+      "time": "16:00 ET",
+      "stage": "r16",
+      "group": "",
+      "homeId": "sui",
+      "awayId": "col",
+      "venue": "BC Place",
       "status": "Scheduled",
       "completed": false,
       "homeGoals": 0,
