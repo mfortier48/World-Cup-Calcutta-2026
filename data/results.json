@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-03-match-86",
-  "updatedAt": "2026-07-03T22:45:23.746Z",
+  "version": "2026-07-04-match-86",
+  "updatedAt": "2026-07-04T00:03:22.092Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -1973,11 +1973,11 @@
       "homeId": "arg",
       "awayId": "cpv",
       "venue": "Hard Rock Stadium",
-      "status": "45'",
+      "status": "ET",
       "completed": false,
       "homeGoals": 1,
-      "awayGoals": 0,
-      "winnerId": "arg"
+      "awayGoals": 1,
+      "winnerId": ""
     },
     {
       "espnId": "760501",
