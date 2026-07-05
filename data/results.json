@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-04-match-90",
-  "updatedAt": "2026-07-04T23:35:16.954Z",
+  "version": "2026-07-05-match-90",
+  "updatedAt": "2026-07-05T20:58:55.320Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -2065,7 +2065,7 @@
       "homeId": "bra",
       "awayId": "nor",
       "venue": "MetLife Stadium",
-      "status": "Scheduled",
+      "status": "HT",
       "completed": false,
       "homeGoals": 0,
       "awayGoals": 0,
