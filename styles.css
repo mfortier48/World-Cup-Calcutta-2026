@@ -603,19 +603,19 @@ h3 {
   text-transform: uppercase;
 }
 
-.round32-bracket {
+.knockout-bracket {
   display: grid;
   grid-template-columns: minmax(310px, 0.92fr) minmax(260px, 0.62fr) minmax(310px, 0.92fr);
   gap: 20px;
   align-items: center;
 }
 
-.round32-side {
+.knockout-side {
   display: grid;
   gap: 11px;
 }
 
-.round32-match {
+.knockout-match {
   position: relative;
   display: grid;
   overflow: hidden;
@@ -625,7 +625,7 @@ h3 {
   box-shadow: 0 8px 18px rgba(31, 37, 35, 0.05);
 }
 
-.round32-match::after {
+.knockout-match::after {
   content: "";
   position: absolute;
   top: 50%;
@@ -633,15 +633,15 @@ h3 {
   border-top: 1px solid rgba(23, 33, 31, 0.22);
 }
 
-.round32-match.left-side::after {
+.knockout-match.left-side::after {
   right: -20px;
 }
 
-.round32-match.right-side::after {
+.knockout-match.right-side::after {
   left: -20px;
 }
 
-.round32-match-head {
+.knockout-match-head {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 8px;
@@ -653,25 +653,25 @@ h3 {
   font-size: 0.78rem;
 }
 
-.round32-match-head strong,
-.round32-match-head span,
-.round32-match-head em {
+.knockout-match-head strong,
+.knockout-match-head span,
+.knockout-match-head em {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.round32-match-head strong {
+.knockout-match-head strong {
   font-weight: 950;
 }
 
-.round32-match-head em {
+.knockout-match-head em {
   color: var(--muted);
   font-style: normal;
   font-weight: 900;
 }
 
-.round32-team {
+.knockout-team {
   display: grid;
   grid-template-columns: 34px minmax(0, 1fr) 30px;
   gap: 8px;
@@ -682,11 +682,11 @@ h3 {
   background: rgba(255, 255, 255, 0.74);
 }
 
-.round32-team.winner {
+.knockout-team.winner {
   background: rgba(13, 107, 87, 0.1);
 }
 
-.round32-flag {
+.knockout-flag {
   display: grid;
   place-items: center;
   width: 32px;
@@ -696,32 +696,32 @@ h3 {
   font-size: 1rem;
 }
 
-.round32-team strong,
-.round32-team em {
+.knockout-team strong,
+.knockout-team em {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.round32-team strong {
+.knockout-team strong {
   font-size: 1rem;
   font-weight: 920;
 }
 
-.round32-team em {
+.knockout-team em {
   color: var(--green);
   font-size: 0.72rem;
   font-style: normal;
   font-weight: 850;
 }
 
-.round32-team b {
+.knockout-team b {
   font-size: 1.18rem;
   text-align: right;
 }
 
-.round32-winner {
+.knockout-winner {
   padding: 4px 10px 6px;
   color: var(--green);
   background: rgba(255, 255, 255, 0.68);
@@ -730,13 +730,13 @@ h3 {
   font-weight: 900;
 }
 
-.round32-center {
+.knockout-center {
   display: grid;
   gap: 14px;
   justify-items: center;
 }
 
-.round32-center-card {
+.knockout-center-card {
   display: grid;
   justify-items: center;
   gap: 5px;
@@ -745,7 +745,7 @@ h3 {
   text-align: center;
 }
 
-.round32-center-card span {
+.knockout-center-card span {
   display: inline-flex;
   align-items: center;
   min-height: 34px;
@@ -758,7 +758,7 @@ h3 {
   text-transform: uppercase;
 }
 
-.round32-center-card strong {
+.knockout-center-card strong {
   color: var(--ink);
   font-size: clamp(2rem, 4.2vw, 3.6rem);
   font-weight: 950;
@@ -766,20 +766,20 @@ h3 {
   text-transform: uppercase;
 }
 
-.round32-center-card em {
+.knockout-center-card em {
   color: var(--muted);
   font-style: normal;
   font-weight: 900;
 }
 
-.round32-slot-grid {
+.knockout-slot-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   width: 100%;
 }
 
-.round32-slot {
+.knockout-slot {
   display: grid;
   gap: 3px;
   min-height: 58px;
@@ -790,15 +790,22 @@ h3 {
   text-align: center;
 }
 
-.round32-slot strong {
+.knockout-slot strong {
   font-size: 0.82rem;
 }
 
-.round32-slot span {
+.knockout-slot span {
   color: var(--muted);
   font-size: 0.72rem;
   font-weight: 800;
   line-height: 1.25;
+}
+
+.knockout-slot em {
+  color: var(--green);
+  font-size: 0.64rem;
+  font-style: normal;
+  font-weight: 850;
 }
 
 .metric-grid {
@@ -2930,7 +2937,7 @@ input[type="number"] {
   .hero-match-board,
   .auction-room,
   .bracket-board,
-  .round32-bracket,
+  .knockout-bracket,
   .match-ticker,
   .game-list,
   .dashboard-grid,
@@ -2949,13 +2956,13 @@ input[type="number"] {
     align-items: stretch;
   }
 
-  .round32-center {
+  .knockout-center {
     order: 3;
     grid-column: 1 / -1;
   }
 
-  .round32-left,
-  .round32-right {
+  .knockout-left,
+  .knockout-right {
     align-self: stretch;
   }
 
@@ -3003,8 +3010,8 @@ input[type="number"] {
   .auction-room,
   .auction-summary-stats,
   .bracket-board,
-  .round32-bracket,
-  .round32-slot-grid,
+  .knockout-bracket,
+  .knockout-slot-grid,
   .match-ticker,
   .game-list,
   .current-team-card,
@@ -3037,11 +3044,11 @@ input[type="number"] {
     flex-direction: column;
   }
 
-  .round32-center {
-    order: -1;
+  .knockout-center {
+    order: 3;
   }
 
-  .round32-match::after {
+  .knockout-match::after {
     display: none;
   }
 

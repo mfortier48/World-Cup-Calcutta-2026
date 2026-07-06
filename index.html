@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css?v=30" />
+    <link rel="stylesheet" href="./styles.css?v=31" />
   </head>
   <body>
     <div class="app-shell">
@@ -85,11 +85,11 @@
             <div class="bracket-showcase-head">
               <div>
                 <p class="panel-label">Knockout Bracket</p>
-                <h3>Round Of 32</h3>
+                <h3 id="bracketStageTitle">Round Of 16</h3>
               </div>
-              <p class="hint">Owners shown under each team. Scores and winners update from the results feed.</p>
+              <p id="bracketStageHint" class="hint">All eight matchups, with owners, scores, and the quarterfinal path.</p>
             </div>
-            <div id="bracketBoard" class="round32-bracket"></div>
+            <div id="bracketBoard" class="knockout-bracket"></div>
           </section>
         </section>
 
@@ -302,6 +302,6 @@
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js?v=30"></script>
+    <script src="./app.js?v=31"></script>
   </body>
 </html>

@@ -68,6 +68,20 @@ const payoutRules = [
   { key: "worstDiff", label: "Worst goal differential", pct: 3, type: "min", field: "gd" },
 ];
 
+const stagePayoutUnits = {
+  r16: 16,
+  qf: 8,
+  sf: 4,
+  final: 2,
+  champion: 1,
+};
+
+const groupFinishPayoutUnits = {
+  winner: 12,
+  runnerUp: 12,
+  third: 8,
+};
+
 const teams = [
   ["arg", "Argentina", "CONMEBOL", "🇦🇷", 1],
   ["aus", "Australia", "AFC", "🇦🇺", 27],
@@ -545,7 +559,14 @@ function buildOfficialResults() {
 
     applyGoalsAndUpset(results, match, score);
     const winnerId = scoreWinnerId(match, score);
-    if (winnerId && match.stage === "r32") results[winnerId].stage = "r16";
+    const nextStage = {
+      r32: "r16",
+      r16: "qf",
+      qf: "sf",
+      sf: "final",
+      final: "champion",
+    }[match.stage];
+    if (winnerId && nextStage) results[winnerId].stage = nextStage;
   }
 
   return results;
@@ -852,7 +873,7 @@ function calculatePayouts() {
       const qualifiers = teams.filter((team) => stageRank(state.results[team.id].stage) >= stageRank(rule.stage));
       if (!qualifiers.length) continue;
       for (const team of qualifiers) {
-        const amount = rulePot / qualifiers.length;
+        const amount = rulePot / stagePayoutUnits[rule.stage];
         teamPayouts[team.id] += amount;
         teamPayoutDetails[team.id].push({
           key: rule.key,
@@ -870,7 +891,7 @@ function calculatePayouts() {
       });
       if (!qualifiers.length) continue;
       for (const team of qualifiers) {
-        const amount = rulePot / qualifiers.length;
+        const amount = rulePot / groupFinishPayoutUnits[rule.finish];
         teamPayouts[team.id] += amount;
         teamPayoutDetails[team.id].push({
           key: rule.key,
@@ -971,6 +992,14 @@ function currentRuleUnitAmount(rule, pot = actualPot()) {
     return denominator ? rulePot / denominator : 0;
   }
 
+  if (rule.type === "stage") {
+    return rulePot / stagePayoutUnits[rule.stage];
+  }
+
+  if (rule.type === "groupFinish") {
+    return rulePot / groupFinishPayoutUnits[rule.finish];
+  }
+
   const winners = payoutRuleWinners(rule);
   return winners.length ? rulePot / winners.length : 0;
 }
@@ -993,17 +1022,10 @@ function scenarioTeamCost(teamId) {
 }
 
 function scenarioStagePayoutDetails(stage, pot) {
-  const stageUnits = {
-    r16: 16,
-    qf: 8,
-    sf: 4,
-    final: 2,
-    champion: 1,
-  };
   return ["r16", "qf", "sf", "final", "champion"].reduce((details, stageKey) => {
     if (stageRank(stage) < stageRank(stageKey)) return details;
     const rule = payoutRuleByKey(stageKey);
-    const amount = rulePool(stageKey, pot) / stageUnits[stageKey];
+    const amount = rulePool(stageKey, pot) / stagePayoutUnits[stageKey];
     if (amount > 0) {
       details.push({
         key: stageKey,
@@ -1021,17 +1043,14 @@ function scenarioStagePayout(stage, pot) {
 }
 
 function scenarioGroupFinishPayout(finish, pot) {
-  const finishUnits = {
-    winner: 12,
-    runnerUp: 12,
-    third: 8,
-  };
   const ruleKeys = {
     winner: "r32Winner",
     runnerUp: "r32RunnerUp",
     third: "r32Third",
   };
-  return finish && finishUnits[finish] ? rulePool(ruleKeys[finish], pot) / finishUnits[finish] : 0;
+  return finish && groupFinishPayoutUnits[finish]
+    ? rulePool(ruleKeys[finish], pot) / groupFinishPayoutUnits[finish]
+    : 0;
 }
 
 function scenarioGroupFinishDetail(finish, pot) {
@@ -1741,12 +1760,59 @@ function bracketSlotTeam(match) {
   `;
 }
 
-function round32TeamRow(team, match, score, side) {
+const knockoutStageDetails = {
+  r32: {
+    label: "Round of 32",
+    next: "r16",
+    nextMatchLabel: "Round of 16",
+    summary: "Sixteen teams advance",
+    hint: "All 16 matchups, with owners, scores, and the Round-of-16 path.",
+  },
+  r16: {
+    label: "Round of 16",
+    next: "qf",
+    nextMatchLabel: "Quarterfinal",
+    summary: "Eight teams advance",
+    hint: "All eight matchups, with owners, scores, and the quarterfinal path.",
+  },
+  qf: {
+    label: "Quarterfinals",
+    next: "sf",
+    nextMatchLabel: "Semifinal",
+    summary: "Four teams advance",
+    hint: "All four quarterfinals, with owners, scores, and the semifinal path.",
+  },
+  sf: {
+    label: "Semifinals",
+    next: "final",
+    nextMatchLabel: "Final",
+    summary: "Two teams advance",
+    hint: "Both semifinals, with owners, scores, and the championship matchup.",
+  },
+  final: {
+    label: "Final",
+    next: "",
+    nextMatchLabel: "",
+    summary: "One champion",
+    hint: "The championship matchup, with owners and the final score.",
+  },
+};
+
+function currentOverviewBracketStage() {
+  const stageOrder = ["r32", "r16", "qf", "sf", "final"];
+  const allMatches = tournamentMatches();
+  const availableStages = stageOrder.filter((stage) => allMatches.some((match) => match.stage === stage));
+  return availableStages.find((stage) => (
+    allMatches.some((match) => match.stage === stage && !matchScore(match))
+  )) || availableStages[availableStages.length - 1] || "r32";
+}
+
+function knockoutTeamRow(team, match, score, side) {
   const finalWinner = score?.isFinal && score.winnerId === team.id;
   const goals = side === "home" ? score?.homeGoals : score?.awayGoals;
   return `
-    <div class="round32-team ${finalWinner ? "winner" : ""}">
-      <span class="round32-flag">${team.flag}</span>
+    <div class="knockout-team ${finalWinner ? "winner" : ""}">
+      <span class="knockout-flag">${team.flag}</span>
       <div>
         <strong>${team.name}</strong>
         <em>${teamOwner(team.id)}</em>
@@ -1756,7 +1822,7 @@ function round32TeamRow(team, match, score, side) {
   `;
 }
 
-function round32MatchCard(match, side = "left") {
+function knockoutMatchCard(match, side = "left") {
   const home = teamById(match.homeId);
   const away = teamById(match.awayId);
   const score = displayScore(match);
@@ -1765,70 +1831,90 @@ function round32MatchCard(match, side = "left") {
   const status = score ? (score.isFinal ? scoreDisplayLabel(match, score) : score.status) : displayMatchTime(match);
   const dateText = new Date(`${match.date}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric" });
   return `
-    <article class="round32-match ${score?.isFinal ? "is-final" : ""} ${side === "right" ? "right-side" : "left-side"}">
-      <div class="round32-match-head">
+    <article class="knockout-match ${score?.isFinal ? "is-final" : ""} ${side === "right" ? "right-side" : "left-side"}">
+      <div class="knockout-match-head">
         <strong>${match.venue}</strong>
         <span>${dateText}</span>
         <em>${status}</em>
       </div>
-      ${round32TeamRow(home, match, score, "home")}
-      ${round32TeamRow(away, match, score, "away")}
-      ${winner ? `<div class="round32-winner">${winner.flag} ${winner.name} advances</div>` : ""}
+      ${knockoutTeamRow(home, match, score, "home")}
+      ${knockoutTeamRow(away, match, score, "away")}
+      ${winner ? `<div class="knockout-winner">${winner.flag} ${winner.name} advances</div>` : ""}
     </article>
   `;
 }
 
-function round32SlotCard(matches, index) {
-  const winners = matches
-    .map((match) => {
+function knockoutSlotCard(matches, index, details, nextMatch) {
+  const nextTeams = nextMatch
+    ? [teamById(nextMatch.homeId), teamById(nextMatch.awayId)].filter(Boolean)
+    : [];
+  const participants = nextTeams.length === 2
+    ? nextTeams.map((team) => `${team.flag} ${team.name}`)
+    : matches.map((match) => {
       const score = matchScore(match);
-      return score?.winnerId ? teamById(score.winnerId) : null;
-    })
-    .filter(Boolean);
-  const label = winners.length === 2
-    ? `${winners[0].flag} ${winners[0].name} vs ${winners[1].flag} ${winners[1].name}`
-    : matches.map((match) => `Winner M${match.matchNumber}`).join(" / ");
+      const winner = score?.winnerId ? teamById(score.winnerId) : null;
+      return winner ? `${winner.flag} ${winner.name}` : `Winner M${match.matchNumber}`;
+    });
+  const dateText = nextMatch
+    ? `${new Date(`${nextMatch.date}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric" })} · ${displayMatchTime(nextMatch)}`
+    : "Schedule pending";
   return `
-    <article class="round32-slot">
-      <strong>R16 ${index + 1}</strong>
-      <span>${label}</span>
+    <article class="knockout-slot">
+      <strong>${details.nextMatchLabel} ${index + 1}</strong>
+      <span>${participants.join(" vs ")}</span>
+      <em>${dateText}</em>
     </article>
   `;
 }
 
 function renderBracket() {
   const board = document.getElementById("bracketBoard");
+  const title = document.getElementById("bracketStageTitle");
+  const hint = document.getElementById("bracketStageHint");
   if (!board) return;
+  const activeStage = currentOverviewBracketStage();
+  const details = knockoutStageDetails[activeStage];
   const matches = tournamentMatches()
-    .filter((match) => match.stage === "r32")
+    .filter((match) => match.stage === activeStage)
     .sort((a, b) => a.matchNumber - b.matchNumber);
 
+  if (title) title.textContent = details.label;
+  if (hint) hint.textContent = details.hint;
+
   if (!matches.length) {
-    board.innerHTML = `<div class="empty-note">Round of 32 fixtures will appear here when the score feed publishes them.</div>`;
+    board.innerHTML = `<div class="empty-note">${details.label} fixtures will appear here when the score feed publishes them.</div>`;
     return;
   }
 
-  const leftMatches = matches.slice(0, 8);
-  const rightMatches = matches.slice(8, 16);
-  const slotCards = Array.from({ length: 8 }, (_, index) => {
-    const pair = matches.slice(index * 2, index * 2 + 2);
-    return round32SlotCard(pair, index);
-  }).join("");
+  const sideBreak = Math.ceil(matches.length / 2);
+  const leftMatches = matches.slice(0, sideBreak);
+  const rightMatches = matches.slice(sideBreak);
+  const nextMatches = details.next
+    ? tournamentMatches()
+      .filter((match) => match.stage === details.next)
+      .sort((a, b) => a.matchNumber - b.matchNumber)
+    : [];
+  const slotCards = details.next
+    ? Array.from({ length: Math.ceil(matches.length / 2) }, (_, index) => {
+        const pair = matches.slice(index * 2, index * 2 + 2);
+        return knockoutSlotCard(pair, index, details, nextMatches[index]);
+      }).join("")
+    : "";
 
   board.innerHTML = `
-    <div class="round32-side round32-left">
-      ${leftMatches.map((match) => round32MatchCard(match, "left")).join("")}
+    <div class="knockout-side knockout-left">
+      ${leftMatches.map((match) => knockoutMatchCard(match, "left")).join("")}
     </div>
-    <div class="round32-center">
-      <div class="round32-center-card">
+    <div class="knockout-center">
+      <div class="knockout-center-card">
         <span>World Cup</span>
-        <strong>Round of 32</strong>
-        <em>Calcutta bracket</em>
+        <strong>${details.label}</strong>
+        <em>${details.summary}</em>
       </div>
-      <div class="round32-slot-grid">${slotCards}</div>
+      ${slotCards ? `<div class="knockout-slot-grid">${slotCards}</div>` : ""}
     </div>
-    <div class="round32-side round32-right">
-      ${rightMatches.map((match) => round32MatchCard(match, "right")).join("")}
+    <div class="knockout-side knockout-right">
+      ${rightMatches.map((match) => knockoutMatchCard(match, "right")).join("")}
     </div>
   `;
 }
