@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-06-match-91",
-  "updatedAt": "2026-07-06T01:15:09.329Z",
+  "version": "2026-07-06-match-92",
+  "updatedAt": "2026-07-06T05:38:55.283Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -619,6 +619,13 @@
       "awayGoals": 2,
       "status": "FT",
       "winnerId": "nor"
+    },
+    {
+      "matchNumber": 92,
+      "homeGoals": 2,
+      "awayGoals": 3,
+      "status": "FT",
+      "winnerId": "eng"
     }
   ],
   "events": [
@@ -2088,11 +2095,11 @@
       "homeId": "mex",
       "awayId": "eng",
       "venue": "Estadio Banorte",
-      "status": "15'",
-      "completed": false,
-      "homeGoals": 0,
-      "awayGoals": 0,
-      "winnerId": ""
+      "status": "FT",
+      "completed": true,
+      "homeGoals": 2,
+      "awayGoals": 3,
+      "winnerId": "eng"
     },
     {
       "espnId": "760506",
@@ -2168,6 +2175,22 @@
       "homeId": "fra",
       "awayId": "mar",
       "venue": "Gillette Stadium",
+      "status": "Scheduled",
+      "completed": false,
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "winnerId": ""
+    },
+    {
+      "espnId": "760512",
+      "matchNumber": 98,
+      "date": "2026-07-11",
+      "time": "17:00 ET",
+      "stage": "qf",
+      "group": "",
+      "homeId": "nor",
+      "awayId": "eng",
+      "venue": "Hard Rock Stadium",
       "status": "Scheduled",
       "completed": false,
       "homeGoals": 0,
