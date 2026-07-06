@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-06-match-92",
-  "updatedAt": "2026-07-06T20:33:44.019Z",
+  "version": "2026-07-06-match-93",
+  "updatedAt": "2026-07-06T22:02:46.155Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -626,6 +626,13 @@
       "awayGoals": 3,
       "status": "FT",
       "winnerId": "eng"
+    },
+    {
+      "matchNumber": 93,
+      "homeGoals": 0,
+      "awayGoals": 1,
+      "status": "FT",
+      "winnerId": "esp"
     }
   ],
   "events": [
@@ -2111,11 +2118,11 @@
       "homeId": "por",
       "awayId": "esp",
       "venue": "AT&T Stadium",
-      "status": "70'",
-      "completed": false,
+      "status": "FT",
+      "completed": true,
       "homeGoals": 0,
-      "awayGoals": 0,
-      "winnerId": ""
+      "awayGoals": 1,
+      "winnerId": "esp"
     },
     {
       "espnId": "760507",
