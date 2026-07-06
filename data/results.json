@@ -1,6 +1,6 @@
 {
   "version": "2026-07-06-match-92",
-  "updatedAt": "2026-07-06T05:38:55.283Z",
+  "updatedAt": "2026-07-06T20:33:44.019Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -2111,7 +2111,7 @@
       "homeId": "por",
       "awayId": "esp",
       "venue": "AT&T Stadium",
-      "status": "Scheduled",
+      "status": "70'",
       "completed": false,
       "homeGoals": 0,
       "awayGoals": 0,
