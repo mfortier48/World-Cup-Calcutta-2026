@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-05-match-91",
-  "updatedAt": "2026-07-05T23:18:19.310Z",
+  "version": "2026-07-06-match-91",
+  "updatedAt": "2026-07-06T01:15:09.329Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -2082,13 +2082,13 @@
       "espnId": "760505",
       "matchNumber": 92,
       "date": "2026-07-05",
-      "time": "20:00 ET",
+      "time": "21:00 ET",
       "stage": "r16",
       "group": "",
       "homeId": "mex",
       "awayId": "eng",
       "venue": "Estadio Banorte",
-      "status": "Scheduled",
+      "status": "15'",
       "completed": false,
       "homeGoals": 0,
       "awayGoals": 0,
