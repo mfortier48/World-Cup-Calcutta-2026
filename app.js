@@ -2017,13 +2017,35 @@ function renderHomeLeaderboard(ownerPayouts) {
     + `<p class="home-leaderboard-note">Showing top six by ${dashboardSortMode === "net" ? "net gain" : "gross winnings"}.</p>`;
 }
 
-function sidePotMetricValue(rule, winnerEntry) {
-  if (!winnerEntry) return "Pending";
-  const metrics = getTeamMetrics(winnerEntry.team);
-  if (rule.field === "gd") return `${metrics.gd > 0 ? "+" : ""}${metrics.gd}`;
-  if (rule.field === "gf") return `${metrics.gf} goals`;
-  if (rule.field === "biggestUpset") return `${metrics.biggestUpset} ranking spots`;
-  return String(winnerEntry.value ?? "");
+function sidePotMetricText(rule, value) {
+  if (rule.field === "gd") return `${value > 0 ? "+" : ""}${value}`;
+  if (rule.field === "gf") return `${value} goal${value === 1 ? "" : "s"}`;
+  if (rule.field === "biggestUpset") return `${value} spot${value === 1 ? "" : "s"}`;
+  return String(value);
+}
+
+function sidePotLeaderboard(rule, maxPlaces = 3, maxTeams = 5) {
+  const direction = rule.type === "min" ? 1 : -1;
+  const ranked = teams
+    .map((team) => ({ team, value: Number(getTeamMetrics(team)[rule.field] || 0) }))
+    .filter(({ value }) => value !== 0)
+    .sort((a, b) => (a.value - b.value) * direction || a.team.name.localeCompare(b.team.name));
+
+  const placeValues = [...new Set(ranked.map(({ value }) => value))].slice(0, maxPlaces);
+  const contenders = ranked.filter(({ value }) => placeValues.includes(value));
+  const tieCounts = contenders.reduce((counts, { value }) => {
+    counts[value] = (counts[value] || 0) + 1;
+    return counts;
+  }, {});
+
+  return {
+    entries: contenders.slice(0, maxTeams).map((entry) => ({
+      ...entry,
+      place: placeValues.indexOf(entry.value) + 1,
+      tied: tieCounts[entry.value] > 1,
+    })),
+    hiddenCount: Math.max(0, contenders.length - maxTeams),
+  };
 }
 
 function renderHomeSidePots(pot) {
@@ -2034,22 +2056,35 @@ function renderHomeSidePots(pot) {
   sidePots.innerHTML = sideRules
     .map((rule) => {
       const winners = payoutRuleWinners(rule);
-      const amount = currentRuleUnitAmount(rule, pot);
-      const chips = winners.length
-        ? winners.map(({ team }) => `
-          <span class="home-sidepot-chip" title="${attrText(`${team.name} - ${teamOwner(team.id)}`)}">
-            ${team.flag} ${team.id.toUpperCase()}
-          </span>
+      const standings = sidePotLeaderboard(rule);
+      const prize = rulePool(rule.key, pot);
+      const rows = standings.entries.length
+        ? standings.entries.map(({ team, value, place, tied }) => `
+          <div class="home-sidepot-standing ${place === 1 ? "leader" : ""}">
+            <span class="home-sidepot-place">${tied ? "T" : ""}${place}</span>
+            <span class="home-sidepot-flag" aria-hidden="true">${team.flag}</span>
+            <span class="home-sidepot-team">
+              <strong>${team.name}</strong>
+              <em>${teamOwner(team.id)}</em>
+            </span>
+            <b>${sidePotMetricText(rule, value)}</b>
+          </div>
         `).join("")
-        : `<span class="empty-note">Pending</span>`;
+        : `<span class="empty-note">No results yet</span>`;
+      const splitNote = winners.length > 1
+        ? `${currency(currentRuleUnitAmount(rule, pot))} each for ${winners.length} tied leaders`
+        : "Current winner takes the pot";
       return `
         <article class="home-sidepot-row">
-          <div>
-            <strong>${rule.label}</strong>
-            <em>${sidePotMetricValue(rule, winners[0])}</em>
+          <div class="home-sidepot-head">
+            <div class="home-sidepot-title">
+              <strong>${rule.label}</strong>
+              <em>${splitNote}</em>
+            </div>
+            <span class="home-sidepot-amount">${currency(prize)}<small>pot</small></span>
           </div>
-          <span class="home-sidepot-amount">${currency(amount)}</span>
-          <div class="home-sidepot-teams">${chips}</div>
+          <div class="home-sidepot-standings">${rows}</div>
+          ${standings.hiddenCount ? `<p class="home-sidepot-more">+${standings.hiddenCount} more tied contender${standings.hiddenCount === 1 ? "" : "s"}</p>` : ""}
         </article>
       `;
     })
