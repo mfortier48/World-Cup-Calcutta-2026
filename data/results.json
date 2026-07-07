@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-07-match-95",
-  "updatedAt": "2026-07-07T22:17:05.044Z",
+  "version": "2026-07-07-match-96",
+  "updatedAt": "2026-07-07T23:29:24.507Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -647,6 +647,13 @@
       "awayGoals": 2,
       "status": "FT",
       "winnerId": "arg"
+    },
+    {
+      "matchNumber": 96,
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "status": "FT-Pens",
+      "winnerId": "sui"
     }
   ],
   "events": [
@@ -2180,11 +2187,11 @@
       "homeId": "sui",
       "awayId": "col",
       "venue": "BC Place",
-      "status": "ET-HT",
-      "completed": false,
+      "status": "FT-Pens",
+      "completed": true,
       "homeGoals": 0,
       "awayGoals": 0,
-      "winnerId": ""
+      "winnerId": "sui"
     },
     {
       "espnId": "760510",
@@ -2228,6 +2235,22 @@
       "homeId": "nor",
       "awayId": "eng",
       "venue": "Hard Rock Stadium",
+      "status": "Scheduled",
+      "completed": false,
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "winnerId": ""
+    },
+    {
+      "espnId": "760513",
+      "matchNumber": 100,
+      "date": "2026-07-11",
+      "time": "21:00 ET",
+      "stage": "qf",
+      "group": "",
+      "homeId": "arg",
+      "awayId": "sui",
+      "venue": "GEHA Field at Arrowhead Stadium",
       "status": "Scheduled",
       "completed": false,
       "homeGoals": 0,
