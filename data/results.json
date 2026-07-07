@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-06-match-93",
-  "updatedAt": "2026-07-06T22:02:46.155Z",
+  "version": "2026-07-07-match-93",
+  "updatedAt": "2026-07-07T01:23:47.043Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -2134,11 +2134,11 @@
       "homeId": "usa",
       "awayId": "bel",
       "venue": "Lumen Field",
-      "status": "Scheduled",
+      "status": "59'",
       "completed": false,
-      "homeGoals": 0,
-      "awayGoals": 0,
-      "winnerId": ""
+      "homeGoals": 1,
+      "awayGoals": 3,
+      "winnerId": "bel"
     },
     {
       "espnId": "760509",
