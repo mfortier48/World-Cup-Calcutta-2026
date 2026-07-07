@@ -1,6 +1,6 @@
 {
   "version": "2026-07-07-match-95",
-  "updatedAt": "2026-07-07T19:08:25.611Z",
+  "updatedAt": "2026-07-07T20:58:10.097Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -2180,7 +2180,7 @@
       "homeId": "sui",
       "awayId": "col",
       "venue": "BC Place",
-      "status": "Scheduled",
+      "status": "HT",
       "completed": false,
       "homeGoals": 0,
       "awayGoals": 0,
