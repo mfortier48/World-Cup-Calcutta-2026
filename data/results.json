@@ -1,6 +1,6 @@
 {
   "version": "2026-07-07-match-94",
-  "updatedAt": "2026-07-07T05:36:27.559Z",
+  "updatedAt": "2026-07-07T16:59:44.056Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -2157,11 +2157,11 @@
       "homeId": "arg",
       "awayId": "egy",
       "venue": "Mercedes-Benz Stadium",
-      "status": "Scheduled",
+      "status": "HT",
       "completed": false,
       "homeGoals": 0,
-      "awayGoals": 0,
-      "winnerId": ""
+      "awayGoals": 1,
+      "winnerId": "egy"
     },
     {
       "espnId": "760508",
