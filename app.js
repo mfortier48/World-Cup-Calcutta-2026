@@ -2,9 +2,7 @@ const BUDGET_CAP = 150;
 const STORAGE_KEY = "calcuttaStateDraft20260609Final12";
 const SCENARIO_KEY = "calcuttaScenarioCalculatorV1";
 const RESULTS_URL = "./data/results.json";
-const CHAOS_URL = "./data/chaos.json";
 const RESULTS_REFRESH_MS = 5 * 60 * 1000;
-const CHAOS_REFRESH_MS = 10 * 60 * 1000;
 const FALLBACK_RESULTS_VERSION = "2026-06-29-match-75";
 const ESTIMATED_DRAW_TEAM_RESULTS = 36;
 
@@ -51,37 +49,6 @@ const sidePotOptions = [
   { key: "bestDiff", label: "Best goal differential" },
   { key: "biggestUpset", label: "Biggest single-match upset" },
   { key: "worstDiff", label: "Worst goal differential" },
-];
-
-const chaosCategories = [
-  {
-    key: "varAgainst",
-    label: "VAR Against",
-    shortLabel: "VAR",
-    unit: "call",
-    help: "Most meaningful VAR decisions that went against a team.",
-  },
-  {
-    key: "disputedVar",
-    label: "Disputed VAR",
-    shortLabel: "Debate",
-    unit: "dispute",
-    help: "The group-chat version: calls that felt arguable, weird, or loudly annoying.",
-  },
-  {
-    key: "yellowCards",
-    label: "Yellow Cards",
-    shortLabel: "YC",
-    unit: "yellow",
-    help: "Manual yellow-card totals when we want the disciplinary chaos in view.",
-  },
-  {
-    key: "redCards",
-    label: "Red Cards",
-    shortLabel: "RC",
-    unit: "red",
-    help: "Manual red-card totals. Painful, dramatic, and worth tracking.",
-  },
 ];
 
 const payoutRules = [
@@ -319,7 +286,6 @@ let scoreByMatch = Object.fromEntries(completedMatchScores.map((score) => [score
 let activeResultsVersion = FALLBACK_RESULTS_VERSION;
 let activeResultsSource = "fallback";
 let liveEventMatches = [];
-let chaosEvents = [];
 
 const teamCardRanks = [
   "A", "A", "K", "K", "Q", "Q", "J", "J", "10", "10", "9", "9",
@@ -689,37 +655,6 @@ async function refreshLiveResults() {
     if (applyResultsPayload(payload)) render();
   } catch {
     // Static fallback data remains usable if the result file cannot be fetched.
-  }
-}
-
-function normalizeChaosEvents(events = []) {
-  const validCategoryKeys = new Set(chaosCategories.map((category) => category.key));
-  return events
-    .filter((event) => validCategoryKeys.has(event.type) && teamById(event.teamId))
-    .map((event) => ({
-      type: event.type,
-      teamId: event.teamId,
-      count: Math.max(1, Number(event.count || 1)),
-      note: String(event.note || "").trim(),
-      matchNumber: Number.isFinite(Number(event.matchNumber)) ? Number(event.matchNumber) : null,
-    }));
-}
-
-function setChaosEvents(events = []) {
-  chaosEvents = normalizeChaosEvents(events);
-}
-
-async function refreshChaosBoard() {
-  try {
-    const response = await fetch(`${CHAOS_URL}?t=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) return;
-    const payload = await response.json();
-    const nextEvents = normalizeChaosEvents(payload.events || []);
-    if (JSON.stringify(nextEvents) === JSON.stringify(chaosEvents)) return;
-    chaosEvents = nextEvents;
-    renderDashboard();
-  } catch {
-    // The chaos board is optional and remains empty if the manual data file is unavailable.
   }
 }
 
@@ -2242,84 +2177,6 @@ function renderHomeSidePots(pot) {
     .join("");
 }
 
-function chaosMetricText(category, value) {
-  if (category.key === "yellowCards") return `${value} YC`;
-  if (category.key === "redCards") return `${value} RC`;
-  const unit = value === 1 ? category.unit : `${category.unit}s`;
-  return `${value} ${unit}`;
-}
-
-function chaosMatchLabel(matchNumber) {
-  const match = matchByNumber(matchNumber);
-  if (!match) return matchNumber ? `Match ${matchNumber}` : "Manual note";
-  const home = teamById(match.homeId);
-  const away = teamById(match.awayId);
-  return `M${match.matchNumber}: ${home?.name || match.homeId} vs ${away?.name || match.awayId}`;
-}
-
-function chaosCategoryStandings(category, maxTeams = 4) {
-  const totals = new Map();
-  chaosEvents
-    .filter((event) => event.type === category.key)
-    .forEach((event) => {
-      const current = totals.get(event.teamId) || { team: teamById(event.teamId), value: 0, notes: [] };
-      current.value += event.count;
-      current.notes.push(event.note || chaosMatchLabel(event.matchNumber));
-      totals.set(event.teamId, current);
-    });
-
-  const entries = [...totals.values()]
-    .sort((a, b) => b.value - a.value || a.team.name.localeCompare(b.team.name));
-
-  return {
-    entries: entries.slice(0, maxTeams),
-    hiddenCount: Math.max(0, entries.length - maxTeams),
-  };
-}
-
-function renderHomeChaosBoard() {
-  const board = document.getElementById("homeChaosBoard");
-  if (!board) return;
-
-  board.innerHTML = chaosCategories
-    .map((category) => {
-      const standings = chaosCategoryStandings(category);
-      const rows = standings.entries.length
-        ? standings.entries.map(({ team, value, notes }, index) => `
-          <div class="home-chaos-row ${index === 0 ? "leader" : ""}" title="${attrText(notes.join(" | "))}">
-            <span class="home-chaos-place">${index + 1}</span>
-            <span class="home-chaos-flag" aria-hidden="true">${team.flag}</span>
-            <span class="home-chaos-team">
-              <strong>${team.name}</strong>
-              <em>${teamOwner(team.id)}</em>
-            </span>
-            <b>${chaosMetricText(category, value)}</b>
-          </div>
-        `).join("")
-        : `
-          <div class="home-chaos-empty">
-            <strong>Nothing logged yet</strong>
-            <em>Send in a call, card, or dispute and this fills in.</em>
-          </div>
-        `;
-
-      return `
-        <article class="home-chaos-card">
-          <div class="home-chaos-head">
-            <span class="home-chaos-badge">${category.shortLabel}</span>
-            <div>
-              <strong>${category.label}</strong>
-              <em>${category.help}</em>
-            </div>
-          </div>
-          <div class="home-chaos-rows">${rows}</div>
-          ${standings.hiddenCount ? `<p class="home-chaos-more">+${standings.hiddenCount} more</p>` : ""}
-        </article>
-      `;
-    })
-    .join("");
-}
-
 function renderDashboard() {
   const { pot, teamPayouts, teamPayoutDetails } = calculatePayouts();
   const ownerSpend = getOwnerSpend();
@@ -2347,7 +2204,6 @@ function renderDashboard() {
   renderSidebarPayouts(pot);
   renderHomeLeaderboard(ownerPayouts);
   renderHomeSidePots(pot);
-  renderHomeChaosBoard();
 
   const teamEarningsElement = document.getElementById("teamEarnings");
   const teamLeaderboardElement = document.getElementById("teamLeaderboard");
@@ -3008,6 +2864,4 @@ bindIfPresent("undoSaleButton", "click", () => {
 
 render();
 refreshLiveResults();
-refreshChaosBoard();
 window.setInterval(refreshLiveResults, RESULTS_REFRESH_MS);
-window.setInterval(refreshChaosBoard, CHAOS_REFRESH_MS);
