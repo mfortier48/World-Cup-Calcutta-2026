@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-07-match-96",
-  "updatedAt": "2026-07-07T23:29:24.507Z",
+  "version": "2026-07-09-match-96",
+  "updatedAt": "2026-07-09T21:07:44.634Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -2203,7 +2203,7 @@
       "homeId": "fra",
       "awayId": "mar",
       "venue": "Gillette Stadium",
-      "status": "Scheduled",
+      "status": "HT",
       "completed": false,
       "homeGoals": 0,
       "awayGoals": 0,
