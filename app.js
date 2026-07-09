@@ -1780,7 +1780,7 @@ const knockoutStageDetails = {
     next: "sf",
     nextMatchLabel: "Semifinal",
     summary: "Four teams advance",
-    hint: "All four quarterfinals, with owners, scores, and the semifinal path.",
+    hint: "Four quarterfinals, grouped by semifinal path with owners, rankings, times, and scores.",
   },
   sf: {
     label: "Semifinals",
@@ -1867,6 +1867,104 @@ function knockoutSlotCard(matches, index, details, nextMatch) {
   `;
 }
 
+function quarterfinalTeamRow(team, match, score, side) {
+  const finalWinner = score?.isFinal && score.winnerId === team.id;
+  const goals = side === "home" ? score?.homeGoals : score?.awayGoals;
+  return `
+    <div class="qf-team ${finalWinner ? "winner" : ""}">
+      <span class="qf-flag">${team.flag}</span>
+      <span class="qf-team-name">
+        <strong>${teamLabel(team)}</strong>
+        <em>${teamOwner(team.id)}</em>
+      </span>
+      <b>${score ? goals : ""}</b>
+    </div>
+  `;
+}
+
+function quarterfinalMatchCard(match, index) {
+  const home = teamById(match.homeId);
+  const away = teamById(match.awayId);
+  const score = displayScore(match);
+  const finalScore = matchScore(match);
+  const winner = finalScore?.winnerId ? teamById(finalScore.winnerId) : null;
+  const status = score ? (score.isFinal ? scoreDisplayLabel(match, score) : score.status) : displayMatchTime(match);
+  const dateText = new Date(`${match.date}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  return `
+    <article class="qf-match ${score?.isFinal ? "is-final" : ""}">
+      <div class="qf-match-head">
+        <span>QF ${index + 1}</span>
+        <strong>Match ${match.matchNumber}</strong>
+        <em>${dateText} · ${status}</em>
+      </div>
+      <div class="qf-venue">${match.venue}</div>
+      ${quarterfinalTeamRow(home, match, score, "home")}
+      ${quarterfinalTeamRow(away, match, score, "away")}
+      ${winner ? `<div class="qf-winner">${winner.flag} ${winner.name} advances</div>` : ""}
+    </article>
+  `;
+}
+
+function quarterfinalParticipantLabel(match, index) {
+  const score = matchScore(match);
+  const winner = score?.winnerId ? teamById(score.winnerId) : null;
+  return winner ? `${winner.flag} ${winner.name}` : `Winner QF ${index + 1}`;
+}
+
+function quarterfinalSemifinalCard(matches, indexes, nextMatch) {
+  const dateText = nextMatch
+    ? `${new Date(`${nextMatch.date}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric" })} · ${displayMatchTime(nextMatch)}`
+    : "Schedule pending";
+  const venueText = nextMatch?.venue || "Semifinal";
+  const participants = matches.map((match, position) => quarterfinalParticipantLabel(match, indexes[position]));
+
+  return `
+    <article class="qf-semi-card">
+      <span>Semifinal Path</span>
+      <strong>${participants[0]}</strong>
+      <em>vs</em>
+      <strong>${participants[1]}</strong>
+      <small>${venueText} · ${dateText}</small>
+    </article>
+  `;
+}
+
+function renderQuarterfinalBracket(matches, details) {
+  const nextMatches = details.next
+    ? tournamentMatches()
+      .filter((match) => match.stage === details.next)
+      .sort((a, b) => a.matchNumber - b.matchNumber)
+    : [];
+
+  const paths = Array.from({ length: Math.ceil(matches.length / 2) }, (_, pathIndex) => {
+    const pair = matches.slice(pathIndex * 2, pathIndex * 2 + 2);
+    const indexes = pair.map((_, pairIndex) => pathIndex * 2 + pairIndex);
+    const label = `Semifinal ${pathIndex + 1}`;
+    const pathSummary = pair
+      .map((match, pairIndex) => quarterfinalParticipantLabel(match, indexes[pairIndex]))
+      .join(" vs ");
+
+    return `
+      <section class="qf-path" aria-label="${label}">
+        <div class="qf-path-head">
+          <span>${label}</span>
+          <strong>${pathSummary}</strong>
+        </div>
+        <div class="qf-path-body">
+          <div class="qf-match-stack">
+            ${pair.map((match, pairIndex) => quarterfinalMatchCard(match, indexes[pairIndex])).join("")}
+          </div>
+          <div class="qf-joiner" aria-hidden="true"><span></span></div>
+          ${quarterfinalSemifinalCard(pair, indexes, nextMatches[pathIndex])}
+        </div>
+      </section>
+    `;
+  });
+
+  return `<div class="quarterfinal-bracket">${paths.join("")}</div>`;
+}
+
 function renderBracket() {
   const board = document.getElementById("bracketBoard");
   const title = document.getElementById("bracketStageTitle");
@@ -1886,6 +1984,13 @@ function renderBracket() {
     return;
   }
 
+  if (activeStage === "qf") {
+    board.className = "quarterfinal-bracket-board";
+    board.innerHTML = renderQuarterfinalBracket(matches, details);
+    return;
+  }
+
+  board.className = "knockout-bracket";
   const sideBreak = Math.ceil(matches.length / 2);
   const leftMatches = matches.slice(0, sideBreak);
   const rightMatches = matches.slice(sideBreak);
