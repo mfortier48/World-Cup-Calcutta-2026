@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-09-match-96",
-  "updatedAt": "2026-07-09T21:07:44.634Z",
+  "version": "2026-07-09-match-97",
+  "updatedAt": "2026-07-09T22:43:14.340Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -654,6 +654,13 @@
       "awayGoals": 0,
       "status": "FT-Pens",
       "winnerId": "sui"
+    },
+    {
+      "matchNumber": 97,
+      "homeGoals": 2,
+      "awayGoals": 0,
+      "status": "FT",
+      "winnerId": "fra"
     }
   ],
   "events": [
@@ -2203,11 +2210,11 @@
       "homeId": "fra",
       "awayId": "mar",
       "venue": "Gillette Stadium",
-      "status": "HT",
-      "completed": false,
-      "homeGoals": 0,
+      "status": "FT",
+      "completed": true,
+      "homeGoals": 2,
       "awayGoals": 0,
-      "winnerId": ""
+      "winnerId": "fra"
     },
     {
       "espnId": "760511",
