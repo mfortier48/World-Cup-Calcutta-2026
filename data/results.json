@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-09-match-97",
-  "updatedAt": "2026-07-09T22:43:14.340Z",
+  "version": "2026-07-10-match-97",
+  "updatedAt": "2026-07-10T20:38:44.357Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -2226,10 +2226,10 @@
       "homeId": "esp",
       "awayId": "bel",
       "venue": "SoFi Stadium",
-      "status": "Scheduled",
+      "status": "76'",
       "completed": false,
-      "homeGoals": 0,
-      "awayGoals": 0,
+      "homeGoals": 1,
+      "awayGoals": 1,
       "winnerId": ""
     },
     {
