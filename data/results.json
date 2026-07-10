@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-10-match-97",
-  "updatedAt": "2026-07-10T20:38:44.357Z",
+  "version": "2026-07-10-match-98",
+  "updatedAt": "2026-07-10T21:41:55.097Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -661,6 +661,13 @@
       "awayGoals": 0,
       "status": "FT",
       "winnerId": "fra"
+    },
+    {
+      "matchNumber": 98,
+      "homeGoals": 2,
+      "awayGoals": 1,
+      "status": "FT",
+      "winnerId": "esp"
     }
   ],
   "events": [
@@ -2226,11 +2233,11 @@
       "homeId": "esp",
       "awayId": "bel",
       "venue": "SoFi Stadium",
-      "status": "76'",
-      "completed": false,
-      "homeGoals": 1,
+      "status": "FT",
+      "completed": true,
+      "homeGoals": 2,
       "awayGoals": 1,
-      "winnerId": ""
+      "winnerId": "esp"
     },
     {
       "espnId": "760512",
@@ -2258,6 +2265,22 @@
       "homeId": "arg",
       "awayId": "sui",
       "venue": "GEHA Field at Arrowhead Stadium",
+      "status": "Scheduled",
+      "completed": false,
+      "homeGoals": 0,
+      "awayGoals": 0,
+      "winnerId": ""
+    },
+    {
+      "espnId": "760514",
+      "matchNumber": 101,
+      "date": "2026-07-14",
+      "time": "15:00 ET",
+      "stage": "sf",
+      "group": "",
+      "homeId": "fra",
+      "awayId": "esp",
+      "venue": "AT&T Stadium",
       "status": "Scheduled",
       "completed": false,
       "homeGoals": 0,
