@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-10-match-98",
-  "updatedAt": "2026-07-10T21:41:55.097Z",
+  "version": "2026-07-11-match-98",
+  "updatedAt": "2026-07-11T21:22:18.340Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -2249,7 +2249,7 @@
       "homeId": "nor",
       "awayId": "eng",
       "venue": "Hard Rock Stadium",
-      "status": "Scheduled",
+      "status": "21'",
       "completed": false,
       "homeGoals": 0,
       "awayGoals": 0,
