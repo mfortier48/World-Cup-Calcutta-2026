@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-12-match-100",
-  "updatedAt": "2026-07-12T04:38:29.762Z",
+  "version": "2026-07-14-match-100",
+  "updatedAt": "2026-07-14T20:10:43.216Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -2295,11 +2295,11 @@
       "homeId": "fra",
       "awayId": "esp",
       "venue": "AT&T Stadium",
-      "status": "Scheduled",
+      "status": "49'",
       "completed": false,
       "homeGoals": 0,
-      "awayGoals": 0,
-      "winnerId": ""
+      "awayGoals": 1,
+      "winnerId": "esp"
     },
     {
       "espnId": "760515",
