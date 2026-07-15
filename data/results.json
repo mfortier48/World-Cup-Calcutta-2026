@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-14-match-101",
-  "updatedAt": "2026-07-14T21:15:12.721Z",
+  "version": "2026-07-15-match-101",
+  "updatedAt": "2026-07-15T19:50:54.407Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -2318,7 +2318,7 @@
       "homeId": "eng",
       "awayId": "arg",
       "venue": "Mercedes-Benz Stadium",
-      "status": "Scheduled",
+      "status": "HT",
       "completed": false,
       "homeGoals": 0,
       "awayGoals": 0,
