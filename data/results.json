@@ -1,6 +1,6 @@
 {
-  "version": "2026-07-18-match-102",
-  "updatedAt": "2026-07-18T22:25:28.578Z",
+  "version": "2026-07-18-match-103",
+  "updatedAt": "2026-07-18T23:26:08.446Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -696,6 +696,13 @@
       "awayGoals": 2,
       "status": "FT",
       "winnerId": "arg"
+    },
+    {
+      "matchNumber": 103,
+      "homeGoals": 4,
+      "awayGoals": 6,
+      "status": "FT",
+      "winnerId": "eng"
     }
   ],
   "events": [
@@ -2341,10 +2348,10 @@
       "homeId": "fra",
       "awayId": "eng",
       "venue": "Hard Rock Stadium",
-      "status": "61'",
-      "completed": false,
-      "homeGoals": 2,
-      "awayGoals": 4,
+      "status": "FT",
+      "completed": true,
+      "homeGoals": 4,
+      "awayGoals": 6,
       "winnerId": "eng"
     },
     {
