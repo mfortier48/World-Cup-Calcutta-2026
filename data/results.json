@@ -1,6 +1,6 @@
 {
   "version": "2026-07-19-match-103",
-  "updatedAt": "2026-07-19T20:46:37.401Z",
+  "updatedAt": "2026-07-19T21:51:31.274Z",
   "source": "espn:fifa.world",
   "matches": [
     {
@@ -2364,11 +2364,11 @@
       "homeId": "esp",
       "awayId": "arg",
       "venue": "MetLife Stadium",
-      "status": "68'",
+      "status": "115'",
       "completed": false,
-      "homeGoals": 0,
+      "homeGoals": 1,
       "awayGoals": 0,
-      "winnerId": ""
+      "winnerId": "esp"
     }
   ]
 }
