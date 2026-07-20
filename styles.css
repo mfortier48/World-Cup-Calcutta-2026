@@ -579,6 +579,182 @@ h3 {
   text-align: right;
 }
 
+.team-payouts-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.team-payout-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.team-payout-summary article {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(23, 33, 31, 0.1);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(13, 107, 87, 0.08), rgba(255, 255, 255, 0.72)),
+    rgba(255, 255, 255, 0.74);
+}
+
+.team-payout-summary span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.team-payout-summary strong {
+  display: block;
+  margin-top: 4px;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 1.18rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-payout-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 10px;
+}
+
+.team-payout-ledger-card {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(23, 33, 31, 0.1);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 253, 248, 0.76)),
+    radial-gradient(circle at 100% 0%, rgba(45, 95, 154, 0.08), transparent 9rem);
+}
+
+.team-payout-rank {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border-radius: 8px;
+  color: white;
+  background: var(--green);
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.team-payout-card-main {
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+}
+
+.team-payout-teamline {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  min-width: 0;
+}
+
+.team-payout-flag {
+  display: grid;
+  width: 36px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: white;
+  font-size: 1.1rem;
+}
+
+.team-payout-teamline strong,
+.team-payout-teamline em {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team-payout-teamline strong {
+  font-size: 0.98rem;
+  font-weight: 930;
+}
+
+.team-payout-teamline em {
+  margin-top: 1px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.team-payout-moneyline {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.team-payout-moneyline div {
+  min-width: 0;
+  padding: 9px 10px;
+  border: 1px solid rgba(23, 33, 31, 0.08);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.team-payout-moneyline span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.team-payout-moneyline strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--green);
+  font-size: 1.08rem;
+  font-weight: 950;
+}
+
+.team-payout-explainer {
+  display: -webkit-box;
+  min-height: 42px;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  color: var(--ink);
+  font-size: 0.78rem;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.team-payout-detail-split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.team-payout-detail-split span {
+  min-height: 24px;
+  padding: 4px 7px;
+  border-radius: 999px;
+  color: var(--muted);
+  background: rgba(23, 33, 31, 0.06);
+  font-size: 0.66rem;
+  font-weight: 900;
+}
+
 .bracket-showcase {
   padding: 20px;
   border: 1px solid var(--line);
@@ -3199,7 +3375,7 @@ input[type="number"] {
   }
 
   .nav {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .nav-item {
@@ -3225,6 +3401,7 @@ input[type="number"] {
   .side-pot-checks,
   .scenario-output,
   .scenario-total-grid,
+  .team-payout-summary,
   .compact-mvp-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -3311,7 +3488,12 @@ input[type="number"] {
   .scenario-grid,
   .side-pot-checks,
   .scenario-output,
-  .scenario-total-grid {
+  .scenario-total-grid,
+  .team-payout-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .team-payout-grid {
     grid-template-columns: 1fr;
   }
 

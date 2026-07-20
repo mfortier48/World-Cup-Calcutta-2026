@@ -597,6 +597,7 @@ const defaultState = {
 let state = loadState();
 let scenarioState = loadScenarioState();
 let dashboardSortMode = "payout";
+let teamPayoutSortMode = "payout";
 let scenarioBuilderState = {
   owner: "",
   selectedTeamIds: [],
@@ -718,6 +719,11 @@ function currency(value) {
 
 function stageRank(stage) {
   return stages.find((item) => item.value === stage)?.rank ?? 0;
+}
+
+function stagePayoutNote(stageKey) {
+  if (stageKey === "champion") return "Won the championship";
+  return `Reached ${stages.find((stage) => stage.value === stageKey)?.label || stageKey}`;
 }
 
 function teamCell(team) {
@@ -879,7 +885,7 @@ function calculatePayouts() {
           key: rule.key,
           label: rule.label,
           amount,
-          note: `Reached ${stages.find((stage) => stage.value === rule.stage)?.label || rule.stage}`,
+          note: stagePayoutNote(rule.stage),
         });
       }
     }
@@ -1031,7 +1037,7 @@ function scenarioStagePayoutDetails(stage, pot) {
         key: stageKey,
         label: rule?.label || stageKey,
         amount,
-        note: rule?.label || stageKey,
+        note: stagePayoutNote(stageKey),
       });
     }
     return details;
@@ -2169,6 +2175,24 @@ function ownerPayoutTooltip(owner) {
     .join(" | ") || "No payout events yet.";
 }
 
+function payoutDetailPhrase(detail) {
+  return `${detail.note} (${currency(detail.amount)})`;
+}
+
+function payoutExplanation(details) {
+  if (!details.length) return "No payout events yet.";
+  const resultDetails = details.filter((detail) => !isSidePotKey(detail.key));
+  const funPotDetails = details.filter((detail) => isSidePotKey(detail.key));
+  const parts = [];
+  if (resultDetails.length) {
+    parts.push(`Results: ${resultDetails.map(payoutDetailPhrase).join(", ")}.`);
+  }
+  if (funPotDetails.length) {
+    parts.push(`Fun pots: ${funPotDetails.map(payoutDetailPhrase).join(", ")}.`);
+  }
+  return parts.join(" ");
+}
+
 function renderHomeLeaderboard(ownerPayouts) {
   const leaderboard = document.getElementById("homeLeaderboard");
   if (!leaderboard) return;
@@ -2183,7 +2207,6 @@ function renderHomeLeaderboard(ownerPayouts) {
   });
 
   leaderboard.innerHTML = sortedOwners
-    .slice(0, 6)
     .map((owner, index) => {
       const topTeams = owner.ownedTeams
         .filter((entry) => entry.payout > 0)
@@ -2205,7 +2228,7 @@ function renderHomeLeaderboard(ownerPayouts) {
       `;
     })
     .join("")
-    + `<p class="home-leaderboard-note">Showing top six by ${dashboardSortMode === "net" ? "net gain" : "gross winnings"}.</p>`;
+    + `<p class="home-leaderboard-note">Full league sorted by ${dashboardSortMode === "net" ? "net gain" : "total payout"}.</p>`;
 }
 
 function sidePotMetricText(rule, value) {
@@ -2280,6 +2303,102 @@ function renderHomeSidePots(pot) {
       `;
     })
     .join("");
+}
+
+function teamPayoutLedgerRows(payoutData = calculatePayouts()) {
+  return teams.map((team) => {
+    const cost = Number(state.auction[team.id]?.price || 0);
+    const payout = Number(payoutData.teamPayouts[team.id] || 0);
+    const details = payoutData.teamPayoutDetails[team.id] || [];
+    const result = state.results[team.id] || {};
+    const stageLabel = stages.find((stage) => stage.value === result.stage)?.label || "Group Stage";
+    return {
+      team,
+      owner: state.auction[team.id]?.owner || "Unassigned",
+      cost,
+      payout,
+      net: payout - cost,
+      details,
+      stageLabel,
+    };
+  });
+}
+
+function renderTeamPayouts(payoutData = calculatePayouts()) {
+  const grid = document.getElementById("teamPayoutGrid");
+  const summary = document.getElementById("teamPayoutSummary");
+  if (!grid && !summary) return;
+
+  document.querySelectorAll("[data-team-payout-sort]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.teamPayoutSort === teamPayoutSortMode);
+  });
+
+  const rows = teamPayoutLedgerRows(payoutData);
+  const sortedRows = [...rows].sort((a, b) => {
+    if (teamPayoutSortMode === "net") return b.net - a.net || b.payout - a.payout || a.team.name.localeCompare(b.team.name);
+    return b.payout - a.payout || b.net - a.net || a.team.name.localeCompare(b.team.name);
+  });
+  const biggestTotal = [...rows].sort((a, b) => b.payout - a.payout)[0];
+  const biggestNet = [...rows].sort((a, b) => b.net - a.net)[0];
+  const payingTeams = rows.filter((row) => row.payout > 0).length;
+
+  if (summary) {
+    summary.innerHTML = `
+      <article>
+        <span>Total Pot</span>
+        <strong>${currency(payoutData.pot)}</strong>
+      </article>
+      <article>
+        <span>Teams Paid</span>
+        <strong>${payingTeams} / ${teams.length}</strong>
+      </article>
+      <article>
+        <span>Top Total</span>
+        <strong>${biggestTotal?.team.flag || ""} ${biggestTotal ? currency(biggestTotal.payout) : currency(0)}</strong>
+      </article>
+      <article>
+        <span>Top Net</span>
+        <strong>${biggestNet?.team.flag || ""} ${biggestNet ? currency(biggestNet.net) : currency(0)}</strong>
+      </article>
+    `;
+  }
+
+  if (!grid) return;
+
+  grid.innerHTML = sortedRows.map((row, index) => {
+    const explanation = payoutExplanation(row.details);
+    const resultDetails = row.details.filter((detail) => !isSidePotKey(detail.key));
+    const funPotDetails = row.details.filter((detail) => isSidePotKey(detail.key));
+    return `
+      <article class="team-payout-ledger-card payout-hover" title="${attrText(explanation)}">
+        <div class="team-payout-rank">${index + 1}</div>
+        <div class="team-payout-card-main">
+          <div class="team-payout-teamline">
+            <span class="team-payout-flag">${row.team.flag}</span>
+            <div>
+              <strong>${teamLabel(row.team)}</strong>
+              <em>${row.owner} · paid ${currency(row.cost)} · ${row.stageLabel}</em>
+            </div>
+          </div>
+          <div class="team-payout-moneyline">
+            <div>
+              <span>Total</span>
+              <strong>${currency(row.payout)}</strong>
+            </div>
+            <div>
+              <span>Net</span>
+              <strong class="${row.net >= 0 ? "budget-ok" : "budget-warn"}">${currency(row.net)}</strong>
+            </div>
+          </div>
+          <p class="team-payout-explainer">${explanation}</p>
+          <div class="team-payout-detail-split">
+            <span>${resultDetails.length ? `${resultDetails.length} result payout${resultDetails.length === 1 ? "" : "s"}` : "No result payout"}</span>
+            <span>${funPotDetails.length ? `${funPotDetails.length} fun pot${funPotDetails.length === 1 ? "" : "s"}` : "No fun pot"}</span>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join("");
 }
 
 function renderDashboard() {
@@ -2613,6 +2732,7 @@ function render() {
   renderResults();
   renderGames();
   renderDashboard();
+  renderTeamPayouts();
   renderRules();
   renderScenarioCalculator();
   renderResultsSyncStatus();
@@ -2820,6 +2940,13 @@ function handleDashboardSort(event) {
   renderDashboard();
 }
 
+function handleTeamPayoutSort(event) {
+  const sortButton = event.target.closest("[data-team-payout-sort]");
+  if (!sortButton) return;
+  teamPayoutSortMode = sortButton.dataset.teamPayoutSort || "payout";
+  renderTeamPayouts();
+}
+
 function handleScenarioBuilderClick(event) {
   const ownerButton = event.target.closest("[data-builder-owner]");
   const teamButton = event.target.closest("[data-builder-team]");
@@ -2861,6 +2988,7 @@ document.addEventListener("input", handleInput);
 document.addEventListener("change", handleInput);
 document.addEventListener("click", handleScenarioRemove);
 document.addEventListener("click", handleDashboardSort);
+document.addEventListener("click", handleTeamPayoutSort);
 document.addEventListener("click", handleScenarioBuilderClick);
 
 document.querySelectorAll(".nav-item").forEach((button) => {

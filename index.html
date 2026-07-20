@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>World Cup Calcutta</title>
-    <link rel="stylesheet" href="./styles.css?v=32" />
+    <link rel="stylesheet" href="./styles.css?v=33" />
   </head>
   <body>
     <div class="app-shell">
@@ -25,6 +25,7 @@
 
         <nav class="nav" aria-label="Primary">
           <button class="nav-item active" data-view="dashboard">Overview</button>
+          <button class="nav-item" data-view="team-payouts">Team Payouts</button>
           <button class="nav-item" data-view="auction">Auction</button>
           <button class="nav-item" data-view="results">Games</button>
           <button class="nav-item" data-view="calculator">Payout Scenario Calculator</button>
@@ -51,7 +52,7 @@
                   <h3>Who Is Winning?</h3>
                 </div>
                 <div class="segmented-control" aria-label="Leaderboard sort">
-                  <button class="active" type="button" data-dashboard-sort="payout">Won</button>
+                  <button class="active" type="button" data-dashboard-sort="payout">Total</button>
                   <button type="button" data-dashboard-sort="net">Net</button>
                 </div>
               </div>
@@ -90,6 +91,24 @@
               <p id="bracketStageHint" class="hint">Four quarterfinals, grouped by semifinal path with owners, rankings, times, and scores.</p>
             </div>
             <div id="bracketBoard" class="knockout-bracket"></div>
+          </section>
+        </section>
+
+        <section id="team-payouts" class="view">
+          <section class="panel team-payouts-panel">
+            <div class="section-heading tight-heading">
+              <div>
+                <p class="panel-label">Team Ledger</p>
+                <h3>All Team Payouts</h3>
+              </div>
+              <div class="segmented-control" aria-label="Team payout sort">
+                <button class="active" type="button" data-team-payout-sort="payout">Total</button>
+                <button type="button" data-team-payout-sort="net">Net</button>
+              </div>
+            </div>
+            <p class="example-copy">Every team is listed with its auction cost, total payout, net result, and a short explanation of where the money came from.</p>
+            <div id="teamPayoutSummary" class="team-payout-summary"></div>
+            <div id="teamPayoutGrid" class="team-payout-grid"></div>
           </section>
         </section>
 
@@ -302,6 +321,6 @@
     </div>
 
     <template id="ownerOptionsTemplate"></template>
-    <script src="./app.js?v=32"></script>
+    <script src="./app.js?v=33"></script>
   </body>
 </html>
